@@ -5,7 +5,7 @@ import { GameProvider, useGame } from './context/GameContext';
 import { InventoryProvider, useInventory } from './context/InventoryContext';
 import { CombatProvider } from './context/CombatContext';
 import { DirectiveEngine } from './engine/DirectiveEngine';
-import DebugMazeView from './components/debug/DebugMazeView';
+import DebugMazeView from './components/Debug/DebugMazeView';
 import CyberdeckUI from './components/ui/CyberdeckUI';
 import TrinityHUD from './components/ui/TrinityHUD';
 import HUD from './components/ui/HUD';
