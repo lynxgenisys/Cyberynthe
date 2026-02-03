@@ -8,7 +8,7 @@ import './LeaderboardPanel.css';
  */
 export default function LeaderboardPanel() {
     const [activeBoard, setActiveBoard] = useState('depth'); // depth | velocity | stealth | etc
-    const [modeFilter, setModeFilter] = useState('normal'); // normal | hardcore | ghost
+    const [modeFilter, setModeFilter] = useState(null); // null (ALL) | normal | hardcore | ghost
     const [leaderboard, setLeaderboard] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -125,6 +125,12 @@ export default function LeaderboardPanel() {
 
             {/* MODE FILTER */}
             <div className="mode-filter">
+                <button
+                    className={`filter-btn ${modeFilter === null ? 'active' : ''}`}
+                    onClick={() => setModeFilter(null)}
+                >
+                    ALL
+                </button>
                 <button
                     className={`filter-btn ${modeFilter === 'normal' ? 'active' : ''}`}
                     onClick={() => setModeFilter('normal')}
