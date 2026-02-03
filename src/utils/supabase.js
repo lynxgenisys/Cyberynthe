@@ -33,6 +33,21 @@ export async function signInWithOtp(email) {
     }
 }
 
+// 1.5 Login with Password
+export async function signInWithPassword(email, password) {
+    if (!supabase) return { success: false, error: "Supabase not initialized" };
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password
+        });
+        if (error) throw error;
+        return { success: true, data };
+    } catch (err) {
+        return { success: false, error: err.message };
+    }
+}
+
 // 2. Verify Login Code
 export async function verifyOtp(email, token) {
     if (!supabase) return { success: false, error: "Supabase not initialized" };
