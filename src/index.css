@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* IDENTITY: GRADIENT_MORALS_04 */
+  /* Palette Constants */
+  --color-cyan: #00FFFF;
+  --color-magenta: #EA00FF;
+  --color-void: #000000;
+  --color-dim-cyan: #00aaaa;
+  --color-dim-magenta: #aa00aa;
+
+  /* UI Glitch Timing */
+  --tick-rate: 100ms;
+}
+
+body {
+  @apply bg-black text-white font-mono;
+  background-color: var(--color-void);
+  overflow-x: hidden;
+  image-rendering: pixelated;
+  /* Hard edges for Re-VAMPD aesthetic */
+}
+
+/* Scrollbar Protocol */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050510;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-cyan);
+}
+
+/* Utility Classes for Dynamic Styling */
+/* Utility Classes for Dynamic Styling */
+.text-cyan-glow {
+  color: var(--color-cyan);
+  text-shadow: 0 0 5px var(--color-cyan), 0 0 10px var(--color-cyan);
+}
+
+.text-magenta-glow {
+  color: var(--color-magenta);
+  text-shadow: 0 0 5px var(--color-magenta), 0 0 10px var(--color-magenta);
+}
+
+.border-cyan {
+  border-color: var(--color-cyan);
+}
+
+.border-magenta {
+  border-color: var(--color-magenta);
+}

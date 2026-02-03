@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberSynthe Speed Mechanics</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 2rem; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 2rem; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; color: #333; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .highlight { background-color: #e8f6f3; padding: 15px; border-left: 5px solid #1abc9c; margin: 1rem 0; }
+        code { background-color: #f0f0f0; padding: 2px 5px; border-radius: 3px; font-family: 'Consolas', monospace; }
+        .print-hint { background: #fff3cd; color: #856404; padding: 10px; margin-bottom: 20px; border: 1px solid #ffeeba; border-radius: 4px; display: block; }
+        @media print {
+            .print-hint { display: none; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="print-hint">
+        💡 <strong>Tip:</strong> Press <code>Ctrl + P</code> and select "Save as PDF" to create a PDF copy.
+    </div>
+
+    <h1>CyberSynthe Movement & Speed Mechanics</h1>
+    <p><strong>Date:</strong> 2026-02-02<br><strong>Version:</strong> v0.10.2 (Tuned)</p>
+
+    <h2>📌 Summary</h2>
+    <p>The player's speed is derived from a <strong>Base Value</strong> multiplied by a factor determined by the <strong>Cycle Speed</strong> (Clock Speed) stat.</p>
+
+    <h2>⚙️ The Formula (3x Scaling)</h2>
+    <div class="highlight">
+        <p><strong>Speed = Base * (1 + (ClockSpeed * 3) / 100)</strong></p>
+        <ul>
+            <li><strong>Base Speed</strong>: <code>3.0 m/s</code> (Tactical Pace)</li>
+            <li><strong>Scaling</strong>: Each <strong>1 Point</strong> of Clock Speed adds <strong>3%</strong> to your total speed.</li>
+        </ul>
+    </div>
+
+    <h2>📊 Speed Progression Chart</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Clock Speed Stat</th>
+                <th>Multiplier</th>
+                <th>Movement Speed (m/s)</th>
+                <th>Relative to Base</th>
+                <th>Weapon Charge Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>0</strong> (Theoretical)</td>
+                <td>1.00x</td>
+                <td><strong>3.00 m/s</strong></td>
+                <td>100%</td>
+                <td>1.00s</td>
+            </tr>
+            <tr>
+                <td><strong>5</strong> (Starter)</td>
+                <td>1.15x</td>
+                <td><strong>3.45 m/s</strong></td>
+                <td>115%</td>
+                <td>~0.87s</td>
+            </tr>
+            <tr>
+                <td><strong>10</strong></td>
+                <td>1.30x</td>
+                <td><strong>3.90 m/s</strong></td>
+                <td>130%</td>
+                <td>~0.77s</td>
+            </tr>
+            <tr>
+                <td><strong>15</strong></td>
+                <td>1.45x</td>
+                <td><strong>4.35 m/s</strong></td>
+                <td>145%</td>
+                <td>~0.69s</td>
+            </tr>
+            <tr>
+                <td><strong>20</strong></td>
+                <td>1.60x</td>
+                <td><strong>4.80 m/s</strong></td>
+                <td>160%</td>
+                <td>~0.63s</td>
+            </tr>
+            <tr>
+                <td><strong>25</strong></td>
+                <td>1.75x</td>
+                <td><strong>5.25 m/s</strong></td>
+                <td>175%</td>
+                <td>~0.57s</td>
+            </tr>
+            <tr>
+                <td><strong>30</strong></td>
+                <td>1.90x</td>
+                <td><strong>5.70 m/s</strong></td>
+                <td>190%</td>
+                <td>~0.53s</td>
+            </tr>
+            <tr>
+                <td><strong>50</strong></td>
+                <td>2.50x</td>
+                <td><strong>7.50 m/s</strong></td>
+                <td>250%</td>
+                <td>~0.40s</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>📝 Notes</h2>
+    <ul>
+        <li><strong>Clock Speed</strong> is the primary "Agility" stat.</li>
+        <li>It affects <strong>Movement Speed</strong>, <strong>Weapon Charge Rate</strong>, and <strong>M-RAM Scrubbing Efficiency</strong>.</li>
+        <li>The current tuning (3x scaling) makes every upgrade point feel significant.</li>
+    </ul>
+</body>
+</html>
