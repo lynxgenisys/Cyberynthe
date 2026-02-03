@@ -68,3 +68,4 @@ Integrated with **Supabase**, Cyberynthe features persistent, cloud-synced leade
 *Directive: Survive the Texture Bleed. Reconstruct the Shards. Exit the Void.*
 
 The machine room is waiting. Good luck, Ghost.
+
