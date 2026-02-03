@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { signInWithOtp, verifyOtp, updateProfile, supabase } from '../../utils/supabase';
+import { signInWithOtp, verifyOtp, updateProfile, claimInvite, supabase } from '../../utils/supabase';
 import './AuthOverlay.css';
 
 /**
@@ -8,9 +8,10 @@ import './AuthOverlay.css';
  * Steps: Email -> OTP Code -> Hacker ID Creation
  */
 export default function AuthOverlay({ onComplete }) {
-    const [step, setStep] = useState('EMAIL'); // EMAIL, OTP, PROFILE
+    const [step, setStep] = useState('EMAIL'); // EMAIL, OTP, TICKET, PROFILE
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
+    const [ticket, setTicket] = useState('');
     const [hackerId, setHackerId] = useState('');
     const [password, setPassword] = useState(''); // Note: Supabase OTP logs them in, password is extra? 
     // User requested password, but OTP is passwordless. 
@@ -46,14 +47,27 @@ export default function AuthOverlay({ onComplete }) {
         const res = await verifyOtp(email, otp);
 
         if (res.success) {
-            // Check if profile exists
-            const user = res.data.user;
-            // We could check profile here, but let's just move to Profile Creation/Confirmation
-            setStep('PROFILE');
             setLoading(false);
+            setStep('TICKET');
         } else {
             setError(res.error);
             setLoading(false);
+        }
+    };
+
+    // 3. CLAIM GOLDEN TICKET
+    const handleClaimTicket = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+
+        const res = await claimInvite(ticket);
+        setLoading(false);
+
+        if (res.success) {
+            setStep('PROFILE');
+        } else {
+            setError("ACCESS DENIED: " + res.error);
         }
     };
 
@@ -134,6 +148,24 @@ export default function AuthOverlay({ onComplete }) {
                             {loading ? 'DECRYPTING...' : 'VERIFY_IDENTITY'}
                         </button>
                         <div className="auth-back" onClick={() => setStep('EMAIL')}>[ RESEND_SIGNAL ]</div>
+                    </form>
+                )}
+
+                {step === 'TICKET' && (
+                    <form onSubmit={handleClaimTicket} className="auth-form">
+                        <div className="auth-label">GOLDEN_TICKET_REQUIRED:</div>
+                        <div className="auth-sublabel">INVITE_ONLY_ACCESS</div>
+                        <input
+                            type="text"
+                            className="auth-input"
+                            value={ticket}
+                            onChange={(e) => setTicket(e.target.value)}
+                            placeholder="TICKET_KEY"
+                            required
+                        />
+                        <button type="submit" className="auth-btn" disabled={loading}>
+                            {loading ? 'VALIDATING...' : 'CLAIM_ACCESS'}
+                        </button>
                     </form>
                 )}
 

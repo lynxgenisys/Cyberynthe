@@ -83,6 +83,22 @@ export async function getProfile(userId) {
     }
 }
 
+// 5. CLAIM INVITE TICKET
+export async function claimInvite(code) {
+    if (!supabase) return { success: false, error: "Supabase not initialized" };
+    try {
+        const { data, error } = await supabase
+            .rpc('claim_invite', { invite_code: code });
+
+        if (error) throw error;
+        // RPC returns boolean (true = success, false = invalid/taken)
+        if (data === true) return { success: true };
+        return { success: false, error: "Invalid or already claimed ticket." };
+    } catch (err) {
+        return { success: false, error: err.message };
+    }
+}
+
 /**
  * Submit a run to the leaderboard
  * @param {Object} runData - { player_name, score, floor_reached, run_time, game_mode }
