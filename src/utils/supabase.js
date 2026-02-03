@@ -92,9 +92,21 @@ export async function submitScore(runData) {
         return { success: false, error: "Supabase not initialized." };
     }
     try {
+        // GET USER ID SECURELY
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return { success: false, error: "User not authenticated. Score cache only." };
+        }
+
+        const payload = {
+            ...runData,
+            user_id: user.id // REQURIED BY NEW RLS POLICY
+        };
+
         const { data, error } = await supabase
             .from('leaderboard')
-            .insert([runData]);
+            .insert([payload]);
 
         if (error) throw error;
         return { success: true, data };
