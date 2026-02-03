@@ -18,6 +18,72 @@ if (!supabaseUrl || !supabaseKey) {
 export const supabase = supabaseInstance;
 
 /**
+ * AUTHENTICATION METHODS
+ */
+
+// 1. Request Login Code (OTP)
+export async function signInWithOtp(email) {
+    if (!supabase) return { success: false, error: "Supabase not initialized" };
+    try {
+        const { data, error } = await supabase.auth.signInWithOtp({ email });
+        if (error) throw error;
+        return { success: true, data };
+    } catch (err) {
+        return { success: false, error: err.message };
+    }
+}
+
+// 2. Verify Login Code
+export async function verifyOtp(email, token) {
+    if (!supabase) return { success: false, error: "Supabase not initialized" };
+    try {
+        const { data, error } = await supabase.auth.verifyOtp({
+            email,
+            token,
+            type: 'email'
+        });
+        if (error) throw error;
+        return { success: true, data };
+    } catch (err) {
+        return { success: false, error: err.message };
+    }
+}
+
+// 3. Create/Update Profile
+export async function updateProfile(userId, hackerId) {
+    if (!supabase) return { success: false, error: "Supabase not initialized" };
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .upsert({
+                id: userId,
+                hacker_id: hackerId,
+                email: (await supabase.auth.getUser()).data.user.email
+            });
+        if (error) throw error;
+        return { success: true, data };
+    } catch (err) {
+        return { success: false, error: err.message };
+    }
+}
+
+// 4. Get Current Profile
+export async function getProfile(userId) {
+    if (!supabase) return { success: false, error: "Supabase not initialized" };
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+        if (error) return { success: false, error: error.message }; // Might not exist yet
+        return { success: true, data };
+    } catch (err) {
+        return { success: false, error: err.message };
+    }
+}
+
+/**
  * Submit a run to the leaderboard
  * @param {Object} runData - { player_name, score, floor_reached, run_time, game_mode }
  */

@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
 import ProfileCard from './ProfileCard';
 import LeaderboardPanel from './LeaderboardPanel';
+import AuthOverlay from './AuthOverlay';
+import { supabase, getProfile } from '../../utils/supabase';
 import './SplashScreen.css';
 
 /**
@@ -12,6 +14,40 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
     const { setGameState } = useGame();
     const [activeTab, setActiveTab] = useState('play'); // 'play' | 'profile' | 'ledger'
     const [selectedMode, setSelectedMode] = useState('normal'); // 'normal' | 'hardcore' | 'ghost'
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [checkingAuth, setCheckingAuth] = useState(true);
+
+    // AUTH CHECK
+    useEffect(() => {
+        const checkAuth = async () => {
+            if (!supabase) {
+                // If Supabase is disabled (offline mode), skip auth
+                setIsAuthenticated(true);
+                setCheckingAuth(false);
+                return;
+            }
+
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                // Fetch profile to get Hacker ID
+                const profile = await getProfile(session.user.id);
+                if (profile.success && profile.data) {
+                    setGameState(prev => ({ ...prev, playerName: profile.data.hacker_id }));
+                } else if (session.user.email) {
+                    // Fallback if profile missing but auth valid
+                    setGameState(prev => ({ ...prev, playerName: session.user.email.split('@')[0].toUpperCase() }));
+                }
+                setIsAuthenticated(true);
+            }
+            setCheckingAuth(false);
+        };
+        checkAuth();
+    }, [setGameState]);
+
+    const handleAuthComplete = (hackerId) => {
+        setGameState(prev => ({ ...prev, playerName: hackerId }));
+        setIsAuthenticated(true);
+    };
 
     const handleStart = () => {
         setGameState(prev => ({
@@ -21,6 +57,9 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
         }));
         onStart?.(selectedMode);
     };
+
+    if (checkingAuth) return <div className="splash-screen"><div className="splash-content">INITIALIZING_SECURE_CONNECTION...</div></div>;
+    if (!isAuthenticated) return <AuthOverlay onComplete={handleAuthComplete} />;
 
     const renderPlayTab = () => (
         <div className="splash-play-tab">
