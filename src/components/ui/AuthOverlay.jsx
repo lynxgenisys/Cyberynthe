@@ -21,7 +21,22 @@ export default function AuthOverlay({ onComplete }) {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [error, setError] = useState(null);
     const [usePassword, setUsePassword] = useState(false); // Toggle for Password Login
+
+    // DETECT EXISTING SESSION (e.g. from Magic Link redirect)
+    useEffect(() => {
+        const checkSession = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                console.log("AuthOverlay: Session found, checking profile status...");
+                // If we are here, SplashScreen already determined "No Profile".
+                // So we skip EMAIL/OTP and go straight to TICKET.
+                setStep('TICKET');
+            }
+        };
+        checkSession();
+    }, []);
 
     // 1. SEND EMAIL (OTP) or LOGIN (Password)
     const handleAuth = async (e) => {

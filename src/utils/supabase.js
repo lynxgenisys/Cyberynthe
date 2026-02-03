@@ -142,7 +142,9 @@ export async function submitScore(runData) {
         if (error) throw error;
         return { success: true, data };
     } catch (err) {
-        console.error("Error submitting score:", err);
+        console.error("SCORE SUBMISSION FAILED:", err);
+        // Alert the user visibly for now to help debug
+        alert(`UPLINK ERROR: ${err.message || 'Data Transmission Failed'}`);
         return { success: false, error: err.message };
     }
 }

@@ -32,12 +32,15 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                 // Fetch profile to get Hacker ID
                 const profile = await getProfile(session.user.id);
                 if (profile.success && profile.data) {
+                    // Profile exists = Full Access
                     setGameState(prev => ({ ...prev, playerName: profile.data.hacker_id }));
-                } else if (session.user.email) {
-                    // Fallback if profile missing but auth valid
-                    setGameState(prev => ({ ...prev, playerName: session.user.email.split('@')[0].toUpperCase() }));
+                    setIsAuthenticated(true);
+                } else {
+                    // Session exists BUT no profile = Incomplete Setup
+                    // Do NOT set isAuthenticated(true).
+                    // This will keep rendering AuthOverlay, which we will update to handle this state.
+                    console.log("User logged in but no profile found. Enforcing Golden Ticket flow.");
                 }
-                setIsAuthenticated(true);
             }
             setCheckingAuth(false);
         };
