@@ -1,8 +1,0 @@
-#:schema https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json
-name = "cyberynthe"
-compatibility_date = "2024-02-03"
-pages_build_output_dir = "dist"
-
-[vars]
-# Add your environment variables here if you prefer config-based setup
-# However, for security, using the dashboard UI is recommended for VITE_SUPABASE_ANON_KEY.
