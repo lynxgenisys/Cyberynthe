@@ -3,17 +3,28 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+let supabaseInstance = null;
+
 if (!supabaseUrl || !supabaseKey) {
     console.warn("Supabase credentials missing. Leaderboard functionality will be disabled.");
+} else {
+    try {
+        supabaseInstance = createClient(supabaseUrl, supabaseKey);
+    } catch (e) {
+        console.error("Failed to initialize Supabase client:", e);
+    }
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+export const supabase = supabaseInstance;
 
 /**
  * Submit a run to the leaderboard
  * @param {Object} runData - { player_name, score, floor_reached, run_time, game_mode }
  */
 export async function submitScore(runData) {
+    if (!supabase) {
+        return { success: false, error: "Supabase not initialized." };
+    }
     try {
         const { data, error } = await supabase
             .from('leaderboard')
@@ -33,6 +44,9 @@ export async function submitScore(runData) {
  * @param {number} limit - Number of records to fetch
  */
 export async function getTopScores(mode = null, limit = 10) {
+    if (!supabase) {
+        return { success: false, error: "Supabase not initialized." };
+    }
     try {
         let query = supabase
             .from('leaderboard')
