@@ -153,8 +153,9 @@ export async function submitScore(runData) {
  * Fetch top scores for the leaderboard
  * @param {string} mode - Optional game mode filter
  * @param {number} limit - Number of records to fetch
+ * @param {string} sortBy - Column to sort by (score, floor_reached, etc)
  */
-export async function getTopScores(mode = null, limit = 10) {
+export async function getTopScores(mode = null, limit = 100, sortBy = 'score') {
     if (!supabase) {
         return { success: false, error: "Supabase not initialized." };
     }
@@ -162,7 +163,7 @@ export async function getTopScores(mode = null, limit = 10) {
         let query = supabase
             .from('leaderboard')
             .select('*')
-            .order('score', { ascending: false })
+            .order(sortBy, { ascending: false }) // Always DESC for now (Higher score/floor/stability is better)
             .limit(limit);
 
         if (mode) {
@@ -174,6 +175,31 @@ export async function getTopScores(mode = null, limit = 10) {
         return { success: true, data };
     } catch (err) {
         console.error("Error fetching scores:", err);
+        return { success: false, error: err.message };
+    }
+}
+
+/**
+ * Get aggregated lifetime stats for a user (Profile Card)
+ * Uses the custom Database Function 'get_player_stats'
+ */
+export async function getPlayerStats(targetUserId = null) {
+    if (!supabase) return { success: false, error: "Supabase not initialized" };
+    try {
+        // If no target provided, use current auth user
+        let userId = targetUserId;
+        if (!userId) {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return { success: false, error: "Not authenticated" };
+            userId = user.id;
+        }
+
+        const { data, error } = await supabase
+            .rpc('get_player_stats', { target_user_id: userId });
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (err) {
         return { success: false, error: err.message };
     }
 }

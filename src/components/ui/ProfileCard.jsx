@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useGame } from '../../context/GameContext';
 import { getLevelFromXP } from '../../utils/scoring';
+import { getPlayerStats } from '../../utils/supabase';
 import './ProfileCard.css';
 
 /**
@@ -9,49 +10,66 @@ import './ProfileCard.css';
  */
 export default function ProfileCard() {
     const { gameState } = useGame();
+    const [profileData, setProfileData] = React.useState(null);
+    const [loading, setLoading] = React.useState(true);
 
-    // Load lifetime stats from history
-    const runHistory = useMemo(() => {
-        try {
-            return JSON.parse(localStorage.getItem('CyberSynthe_RunHistory') || '[]');
-        } catch {
-            return [];
+    // Fetch REAL lifetime stats from Supabase
+    React.useEffect(() => {
+        async function loadProfile() {
+            setLoading(true);
+            const result = await getPlayerStats(); // Defaults to current users ID
+
+            if (result.success) {
+                setProfileData(result.data);
+            } else {
+                // Fallback for new/offline users
+                setProfileData({
+                    total_runs: 0,
+                    total_ebits: 0,
+                    max_floor: 0,
+                    sentinel_kills: 0,
+                    avg_resonance: 0.5
+                });
+            }
+            setLoading(false);
         }
-    }, []);
+        loadProfile();
+    }, []); // Run once on mount
 
-    // Aggregate lifetime stats
-    const lifetimeStats = useMemo(() => {
-        return runHistory.reduce((acc, run) => ({
-            totalEBits: acc.totalEBits + (run.score || 0), // Use score as eBits proxy for history
-            maxFloor: Math.max(acc.maxFloor, run.maxFloor || 0),
-            totalRuns: acc.totalRuns + 1,
-            sentinelKills: acc.sentinelKills + (run.maxFloor >= 10 ? 1 : 0)
-        }), { totalEBits: 0, maxFloor: 0, totalRuns: 0, sentinelKills: 0 });
-    }, [runHistory]);
+    // Fallback while loading
+    if (loading) return <div className="profile-card loading"><div className="animate-pulse">DECRYPTING_DOSSIE...</div></div>;
+
+    const stats = profileData || {};
 
     const profile = {
-        username: gameState.playerName || 'GHOST_USER',
-        created_at: runHistory.length > 0 ? new Date(runHistory[0].timestamp).toLocaleDateString() : new Date().toLocaleDateString(),
-        total_ebits: Math.max(gameState.eBits || 0, lifetimeStats.totalEBits),
-        current_level: getLevelFromXP(gameState.xp || 0),
-        fragments_found: gameState.collectedFragments?.length || 0,
-        resonance_lifetime: gameState.ethicsScore || 0,
-        best_floor_normal: Math.max(gameState.highestFloor || 0, lifetimeStats.maxFloor),
-        sentinel_kills: lifetimeStats.sentinelKills,
+        username: gameState.playerName || 'GHOST_ID',
+        // created_at: Use current date or fetch from auth metadata if needed (simplified for now)
+        current_level: getLevelFromXP(gameState.xp || 0), // Current session Level
+
+        // REAL DB STATS
+        total_runs: stats.total_runs || 0,
+        total_ebits: (stats.total_ebits || 0).toLocaleString(),
+        best_floor_normal: stats.max_floor || 0,
+        sentinel_kills: stats.sentinel_kills || 0,
+        resonance_lifetime: stats.avg_resonance !== undefined ? stats.avg_resonance : 0.5,
+
+        fragments_found: gameState.collectedFragments?.length || 0, // Still local for now
         badges: ['[USER]']
     };
 
-    // Calculate dynamic badges
+    // Calculate dynamic badges based on REAL Stats
     if (profile.best_floor_normal >= 10) profile.badges.push('[EXPLORER]');
     if (profile.best_floor_normal >= 25) profile.badges.push('[DEEP_DIVER]');
     if (profile.best_floor_normal >= 50) profile.badges.push('[VOID_WALKER]');
     if (profile.current_level >= 5) profile.badges.push('[OVERCLOCKED]');
+    if (profile.sentinel_kills >= 5) profile.badges.push('[SLAYER]');
 
     const getBadgeColor = (badge) => {
         if (badge.includes('VOID_WALKER')) return '#FFD700'; // Gold
         if (badge.includes('DEEP_DIVER')) return '#EA00FF'; // Magenta
         if (badge.includes('EXPLORER')) return '#00FFFF'; // Cyan
         if (badge.includes('OVERCLOCKED')) return '#FFA500'; // Orange
+        if (badge.includes('SLAYER')) return '#FF0000'; // Red
         return '#00AAAA'; // Dim Cyan
     };
 
@@ -84,7 +102,7 @@ export default function ProfileCard() {
                     STATUS: {profile.badges[profile.badges.length - 1]}
                 </div>
                 <div className="profile-created">
-                    LEVEL: {profile.current_level} // FIRST_INTRUSION: {profile.created_at}
+                    LEVEL: {profile.current_level} // RUNS_LOGGED: {profile.total_runs}
                 </div>
             </div>
 
@@ -92,10 +110,10 @@ export default function ProfileCard() {
             <div className="profile-vitals">
                 <div className="vital-stat">
                     <div className="vital-label">TOTAL_ASSETS_EXTRACTED:</div>
-                    <div className="vital-value">{profile.total_ebits.toLocaleString()} eBits</div>
+                    <div className="vital-value">{profile.total_ebits} eBits</div>
                 </div>
                 <div className="vital-stat">
-                    <div className="vital-label">DEEPEST_DIVE (NORMAL):</div>
+                    <div className="vital-label">DEEPEST_DIVE (RECORD):</div>
                     <div className="vital-value">Floor {profile.best_floor_normal}</div>
                 </div>
                 <div className="vital-stat">
@@ -110,7 +128,7 @@ export default function ProfileCard() {
 
             {/* RESONANCE SIGNATURE */}
             <div className="profile-section">
-                <div className="section-title">RESONANCE_SIGNATURE:</div>
+                <div className="section-title">LIFETIME_RESONANCE_MEAN:</div>
                 {renderResonanceBar()}
             </div>
 
@@ -137,7 +155,7 @@ export default function ProfileCard() {
 
             {/* NOTE */}
             <div className="profile-note">
-                ⚡ LIVE_DATA // ASYNC_BRIDGE_ACTIVE
+                ⚡ SECURE_UPLINK // DATA_SOURCE: OFFICIAL_LEDGER
             </div>
         </div>
     );

@@ -141,10 +141,18 @@ export default function RunTracker() {
             floor_reached: gameState.floorLevel,
             run_time: Math.floor((Date.now() - gameState.runStartTime) / 1000), // Seconds
             game_mode: gameState.gameMode,
+
+            // NEW METRICS (Leaderboard 2.0)
+            damage_taken: gameState.totalDamageTaken || 0,
+            mram_used: gameState.mramUsedCount || 0,
+            undetected_floors: finalScores.undetectedStreak || 0,
+            resonance: finalScores.resonanceFinal || 0.5,
+            ghost_score: finalScores.ghostScore || 0,
+            stability_score: finalScores.stabilityScore || 0,
+
+            // Legacy JSON (Keep for debug/safety)
             platform_data: {
                 velocity: finalScores.velocityScore,
-                stability: finalScores.stabilityScore,
-                ghost: finalScores.ghostScore,
                 reason: finalScores.reason
             }
         };

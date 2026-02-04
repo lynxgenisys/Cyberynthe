@@ -19,9 +19,14 @@ export default function LeaderboardPanel() {
             setIsLoading(true);
             setError(null);
 
-            // Note: Since we only have one main score table for now,
-            // we'll filter by mode and limit to top 100.
-            const result = await getTopScores(modeFilter, 100);
+            // MAP UI TABS TO DATABASE COLUMNS
+            let sortColumn = 'score'; // Default (Velocity)
+            if (activeBoard === 'depth') sortColumn = 'floor_reached';
+            if (activeBoard === 'stealth') sortColumn = 'undetected_floors'; // Using streak (V2 column)
+            if (activeBoard === 'stability') sortColumn = 'stability_score'; // (V2 column)
+            if (activeBoard === 'ghost') sortColumn = 'ghost_score';         // (V2 column)
+
+            const result = await getTopScores(modeFilter, 100, sortColumn);
 
             if (result.success) {
                 // Map DB schema to UI schema
@@ -32,8 +37,8 @@ export default function LeaderboardPanel() {
                     floor: entry.floor_reached,
                     time: entry.run_time,
                     mode: entry.game_mode,
-                    // Badges could be derived from score or floor later
-                    badge: entry.platform_data?.velocity > 100 ? '[ELITE]' : '[USER]'
+                    // Badges derived from stats
+                    badge: entry.score > 50000 ? '[ELITE]' : '[USER]'
                 }));
                 setLeaderboard(mapped);
             } else {
@@ -43,12 +48,13 @@ export default function LeaderboardPanel() {
         };
 
         fetchData();
-    }, [modeFilter]);
+    }, [modeFilter, activeBoard]);
 
     const boards = [
+        { id: 'velocity', label: 'VELOCITY_SCORE', metric: 'Score' },
         { id: 'depth', label: 'DEEPEST_DIVE', metric: 'Floor' },
-        { id: 'velocity', label: 'VELOCITY_DEMON', metric: 'Score' },
-        // ... (others disabled until we have multiple tables/complex queries)
+        { id: 'stealth', label: 'STEALTH_PARTITION', metric: 'Streak' },
+        { id: 'stability', label: 'SYSTEM_STABILITY', metric: 'Rating' },
     ];
 
     const renderTopThree = () => {
