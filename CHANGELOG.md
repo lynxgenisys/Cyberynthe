@@ -1,5 +1,27 @@
 # CHANGELOG - CYBERYNTHE
 
+## [0.11.0] - 2026-02-04
+
+### Added - SENTRY ANIMATION OVERHAUL & BUG FIXES
+- **Sentry Overhaul**: Complete rework of the "Stateless Sentry" telegraphs:
+  - 3s Charge phase with Purple color shift and 2.5x body expansion.
+  - rotation pause during charge for maximum intimidation.
+  - 4s Cooldown after firing to balance difficulty.
+- **Sentry Beam Refactor**: Migrated beam rendering to `InstancedMesh` for 60Hz frame-perfect synchronization.
+- **Beam Offset Logic**: Visual beam now originates 1.2m forward, preventing self-clipping stubby beams.
+
+### Changed
+- **Sprint Mechanics**: Implemented dynamic M-RAM cost: `(Regen Rate + 1) - Efficiency Level`.
+- **M-RAM Safety**: Added guardrail to prevent negative M-RAM values during rapid consumption.
+- **Level 7 Stability**: Fixed persistent strobe/glitch effect that would carry over to other floors or game states.
+
+### Technical
+- Optimized `MobManager` render loop by nesting visual logic directly within instance updates.
+- Added dynamic `PointLight` flares for firing mobs.
+- Incremented system version to 0.11.0.
+
+---
+
 ## [0.10.0] - 2026-02-02
 
 ### Added - THE GRADIENT LEDGER SYSTEM
