@@ -49,35 +49,44 @@ export default function AuthOverlay({ onLoginSuccess }) {
 
     // --- 0. AUTO-DETECT MAGIC LINK LOGIN ---
     useEffect(() => {
+        const handleSession = async (session) => {
+            if (!session) return;
+            console.log("[AUTH]: Uplink Detected", session.user);
+
+            // Check if profile exists
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('hacker_id, invite_claimed')
+                .eq('id', session.user.id)
+                .single();
+
+            if (!profile) {
+                // Step 3: Profile Creation Needed
+                setMsg("UPLINK_VERIFIED. IDENTITY_REQUIRED.");
+                setStatus('IDLE');
+                setMode('REGISTER_PROFILE');
+            } else if (!profile.invite_claimed) {
+                // Step 4: Ticket Needed
+                setMsg("IDENTITY_FOUND. CLEARANCE_REQUIRED.");
+                setStatus('IDLE');
+                setMode('REGISTER_TICKET');
+                setHackerId(profile.hacker_id);
+            } else {
+                // Fully Complete
+                setMsg("WELCOME_BACK_OPERATIVE.");
+                setStatus('SUCCESS');
+                setTimeout(() => onLoginSuccess(session.user.email), 1000);
+            }
+        };
+
+        // Initial check in case onAuthStateChange fires before/after mount
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) handleSession(session);
+        });
+
         const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' && session) {
-                console.log("[AUTH]: Magic Link / Session Detected", session.user);
-
-                // Determine next step
-                // Check if profile exists
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('hacker_id, invite_claimed')
-                    .eq('id', session.user.id)
-                    .single();
-
-                if (!profile) {
-                    // Step 3: Profile Creation Needed
-                    setMsg("UPLINK_VERIFIED. IDENTITY_REQUIRED.");
-                    setStatus('IDLE');
-                    setMode('REGISTER_PROFILE');
-                } else if (!profile.invite_claimed) {
-                    // Step 4: Ticket Needed
-                    setMsg("IDENTITY_FOUND. CLEARANCE_REQUIRED.");
-                    setStatus('IDLE');
-                    setMode('REGISTER_TICKET');
-                    setHackerId(profile.hacker_id); // Pre-fill?
-                } else {
-                    // Fully Complete - Login
-                    setMsg("WELCOME_BACK_OPERATIVE.");
-                    setStatus('SUCCESS');
-                    setTimeout(() => onLoginSuccess(session.user.email), 1000);
-                }
+            if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
+                handleSession(session);
             }
         });
 
