@@ -24,6 +24,8 @@
 
 ### Technical (Logging & Auth Repairs)
 - **Auth Flow 2.0**: Split Login/Register flows with proper Email & Username support.
+- **Magic Link Auto-Detection**: Fixed issue where email confirmation links would get stuck at the login gate instead of proceeding to profile/ticket steps.
+- **Leaderboard UX**: Added "ALL" mode filter as default; fixed sorting logic for non-score metrics.
 - **Leaderboard Integration**: Posed-based tracking for `damage_taken`, `mram_used`, and `ghost_score`.
 - **Timer Fix**: `RunTracker` now correctly respects Pause states (Inventory/Lore).
 - **Profile Persistence**: Switched `ProfileCard` to real-time Supabase RPC calls instead of LocalStorage.
