@@ -2,56 +2,58 @@
 
 ## [0.11.0] - 2026-02-04
 
-### Added - SENTRY ANIMATION OVERHAUL & BUG FIXES
+### Added - SENTRY OVERHAUL & MINIGAMES
+- **Spectral Scroll (Minigame)**: Implemented "Handshake" decryption for Loot Caches.
+  - Interactive roller-based timing game for high-tier rewards.
+  - Critical success/failure states affect loot yield.
 - **Sentry Overhaul**: Complete rework of the "Stateless Sentry" telegraphs:
   - 3s Charge phase with Purple color shift and 2.5x body expansion.
-  - rotation pause during charge for maximum intimidation.
+  - Rotation pause during charge for maximum intimidation.
   - 4s Cooldown after firing to balance difficulty.
 - **Sentry Beam Refactor**: Migrated beam rendering to `InstancedMesh` for 60Hz frame-perfect synchronization.
 - **Beam Offset Logic**: Visual beam now originates 1.2m forward, preventing self-clipping stubby beams.
 
 ### Changed
+- **Ghost Mode Polish**:
+  - Remapped Controls: RMB=Sprint, LeftClick=Pulse Scan (Weaponry disabled).
+  - Level 10 Override: Boss is removed; a clear "Speed Corridor" leads to an auto-unlocked portal.
+  - Auto-Loot: Collection time reduced to 0.2s for high-velocity runs.
 - **Sprint Mechanics**: Implemented dynamic M-RAM cost: `(Regen Rate + 1) - Efficiency Level`.
 - **M-RAM Safety**: Added guardrail to prevent negative M-RAM values during rapid consumption.
 - **Level 7 Stability**: Fixed persistent strobe/glitch effect that would carry over to other floors or game states.
 
-### Technical
+### Technical (Logging & Auth Repairs)
+- **Auth Flow 2.0**: Split Login/Register flows with proper Email & Username support.
+- **Leaderboard Integration**: Posed-based tracking for `damage_taken`, `mram_used`, and `ghost_score`.
+- **Timer Fix**: `RunTracker` now correctly respects Pause states (Inventory/Lore).
+- **Profile Persistence**: Switched `ProfileCard` to real-time Supabase RPC calls instead of LocalStorage.
 - Optimized `MobManager` render loop by nesting visual logic directly within instance updates.
 - Added dynamic `PointLight` flares for firing mobs.
-- Incremented system version to 0.11.0.
 
 ---
 
 ## [0.10.0] - 2026-02-02
 
 ### Added - THE GRADIENT LEDGER SYSTEM
+- **Supabase Backend**: Persistence for Leaderboards and Player Profiles.
 - **Splash Screen**: Full menu system with mode selection (Normal/Hardcore/True Ghost)
 - **Profile Card**: Hacker ID display with badges, resonance bar, and lifetime stats
 - **Leaderboard Panel**: Top 100 rankings with emphasis on Top 3/10
 - **Game Modes**:
   - **Normal**: Full game experience with mobs and RPG mechanics
-  - **Hardcore**: Permadeath mode, death ends run permanently
-  - **True Ghost**: Pure speedrun mode - no mobs, no combat, maze navigation only
-- **Scoring System**:
-  - Velocity Score: Time-based performance across floors
-  - Stability Score: Damage-free perfect runs
-  - Ghost Score: Speed × Depth for speedrun mode
-- **Run Tracker**: Automatic floor event logging and score calculation
-- **Badge System**: Permanent achievement tracking (Player, Explorer, Deep Diver, Void Walker, etc.)
-
-### Changed
-- Ghost mode disables mobs, Trinity HUD, and all combat systems
-- Game now starts in Splash Screen instead of old menu
-- GameContext updated with scoring tracking fields
+  - **Hardcore**: Permadeath mode - survival is the only priority.
+  - **True Ghost**: Pure speedrun mode - no mobs, no combat, just pure movement.
+- **Scoring System**: Distinct algorithms for Velocity, Stability, and Ghost runs.
+- **Badge System**: Achievement tracking for explorer, speedrunner, and veteran roles.
+- **Mini-Map (Tactical Nav)**: Implemented 2D top-down view with Fog of War and Scanner integration.
 
 ### Technical
-- Created `SplashScreen.jsx`, `ProfileCard.jsx`, `LeaderboardPanel.jsx`
-- Created `RunTracker.jsx` for score tracking
-- Created `scoring.js` utilities for calculations
-- Updated `App.jsx` to integrate new menu system
-- Updated `GameContext.jsx` with game mode and scoring fields
-- Updated `MobManager.jsx` to disable in ghost mode
-- Updated `TrinityHUD.jsx` to hide in ghost mode
+- Implemented `SpectralScroll.jsx` for data node interaction.
+- Created `RunTracker.jsx` for comprehensive session logging.
+- Created `scoring.js` for algorithmic score evaluation.
+- Implemented `AuthOverlay.jsx` for invitation-only access.
+- Corrected global case-sensitive import paths for Linux/Cloudflare compatibility.
+- Implemented `FastStateRef` to optimize player position telemetry.
 
 ---
 
