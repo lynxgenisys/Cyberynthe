@@ -5,6 +5,7 @@ import { MiniMap } from './MiniMap';
 import QuickSlots from './QuickSlots';
 import LoreOverlay from './LoreOverlay';
 import ChargingReticle from './ChargingReticle';
+import SpectralScroll from './SpectralScroll';
 
 // --- MEMOIZED HUD SUB-COMPONENTS ---
 
@@ -323,9 +324,14 @@ export default function HUD() {
     // KEY LISTENERS
     useEffect(() => {
         if (gameState.activeLoreLog) {
-            const handleAnyKey = (e) => { e.preventDefault(); unlockKernel(); };
-            window.addEventListener('keydown', handleAnyKey);
-            return () => window.removeEventListener('keydown', handleAnyKey);
+            const handleCloseKey = (e) => {
+                if (e.code === 'KeyQ') {
+                    e.preventDefault();
+                    unlockKernel();
+                }
+            };
+            window.addEventListener('keydown', handleCloseKey);
+            return () => window.removeEventListener('keydown', handleCloseKey);
         }
     }, [gameState.activeLoreLog, unlockKernel]);
 
@@ -344,6 +350,7 @@ export default function HUD() {
         transition: 'all 3s cubic-bezier(0.1, 0.7, 1.0, 0.1)'
     } : { transition: 'all 0.5s ease-out' };
 
+    // --- RENDER ---
     return (
         <div className="absolute inset-0 pointer-events-none p-6 flex flex-col justify-between" style={hudStyle}>
             <div className="relative w-full h-24 flex justify-center pointer-events-auto">
@@ -418,7 +425,7 @@ export default function HUD() {
                         </div>
                         <div className="text-lg text-gray-300 font-mono leading-relaxed whitespace-pre-wrap min-h-[200px]">{gameState.activeLoreLog.text}</div>
                         <div className="mt-8 text-center">
-                            <button className="text-sm text-cyan font-bold tracking-[0.2em] hover:text-white transition-colors animate-pulse" onClick={unlockKernel}>[PRESS ANY KEY TO CONTINUE]</button>
+                            <button className="text-sm text-cyan font-bold tracking-[0.2em] hover:text-white transition-colors animate-pulse" onClick={unlockKernel}>[PRESS [Q] TO CLOSE]</button>
                         </div>
                     </div>
                 </div>
@@ -431,7 +438,22 @@ export default function HUD() {
             <LoreOverlay />
 
             {/* Data Spike v2 Charging Reticle */}
-            <ChargingReticle isCharging={gameState.isChargingWeapon || false} />
+            <ChargingReticle
+                isCharging={gameState.isChargingWeapon || false}
+                critTimestamp={gameState.critSignal}
+            />
+
+            {/* FLOATING REWARD TEXT */}
+            {gameState.floatingMessage && (
+                <div className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 z-[80] pointer-events-none text-center">
+                    <div className={`text-3xl font-bold font-mono tracking-widest animate-pulse ${gameState.floatingMessage.color} drop-shadow-[0_0_15px_rgba(0,0,0,0.8)]`}>
+                        {gameState.floatingMessage.text}
+                    </div>
+                </div>
+            )}
+
+            {/* DECRYPTION MINIGAME OVERLAY */}
+            {gameState.isDecrypting && <SpectralScroll />}
         </div>
     );
 }

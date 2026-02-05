@@ -111,6 +111,9 @@ function playerReducer(state, action) {
 
         case ACTIONS.LOCK_RESOURCE: {
             const { cost } = action.payload;
+            // Reducer-side safety check to prevent negative RAM from race conditions
+            if (state.stats.mRamCurrent < cost) return state;
+
             return {
                 ...state,
                 stats: { ...state.stats, mRamCurrent: state.stats.mRamCurrent - cost }

@@ -164,6 +164,8 @@ const BossBeam = ({ mob, maze }) => {
     );
 };
 
+// SentryBeam Component Removed - Migrated to InstancedMesh for stability
+
 export default function MobManager({ maze, floorLevel }) {
     const [mobs, setMobs] = useState([]);
     const mobsRef = useRef([]);
@@ -173,9 +175,34 @@ export default function MobManager({ maze, floorLevel }) {
     const bestiaryDeadMobs = useRef([]); // Bestiary respawn queue
     const [bossKey, setBossKey] = useState(null);
 
-    const { gameState, setGameState, addNotification, setBossSubtitle, updateBossStatus, fastStateRef, getLevelFromXP, getNextLevelXP, setInteractionPrompt, updateScannedTargets } = useGame();
+    const { gameState, setGameState, addNotification, setBossSubtitle, updateBossStatus, fastStateRef, getLevelFromXP, getNextLevelXP, setInteractionPrompt, updateScannedTargets, triggerCrit, consumeMobQueue } = useGame();
     const { triggerImpact, mobDamageBuffer, mobPositionBuffer, mobLifeBuffer, mobTypeBuffer, mobStatusBuffer } = useCombat();
-    const { damageKernel } = usePlayer(); // Import damage handler
+    const { damageKernel, lockResource } = usePlayer(); // Import damage handler
+
+    // CONSUME SPAWN QUEUE (From GameContext)
+    useFrame(() => {
+        if (consumeMobQueue) {
+            const queue = consumeMobQueue();
+            if (queue.length > 0) {
+                const newMobs = [...mobsRef.current];
+                queue.forEach(req => {
+                    const m = MobLogic.createMob(req.type, floorLevel);
+                    if (m) {
+                        const spawnX = req.x * 2 + (Math.random() - 0.5);
+                        const spawnZ = req.z * 2 + (Math.random() - 0.5);
+
+                        const newMob = { ...m, instanceId: Math.random(), x: spawnX, z: spawnZ };
+                        if (req.type === 'STATELESS_SENTRY') newMob.isStationary = true;
+                        newMobs.push(newMob);
+                        triggerImpact({ x: spawnX, y: 1, z: spawnZ }, "#FF00FF");
+                    }
+                });
+                if (newMobs.length > MAX_MOBS) newMobs.length = MAX_MOBS;
+                setMobs(newMobs.slice(0, MAX_MOBS));
+                mobsRef.current = newMobs.slice(0, MAX_MOBS);
+            }
+        }
+    });
 
     // TRUE GHOST MODE: Disable all mobs
     if (gameState.gameMode === 'ghost') {
@@ -186,6 +213,7 @@ export default function MobManager({ maze, floorLevel }) {
     const sentryTopRef = useRef(); const sentryMidRef = useRef(); const sentryBotRef = useRef(); const sentryHeartRef = useRef();
     const bossCore = useRef(); const bossRing1Ref = useRef(); const bossRing2Ref = useRef(); const bossRing3Ref = useRef();
     const miteScanRef = useRef(); const wispScanRef = useRef(); const hunterScanRef = useRef(); const sentryScanRef = useRef(); const bossScanRef = useRef();
+    const sentryBeamRef = useRef(); // NEW: Instanced Beams
 
     const tempObject = useMemo(() => new THREE.Object3D(), []);
 
@@ -372,8 +400,8 @@ export default function MobManager({ maze, floorLevel }) {
                         mob.revealTimer = (mob.revealTimer || 0) - delta;
                         if (mob.revealTimer > 0) {
                             // Fade In (first 0.5s of 2.0s duration) - assuming 2.0 start
-                            // Actually, just ease it based on remaining time? 
-                            // Better: 
+                            // Actually, just ease it based on remaining time?
+                            // Better:
                             // If just hit (timer ~2.0): Fade In.
                             // If ending (timer < 0.5): Fade Out.
 
@@ -486,10 +514,39 @@ export default function MobManager({ maze, floorLevel }) {
         setMobs(newMobs.slice(0, MAX_MOBS)); mobsRef.current = newMobs.slice(0, MAX_MOBS);
     }, [maze, floorLevel]);
 
+
+
+    // CONSUME SPAWN QUEUE (From GameContext)
+    useFrame(() => {
+        if (consumeMobQueue) {
+            const queue = consumeMobQueue();
+            if (queue.length > 0) {
+                const newMobs = [...mobsRef.current];
+                queue.forEach(req => {
+                    const m = MobLogic.createMob(req.type, floorLevel);
+                    if (m) {
+                        const spawnX = req.x * 2 + (Math.random() - 0.5);
+                        const spawnZ = req.z * 2 + (Math.random() - 0.5);
+
+                        const newMob = { ...m, instanceId: Math.random(), x: spawnX, z: spawnZ };
+                        if (req.type === 'STATELESS_SENTRY') newMob.isStationary = true;
+                        newMobs.push(newMob);
+                        triggerImpact({ x: spawnX, y: 1, z: spawnZ }, "#FF00FF");
+                    }
+                });
+                if (newMobs.length > MAX_MOBS) newMobs.length = MAX_MOBS;
+                setMobs(newMobs.slice(0, MAX_MOBS));
+                mobsRef.current = newMobs.slice(0, MAX_MOBS);
+            }
+        }
+    });
+
     useFrame((state, delta) => {
         const playerPos = fastStateRef.current.playerWorldPos; if (!playerPos) return;
         let mobsDirty = false;
-        let miteC = 0, wispC = 0, hunterC = 0, sentryC = 0, miteScanC = 0, wispScanC = 0, hunterScanC = 0, sentryScanC = 0, bossC = 0, bossScanC = 0;
+        let miteC = 0, wispC = 0, hunterC = 0, sentryC = 0, bossC = 0;
+        let miteScanC = 0, wispScanC = 0, hunterScanC = 0, sentryScanC = 0, bossScanC = 0;
+        let sentryBeamC = 0; // Instance Counter
         const playerLevel = getLevelFromXP(gameState.xp || 0);
         const currentMobs = mobsRef.current;
 
@@ -533,12 +590,15 @@ export default function MobManager({ maze, floorLevel }) {
                     }
 
                     if (mob.isVulnerable) {
-                        dmg *= 2; // Critical Hit on Vulnerable
-                        if (Math.random() < 0.5) addNotification("CRITICAL HIT!");
+                        dmg *= 2; // Critical Hit on Vulnerable (Double Damage)
+                        triggerCrit(); // Reticle Flash (Orange)
+                        triggerImpact({ x: mob.x, y: mobY, z: mob.z }, "#FF8800"); // Orange Particles
+                        addNotification(`CRIT: x2.0 (${dmg.toFixed(0)} DMG)`);
+                    } else {
+                        if (Math.random() < 0.2) triggerImpact({ x: mob.x, y: mobY, z: mob.z }, "#FF0000"); // Normal Red
                     }
                     mob.currentHp -= dmg;
                     mobDamageBuffer.current[i] = 0; // Reset
-                    if (Math.random() < 0.2) triggerImpact({ x: mob.x, y: mobY, z: mob.z }, "#FF0000");
 
                     // Hunter: Reveal on hit
                     if (mob.id === 'HUNTER') {
@@ -653,12 +713,38 @@ export default function MobManager({ maze, floorLevel }) {
                     const speed = (mob.id === 'HUNTER' ? 3.5 : 2.5);
                     const dist = Math.sqrt(distSq);
 
-                    // WISP LOGIC: Maintain 2m distance
-                    let dirMultiplier = 1;
-                    if (mob.id === 'NULL_WISP' && dist < 2.5) dirMultiplier = -1; // Back away if closer than 2.5m
+                    // WISP LOGIC: ORBIT & SLEEP
+                    let vx = 0, vz = 0;
+                    if (mob.id === 'NULL_WISP') {
+                        if (dist > 15) return; // Sleep if > 15m away
 
-                    const nextX = mob.x + (dx / dist) * speed * delta * dirMultiplier;
-                    const nextZ = mob.z + (dz / dist) * speed * delta * dirMultiplier;
+                        // Orbit Logic
+                        const orbitRadius = 1.5;
+                        const distError = dist - orbitRadius; // + means too far, - means too close
+                        const nx = dx / dist; // Toward Player
+                        const nz = dz / dist;
+
+                        // Tangent (Orbit Direction based on Index to handle multiple)
+                        const orbitDir = (i % 2 === 0 ? 1 : -1);
+                        const tx = -nz * orbitDir;
+                        const tz = nx * orbitDir;
+
+                        // Combine: Push to Radius + Spin
+                        // If far, mostly Push. If close, mostly Spin.
+                        // Speed reduced to 55% (1.5 -> 0.825, 2.0 -> 1.1)
+                        const approachFactor = 0.825; // Speed to close gap
+                        const orbitFactor = 1.1;    // Speed to spin
+
+                        vx = (nx * distError * approachFactor) + (tx * orbitFactor);
+                        vz = (nz * distError * approachFactor) + (tz * orbitFactor);
+                    } else {
+                        // Standard Chase
+                        vx = (dx / dist) * speed;
+                        vz = (dz / dist) * speed;
+                    }
+
+                    const nextX = mob.x + vx * delta;
+                    const nextZ = mob.z + vz * delta;
 
                     const gx = Math.round(nextX / 2), gz = Math.round(nextZ / 2);
                     const canMove = (gx >= 0 && gx < maze.width && gz >= 0 && gz < maze.height) ? maze.grid[gz][gx] !== 0 : false;
@@ -685,6 +771,135 @@ export default function MobManager({ maze, floorLevel }) {
                         if (sdSq < 0.25) { mob.x += sdx * delta; mob.z += sdz * delta; }
                     });
                 }
+            }
+
+
+
+            // --- MOB ATTACK LOGIC (BESTIARY 2.0) ---
+            if (!mob.isStasis && floorLevel !== 999 && mob.currentHp > 0) {
+                const dist = Math.sqrt(distSq);
+
+                // 1. BIT_MITE: NIBBLE (Melee)
+                if (mob.id === 'BIT_MITE') {
+                    if (dist < 1.5) { // Melee Range
+                        if ((mob.attackCooldown || 0) <= 0) {
+                            damageKernel(2); // 2 DMG
+                            triggerImpact({ x: playerPos.x, y: 1, z: playerPos.z }, "#FF0000");
+                            addNotification("WARNING: HULL_BREACH (BIT_MITE)");
+                            mob.attackCooldown = 1.0; // 1s Cooldown
+                        }
+                    }
+                }
+
+                // 2. STATELESS_SENTRY: DATA_STREAM (Ranged)
+                if (mob.id === 'STATELESS_SENTRY') {
+                    // State Machine: IDLE -> PINGING/CHARGING -> FIRING -> COOLDOWN
+                    if (!mob.attackState) mob.attackState = 'IDLE';
+                    if (!mob.attackTimer) mob.attackTimer = 0;
+                    if (!mob.rotationY) mob.rotationY = 0;
+
+                    // Rotate to face player
+                    const targetDx = playerPos.x - mob.x;
+                    const targetDz = playerPos.z - mob.z;
+                    const targetRot = Math.atan2(-targetDx, -targetDz);
+                    // Smooth Rotate
+                    let diff = targetRot - mob.rotationY;
+                    while (diff > Math.PI) diff -= Math.PI * 2;
+                    while (diff < -Math.PI) diff += Math.PI * 2;
+                    mob.rotationY += diff * 5.0 * delta; // Fast rotate
+
+                    mob.attackTimer -= delta;
+
+                    if (mob.attackState === 'IDLE') {
+                        if (dist < 20 && mob.attackTimer <= 0) {
+                            mob.attackState = 'CHARGING';
+                            mob.attackTimer = 3.0; // 3s Charge (User Request)
+                        }
+                    } else if (mob.attackState === 'CHARGING') {
+                        if (mob.attackTimer <= 0) {
+                            mob.attackState = 'FIRING';
+                            mob.attackTimer = 0.5; // 0.5s Beam Duration
+                            // Play Sound?
+                        }
+                    } else if (mob.attackState === 'FIRING') {
+                        // DAMAGE TICK (Once per burst)
+                        if (!mob.hasFired) {
+                            // Raycast Check (WALL HACK FIX)
+                            let isLineOfSight = true;
+                            if (maze && maze.grid) {
+                                // Simple DDA-like ray march
+                                const dist = Math.sqrt(distSq); // Recalculate exact distance
+                                const steps = Math.ceil(dist * 2); // 2 steps per meter (0.5m resolution)
+                                const stepX = targetDx / steps;
+                                const stepZ = targetDz / steps;
+
+                                for (let s = 1; s < steps; s++) {
+                                    const cx = mob.x + stepX * s;
+                                    const cz = mob.z + stepZ * s;
+                                    const gx = Math.round(cx / 2);
+                                    const gz = Math.round(cz / 2);
+
+                                    if (gx >= 0 && gx < maze.width && gz >= 0 && gz < maze.height) {
+                                        if (maze.grid[gz][gx] === 0) {
+                                            isLineOfSight = false; // Blocked by wall
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Only Damage if Visible
+                            if (isLineOfSight) {
+                                const bx = -Math.sin(mob.rotationY), bz = -Math.cos(mob.rotationY);
+                                const dot = (targetDx * bx + targetDz * bz);
+                                if (dot > 0) {
+                                    damageKernel(10); // 10 HP Damage
+                                    addNotification("ALERT: DATA_STREAM_IMPACT");
+                                    triggerImpact({ x: playerPos.x, y: 1, z: playerPos.z }, "#00FFFF");
+                                }
+                            } else {
+                                // Optional: Impact wall effect?
+                            }
+                            mob.hasFired = true;
+                        }
+                        if (mob.attackTimer <= 0) {
+                            mob.attackState = 'COOLDOWN';
+                            mob.attackTimer = 3.0; // 3s Cooldown
+                            mob.hasFired = false;
+                        }
+                    } else if (mob.attackState === 'COOLDOWN') {
+                        if (mob.attackTimer <= 0) mob.attackState = 'IDLE';
+                    }
+                }
+
+                // 3. NULL_WISP: PING_ALARM (Scout)
+                if (mob.id === 'NULL_WISP') {
+                    if (dist < 15 && !mob.hasAlerted) {
+                        addNotification("ALERT: SCOUT_PING_DETECTED // POSITION_LEAKED");
+                        mob.hasAlerted = true;
+                        // Alert nearby sentries?
+                        currentMobs.forEach(m2 => {
+                            if (m2.id === 'STATELESS_SENTRY') {
+                                // m2.isAlerted = true; // Use this later
+                            }
+                        });
+                    }
+                }
+
+                // 4. HUNTER: MEMORY_LEAK (RAM Damage)
+                if (mob.id === 'HUNTER') {
+                    if (dist < 4.0) {
+                        if ((mob.attackCooldown || 0) <= 0) {
+                            lockResource(5); // Drain 5 M-RAM
+                            addNotification("WARNING: MEMORY_LEAK DETECTED");
+                            triggerImpact({ x: playerPos.x, y: 1, z: playerPos.z }, "#FF00FF"); // Magenta
+                            mob.attackCooldown = 1.0;
+                        }
+                    }
+                }
+
+                // Decrement General Cooldowns
+                if (mob.attackCooldown > 0) mob.attackCooldown -= delta;
             }
 
             // Boss minion summoning & Animation
@@ -910,11 +1125,15 @@ export default function MobManager({ maze, floorLevel }) {
                 if (mob.id === 'IO_SENTINEL') { setBossSubtitle("REBOOT_ABORTED.", 3000); setBossKey({ x: mob.x, z: mob.z }); updateBossStatus({ active: false }); }
             }
 
-            if (gameState.lastScanTime && (Date.now() - gameState.lastScanTime) / 1000 < 2.5) {
-                const radius = ((Date.now() - gameState.lastScanTime) / 1000) * 25, d = Math.sqrt(distSq);
-                if (d < radius && d > radius - 5) {
+            if (gameState.lastScanTime && (Date.now() - gameState.lastScanTime) / 1000 < 3.0) {
+                const radius = ((Date.now() - gameState.lastScanTime) / 1000) * 20; // 20m/s wave
+                const d = Math.sqrt(distSq);
+
+                // WAVE INTERSECTION: Only reveal if wave is passing through
+                if (d < radius && d > radius - 8.0 && (mob.scanTimer || 0) <= 0) {
+                    // console.log(`[SCANNER] Hit Mob ${mob.id} at Dist ${d} (Radius ${radius})`);
                     mob.scanTimer = 10;
-                    if (playerLevel >= 5) mob.isVulnerable = true;
+                    mob.isVulnerable = true; // Always apply Vulnerability on Scan (Visual Feedback = Mechanic)
                     // Add to scanned targets for mini-map
                     scannedTargets.push({ x: mob.x, z: mob.z, type: 'MOB' });
                 }
@@ -927,12 +1146,22 @@ export default function MobManager({ maze, floorLevel }) {
             // CRITICAL: Reset scale to prevent contamination from previous mobs (especially sentry hearts)
             tempObject.scale.set(1, 1, 1);
 
-            // Bit Mites are 35% smaller
+            // Bit Mites are 30% smaller (0.65 -> 0.45)
             if (mob.id === 'BIT_MITE') {
-                tempObject.scale.set(0.65, 0.65, 0.65);
+                tempObject.scale.set(0.45, 0.45, 0.45);
+            }
+            // Null Wisps are ~35% (0.35)
+            if (mob.id === 'NULL_WISP') {
+                tempObject.scale.set(0.35, 0.35, 0.35);
             }
 
-            tempObject.position.set(mob.x, mob.id === 'NULL_WISP' ? 3.5 : 1, mob.z); // Wisp lowered to 3.5 (Aligned with collision)
+            let mobY = mob.id === 'NULL_WISP' ? 3.5 : 1;
+            if (mob.id === 'NULL_WISP') {
+                // Bobbing: Base 3.75, Amp 0.25 (3.5 to 4.0)
+                const t = state.clock.elapsedTime;
+                mobY = 3.75 + Math.sin(t * 2 + i) * 0.25;
+            }
+            tempObject.position.set(mob.x, mobY, mob.z); // Wisp lowered to 3.5 (Aligned with collision)
             if (floorLevel !== 999) tempObject.lookAt(playerPos.x, tempObject.position.y, playerPos.z);
             else { tempObject.rotation.set(0, 0, 0); }
             tempObject.updateMatrix();
@@ -955,49 +1184,133 @@ export default function MobManager({ maze, floorLevel }) {
                 hunterRef.current.setMatrixAt(hunterC++, tempObject.matrix);
                 if (mob.scanTimer > 0 && hunterScanRef.current) hunterScanRef.current.setMatrixAt(hunterScanC++, tempObject.matrix);
             } else if (mob.id === 'STATELESS_SENTRY') {
-                const t = state.clock.elapsedTime;
-                const expansion = Math.sin(t * 1.5) * 0.15 + 0.45; // 0.3 to 0.6 range (meet at middle)
                 const ti = sentryC++;
+                const t = state.clock.elapsedTime;
+
+                // ANIMATION STATE: CHARGING (Purple, Boom, Freeze) vs NORMAL (Cyan, Pulse, Spin)
+                const isCharging = mob.attackState === 'CHARGING';
+                const isFiring = mob.attackState === 'FIRING';
+
+                // Color Management
+                const baseColor = new THREE.Color("#00FFFF"); // Cyan
+                const chargeColor = new THREE.Color("#EA00FF"); // Purple
+                const activeColor = (isCharging || isFiring) ? chargeColor : baseColor;
+
+                // Body Expansion
+                let expansion = Math.sin(t * 1.5) * 0.15 + 0.45; // Normal Breath
+                let scaleMult = 1.35; // Normal Scale
+                let rotSpeed = 1.0;
+
+                if (isCharging) {
+                    // CHARGE: Expand huge (2.5x), Freeze Rot, Glow
+                    // Pulse faster? Or pure expansion?
+                    // "expand 1.5 more than normal". Normal ~1.35. Goal ~2.5.
+                    // Lerp to it? Or snap? User script implies sequence.
+                    // Use linear ramp based on remaining timer?
+                    // mob.attackTimer counts DOWN from 3.0.
+                    // Progress 0 (Start) to 1 (Ready).
+                    const progress = 1.0 - (mob.attackTimer / 3.0);
+                    scaleMult = 1.35 + (progress * 1.5); // Boom to 2.85
+                    expansion = 0.8; // Static wide spread
+                    rotSpeed = 0.05; // Paused (slight drift)
+                } else if (isFiring) {
+                    scaleMult = 1.0; // Recoil? "Go back to normal size"
+                    expansion = 0.2;
+                }
+
+                // Apply Color to Instances
+                if (sentryTopRef.current) sentryTopRef.current.setColorAt(ti, activeColor);
+                if (sentryMidRef.current) sentryMidRef.current.setColorAt(ti, activeColor);
+                if (sentryBotRef.current) sentryBotRef.current.setColorAt(ti, activeColor);
 
                 // Middle segment (heart housing) stays centered
                 if (sentryMidRef.current) {
-                    tempObject.position.set(mob.x, 2.5, mob.z);
-                    tempObject.rotation.y = t * 0.5; // Clockwise
+                    tempObject.position.set(mob.x, 2.25, mob.z);
+                    tempObject.rotation.y = t * 0.5 * rotSpeed;
+                    tempObject.scale.setScalar(scaleMult);
                     tempObject.updateMatrix();
                     sentryMidRef.current.setMatrixAt(ti, tempObject.matrix);
                 }
 
-                // Top segment (inverted teardrop) - contracts down toward heart
+                // Top segment (inverted teardrop) - Stretched
                 if (sentryTopRef.current) {
-                    tempObject.position.y = 2.5 + expansion;
-                    tempObject.rotation.y = -t * 0.8; // Counter-clockwise
+                    tempObject.position.y = 2.25 + expansion;
+                    tempObject.rotation.y = -t * 0.8 * rotSpeed;
+                    tempObject.scale.set(scaleMult, 2.0, scaleMult);
                     tempObject.updateMatrix();
                     sentryTopRef.current.setMatrixAt(ti, tempObject.matrix);
                 }
 
-                // Bottom segment (raindrop) - contracts up toward heart
+                // Bottom segment (raindrop) - Stretched
                 if (sentryBotRef.current) {
-                    tempObject.position.y = 2.5 - expansion;
-                    tempObject.rotation.y = -t * 1.2; // Counter-clockwise
+                    tempObject.position.y = 2.25 - expansion;
+                    tempObject.rotation.y = -t * 1.2 * rotSpeed;
+                    tempObject.scale.set(scaleMult, 2.0, scaleMult);
                     tempObject.updateMatrix();
                     sentryBotRef.current.setMatrixAt(ti, tempObject.matrix);
                 }
 
-                // Heart (core) stays centered
+                // Sentry Heart: Sphere Core
                 if (sentryHeartRef.current) {
-                    tempObject.position.set(mob.x, 2.5, mob.z);
-                    tempObject.scale.setScalar(0.2);
+                    tempObject.position.set(mob.x, 2.25, mob.z);
+                    tempObject.scale.setScalar(isCharging ? 0.3 : 0.1); // Core expands too
                     tempObject.updateMatrix();
                     sentryHeartRef.current.setMatrixAt(ti, tempObject.matrix);
+                    sentryHeartRef.current.setColorAt(ti, activeColor);
                 }
+
                 if (mob.scanTimer > 0 && sentryScanRef.current) {
-                    tempObject.position.set(mob.x, 2.5, mob.z); tempObject.scale.setScalar(1.0); tempObject.updateMatrix();
+                    tempObject.position.set(mob.x, 2.25, mob.z); tempObject.scale.setScalar(1.0); tempObject.updateMatrix();
                     sentryScanRef.current.setMatrixAt(sentryScanC++, tempObject.matrix);
+                }
+            }
+
+            // SENTRY BEAM LOGIC (Moved to Loop)
+            if (mob.id === 'STATELESS_SENTRY' && mob.attackState === 'FIRING') {
+                const ry = mob.rotationY || 0;
+                let hitDist = 20;
+
+                // RAYCAST
+                if (maze && maze.grid) {
+                    const dirX = -Math.sin(ry);
+                    const dirZ = -Math.cos(ry);
+                    // Start at d=3 (1.5m) to clear own mesh/collider
+                    for (let d = 3; d < 40; d++) {
+                        const checkDist = d / 2;
+                        const checkX = Math.round((mob.x + dirX * checkDist) / 2);
+                        const checkZ = Math.round((mob.z + dirZ * checkDist) / 2);
+                        if (checkX >= 0 && checkX < maze.width && checkZ >= 0 && checkZ < maze.height) {
+                            if (maze.grid[checkZ][checkX] === 0) {
+                                hitDist = checkDist;
+                                break;
+                            }
+                        }
+                    }
+                }
+                hitDist = Math.max(0.2, hitDist);
+
+                if (sentryBeamRef.current) {
+                    // Start at center height (2.25)
+                    tempObject.position.set(mob.x, 2.25, mob.z);
+
+                    // Rotation: Mob Rotation (Y) then Pitch (X) -90deg to point forward (-Z)
+                    tempObject.rotation.set(0, ry, 0); // Face direction
+                    tempObject.rotateX(-Math.PI / 2);   // Lay flat to point Z- (FORWARD)
+
+                    // Cylinder geometry is centered at logic (0,0,0) and extends Y.
+                    // Rotated X 90: Top is now World Z-
+                    // We need to shift it "forward" (Local Y+) by half height.
+                    // VISUAL OFFSET: Start 1.2m further forward to clear mesh
+                    tempObject.translateY(hitDist / 2 + 1.2);
+
+                    tempObject.scale.set(1, hitDist, 1);
+                    tempObject.updateMatrix();
+                    sentryBeamRef.current.setMatrixAt(sentryBeamC++, tempObject.matrix);
                 }
             }
         });
 
-        [miteRef, wispRef, wispOverlayRef, hunterRef, sentryTopRef, sentryMidRef, sentryBotRef, sentryHeartRef, bossCore, bossRing1Ref, bossRing2Ref, bossRing3Ref, miteScanRef, wispScanRef, hunterScanRef, sentryScanRef, bossScanRef].forEach(r => {
+        [miteRef, wispRef, wispOverlayRef, hunterRef, sentryTopRef, sentryMidRef, sentryBotRef, sentryHeartRef, bossCore, bossRing1Ref, bossRing2Ref, bossRing3Ref, miteScanRef, wispScanRef, hunterScanRef, sentryScanRef, bossScanRef, sentryBeamRef].forEach(r => {
             if (r.current) {
                 r.current.count = (
                     r === miteRef ? miteC :
@@ -1008,8 +1321,12 @@ export default function MobManager({ maze, floorLevel }) {
                                         r === wispScanRef ? wispScanC :
                                             r === hunterScanRef ? hunterScanC :
                                                 r === sentryScanRef ? sentryScanC :
-                                                    r === bossScanRef ? bossScanC : sentryC
+                                                    r === sentryBeamRef ? sentryBeamC :
+                                                        r === bossScanRef ? bossScanC : sentryC
                 );
+                if (r === sentryTopRef || r === sentryMidRef || r === sentryBotRef || r === sentryHeartRef) {
+                    r.current.instanceColor.needsUpdate = true; // Enable Color Updates
+                }
                 r.current.instanceMatrix.needsUpdate = true;
             }
         });
@@ -1022,8 +1339,21 @@ export default function MobManager({ maze, floorLevel }) {
         }
 
         // Update mini-map with scanned targets
+        // Update mini-map with scanned targets (SAFE APPEND)
         if (scannedTargets.length > 0) {
-            updateScannedTargets(scannedTargets);
+            setGameState(prev => {
+                // Filter out duplicates
+                const newTargets = scannedTargets.filter(t =>
+                    !prev.scannedTargets.some(pt => pt.x === t.x && pt.z === t.z && pt.type === 'MOB')
+                );
+
+                if (newTargets.length === 0) return prev;
+
+                return {
+                    ...prev,
+                    scannedTargets: [...prev.scannedTargets, ...newTargets]
+                };
+            });
         }
         // Note: Don't clear targets - other components (LootManager, MazeRenderer) may add theirs
     });
@@ -1036,16 +1366,16 @@ export default function MobManager({ maze, floorLevel }) {
                 <meshStandardMaterial ref={miteMatRef} alphaMap={miteTex} emissiveMap={miteTex} emissive="#FFFFFF" emissiveIntensity={2} transparent opacity={1} />
             </instancedMesh>
 
-            {/* NULL WISP: Sphere, Blue/Purple Texture */}
+            {/* NULL WISP: Sphere, Blue/Purple Texture -> WIREFRAME */}
             <instancedMesh ref={wispRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false}>
                 <sphereGeometry args={[0.25, 16, 16]} />
-                <meshStandardMaterial ref={wispMatRef} alphaMap={wispTex} emissiveMap={wispTex} emissive="#FFFFFF" emissiveIntensity={2} transparent opacity={1} />
+                <meshStandardMaterial ref={wispMatRef} alphaMap={wispTex} emissiveMap={wispTex} emissive="#FFFFFF" emissiveIntensity={2} transparent opacity={1} wireframe />
             </instancedMesh>
 
-            {/* NULL WISP OVERLAY: Second layer with opposite rotation */}
+            {/* NULL WISP OVERLAY: Second layer with opposite rotation -> WIREFRAME */}
             <instancedMesh ref={wispOverlayRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false}>
                 <sphereGeometry args={[0.26, 16, 16]} />
-                <meshStandardMaterial ref={wispOverlayMatRef} alphaMap={wispTex2} emissiveMap={wispTex2} emissive="#FFFFFF" emissiveIntensity={2} transparent opacity={1} depthWrite={false} />
+                <meshStandardMaterial ref={wispOverlayMatRef} alphaMap={wispTex2} emissiveMap={wispTex2} emissive="#FFFFFF" emissiveIntensity={2} transparent opacity={1} depthWrite={false} wireframe />
             </instancedMesh>
 
             {/* HUNTER: Dodecahedron - Metallic Shimmer with Fade */}
@@ -1054,17 +1384,16 @@ export default function MobManager({ maze, floorLevel }) {
                 <meshStandardMaterial ref={hunterMatRef} map={hunterTex} emissiveMap={hunterTex} emissive="#FFFFFF" emissiveIntensity={1} metalness={0.8} roughness={0.2} transparent opacity={0.8} />
             </instancedMesh>
 
-            {/* SENTRIES: 3 Segments - Top: Inverted Teardrop (15% smaller) */}
+            {/* SENTRIES: RESTORED ORIGINAL SKINS (Textured, Full Size) */}
             <instancedMesh ref={sentryTopRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false}>
+                {/* Scale handled in loop, geometry base same */}
                 <cylinderGeometry args={[0.17, 0.34, 0.6, 16]} />
                 <meshStandardMaterial ref={sentryTopMatRef} alphaMap={sentryTex} emissiveMap={sentryTex} emissive="#00FFFF" emissiveIntensity={1} transparent opacity={1} />
             </instancedMesh>
-            {/* Sentry Middle: Sphere Housing */}
             <instancedMesh ref={sentryMidRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false}>
                 <sphereGeometry args={[0.45, 16, 16]} />
                 <meshStandardMaterial ref={sentryMidMatRef} alphaMap={sentryTex} emissiveMap={sentryTex} emissive="#00FFFF" emissiveIntensity={1} transparent opacity={1} />
             </instancedMesh>
-            {/* Sentry Bottom: Raindrop Shape (15% smaller) */}
             <instancedMesh ref={sentryBotRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false}>
                 <cylinderGeometry args={[0.34, 0.17, 0.6, 16]} />
                 <meshStandardMaterial ref={sentryBotMatRef} alphaMap={sentryTex} emissiveMap={sentryTex} emissive="#00FFFF" emissiveIntensity={1} transparent opacity={1} />
@@ -1098,23 +1427,42 @@ export default function MobManager({ maze, floorLevel }) {
                 <sphereGeometry args={[1.0, 32, 32]} /><meshBasicMaterial color="#EA00FF" wireframe transparent opacity={0.6} depthTest={false} />
             </instancedMesh>
 
-            {/* SCAN WIREFRAMES - Re-enabled for feedback */}
-            <instancedMesh ref={miteScanRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false}>
-                <tetrahedronGeometry args={[0.8, 0]} /><meshBasicMaterial color="#EA00FF" wireframe transparent opacity={0.6} depthTest={false} />
+            {/* SCAN WIREFRAMES - REFINED CRITICAL POINTS (User Request: Just Cores) */}
+            <instancedMesh ref={miteScanRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false} renderOrder={999}>
+                {/* Mite Core: Tight fit (0.4) */}
+                <tetrahedronGeometry args={[0.4, 0]} /><meshBasicMaterial color="#EA00FF" wireframe transparent opacity={0.8} depthTest={false} />
             </instancedMesh>
-            <instancedMesh ref={wispScanRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false}>
-                <sphereGeometry args={[0.25, 16, 16]} /><meshBasicMaterial color="#EA00FF" wireframe transparent opacity={0.6} depthTest={false} />
+            <instancedMesh ref={wispScanRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false} renderOrder={999}>
+                {/* Wisp Core: Tight fit (0.3) */}
+                <sphereGeometry args={[0.3, 16, 16]} /><meshBasicMaterial color="#EA00FF" wireframe transparent opacity={0.8} depthTest={false} />
             </instancedMesh>
-            <instancedMesh ref={hunterScanRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false}>
-                <boxGeometry args={[0.8, 0.8, 0.8]} /><meshBasicMaterial color="#EA00FF" wireframe transparent opacity={0.6} depthTest={false} />
+            <instancedMesh ref={hunterScanRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false} renderOrder={999}>
+                {/* Hunter Critical: Tight fit (0.4) */}
+                <sphereGeometry args={[0.4, 16, 16]} /><meshBasicMaterial color="#EA00FF" wireframe transparent opacity={0.8} depthTest={false} />
             </instancedMesh>
-            <instancedMesh ref={sentryScanRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false}>
-                <boxGeometry args={[1.2, 3.2, 1.2]} /><meshBasicMaterial color="#EA00FF" wireframe transparent opacity={0.6} depthTest={false} />
+            <instancedMesh ref={sentryScanRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false} renderOrder={999}>
+                {/* Sentry Critical: Tiny! 50% smaller (0.18 -> 0.09) - CYAN COLOR */}
+                <sphereGeometry args={[0.09, 16, 16]} /><meshBasicMaterial color="#00FFFF" wireframe transparent opacity={0.8} depthTest={false} />
             </instancedMesh>
             {/* Boss now uses instanced meshes below instead of BossFX component */}
             {bossKey && <KernelShard position={bossKey} maze={maze} />}
-            {/* Render Boss Beams */}
-            {mobs.map(m => m.id === 'IO_SENTINEL' && <BossBeam key={m.instanceId} mob={m} maze={maze} />)}
+            {/* Instanced Beams */}
+            <instancedMesh ref={sentryBeamRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false}>
+                <cylinderGeometry args={[0.07, 0.07, 1, 8, 1, true]} /> {/* 30% Smaller Dia (0.1 -> 0.07) */}
+                <meshBasicMaterial color="#00FFFF" transparent opacity={0.6} depthWrite={false} side={THREE.DoubleSide} />
+            </instancedMesh>
+
+            {/* RESTORED: Dynamic PointLights for Firing Sentries (Flare Effect) */}
+            {mobs.map(m => m.id === 'STATELESS_SENTRY' && m.attackState === 'FIRING' && (
+                <pointLight
+                    key={`flare-${m.instanceId}`}
+                    position={[m.x, 2.25, m.z]}
+                    intensity={3}
+                    color="#EA00FF"
+                    distance={8}
+                    decay={2}
+                />
+            ))}
         </group>
     );
 }

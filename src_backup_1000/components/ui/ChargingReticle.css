@@ -1,0 +1,105 @@
+.charging-reticle {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 100;
+}
+
+.reticle-container {
+    position: relative;
+    width: 0;
+    height: 0;
+    /* Rotation is handled by JS for infinite spin */
+}
+
+/* --- BEADS --- */
+.reticle-bead {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 8px;
+    /* Doubled size */
+    height: 8px;
+    margin-left: -4px;
+    margin-top: -4px;
+
+    border-radius: 50%;
+
+    /* Chrome shader */
+    background: radial-gradient(circle at 30% 30%,
+            #ffffff 0%,
+            #c0c0c0 30%,
+            #808080 60%,
+            #404040 100%);
+    box-shadow:
+        0 0 2px rgba(255, 255, 255, 0.8),
+        inset 1px 1px 1px rgba(255, 255, 255, 0.6);
+
+    transition: opacity 0.1s;
+}
+
+/* Charged Glow */
+.reticle-bead.charged {
+    box-shadow:
+        0 0 10px #00FFFF,
+        0 0 20px #00FFFF,
+        inset 1px 1px 2px white;
+    background: #00FFFF;
+    /* Solid light source look */
+}
+
+/* --- FLARE --- */
+.reticle-flare {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, #00FFFF 0%, rgba(0, 255, 255, 0) 70%);
+    opacity: 0;
+    animation: flash 0.1s forwards;
+}
+
+@keyframes flash {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.5);
+    }
+}
+
+/* --- PROJECTILES (Animation) --- */
+.reticle-projectile {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    /* slightly smaller than bead */
+    height: 6px;
+    margin-left: -3px;
+    margin-top: -3px;
+    border-radius: 50%;
+    background: #00FFFF;
+    box-shadow: 0 0 5px #00FFFF;
+
+    animation: fireInward 0.3s cubic-bezier(0.1, 0.7, 1.0, 0.1) forwards;
+}
+
+@keyframes fireInward {
+    0% {
+        transform: translate(var(--startX), var(--startY));
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(0, 0);
+        opacity: 0;
+    }
+}

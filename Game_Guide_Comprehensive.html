@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberSynthe: Operator's Manual</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-color: #e0e0e0;
+            --cyan: #00ffff;
+            --magenta: #ff00ff;
+            --grid-color: rgba(0, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px;
+            background-image:
+                linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 40px;
+            border: 1px solid var(--cyan);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, var(--cyan), var(--magenta));
+        }
+
+        h1,
+        h2,
+        h3 {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        h1 {
+            color: var(--cyan);
+            border-bottom: 2px solid var(--cyan);
+            padding-bottom: 10px;
+            text-align: center;
+            text-shadow: 0 0 10px var(--cyan);
+        }
+
+        h2 {
+            color: var(--magenta);
+            margin-top: 40px;
+            border-left: 4px solid var(--magenta);
+            padding-left: 15px;
+        }
+
+        h3 {
+            color: #fff;
+            background: linear-gradient(90deg, rgba(0, 255, 255, 0.1), transparent);
+            padding: 5px 10px;
+            margin-top: 30px;
+        }
+
+        ul {
+            list-style-type: square;
+        }
+
+        strong {
+            color: #fff;
+        }
+
+        code {
+            background: #1a1a1a;
+            color: var(--cyan);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #333;
+        }
+
+        .alert {
+            border: 1px solid var(--magenta);
+            background: rgba(255, 0, 255, 0.05);
+            padding: 15px;
+            margin: 20px 0;
+            color: #ffccff;
+        }
+
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            font-size: 0.8em;
+        }
+
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+
+            .container {
+                box-shadow: none;
+                border: 1px solid #ccc;
+                color: black;
+                background: white;
+            }
+
+            h1,
+            h2,
+            h3 {
+                color: black;
+                text-shadow: none;
+            }
+
+            code {
+                border: 1px solid #ccc;
+                color: black;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>CyberSynthe<br><span style="font-size: 0.5em; color: white;">Operator's Manual</span></h1>
+
+        <div class="alert">
+            <strong>SYSTEM NOTICE:</strong> This document contains classified protocols for navigating The Labyrinth.
+            Unauthorized distribution is a Logic Breach.
+        </div>
+
+        <h2>01. The Universe</h2>
+        <p><strong>CyberSynthe</strong> is a tactical roguelite set inside a decaying mainframe known as "The
+            Labyrinth." You play as <strong>NULL_POINTER</strong>, a ghost process attempting to keep the system running
+            while uncovering why it's falling apart.</p>
+
+        <h3>The Sectors</h3>
+        <p>The Labyrinth is divided into sectors, each with unique visual identities and narrative themes:</p>
+        <ul>
+            <li><strong>Sector 01 (Floors 1-25)</strong>: The Morgue. Cold, blue/cyan aesthetics. Where dead data goes
+                to be forgotten.</li>
+            <li><strong>Sector 02 (Floors 26-50)</strong>: The Factory. Orange/Industrial. Where data is processed.</li>
+            <li><strong>Sector 03 (Floors 51-75)</strong>: The Archives. Purple/Glitch. Corrupted memory banks.</li>
+            <li><strong>Sector 04 (Floors 76-100)</strong>: The Kernel. Red/Critical. The core of the system.</li>
+        </ul>
+
+        <h2>02. The Bestiary (Threat Assessment)</h2>
+        <p>Hostile processes roam the maze. Understanding them is key to survival.</p>
+
+        <h3>Minions</h3>
+        <ul>
+            <li><strong>Bit-Mite</strong>: Small, pyramid-shaped scrubbers.
+                <ul>
+                    <li><em>Behavior</em>: Swarm tactics.</li>
+                    <li><em>Attack</em>: <code>NIBBLE</code> (Melee, 2 DMG). Causes <code>HULL_BREACH</code>.</li>
+                    <li><em>Weakness</em>: Low HP, easily kited.</li>
+                </ul>
+            </li>
+            <li><strong>Null-Wisp</strong>: Floating surveillance orbs.
+                <ul>
+                    <li><em>Behavior</em>: Scouts. They orbit the player and alert others.</li>
+                    <li><em>Attack</em>: <code>PING_ALARM</code> (Alerts nearby mobs).</li>
+                    <li><em>Weakness</em>: Does not deal direct damage directly.</li>
+                </ul>
+            </li>
+            <li><strong>Hunter</strong>: Stealth assault units.
+                <ul>
+                    <li><em>Behavior</em>: Flankers. Uses camouflage.</li>
+                    <li><em>Attack</em>: <code>MEMORY_LEAK</code> (Drains M-RAM, 5 RAM DMG).</li>
+                    <li><em>Weakness</em>: Visible when attacking.</li>
+                </ul>
+            </li>
+            <li><strong>Stateless Sentry</strong>: Stationary turrets.
+                <ul>
+                    <li><em>Behavior</em>: Area denial.</li>
+                    <li><em>Attack</em>: <code>DATA_STREAM</code> (Beam, 10 DMG). Telegraphs with a charge-up.</li>
+                    <li><em>Weakness</em>: Stationary. Can be line-of-sighted.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Bosses</h3>
+        <ul>
+            <li><strong>IO_SENTINEL (Level 10)</strong>: The Gatekeeper.
+                <ul>
+                    <li><em>Phase 1</em>: Sits in center, rotates.</li>
+                    <li><em>Phase 2</em>: Becomes mobile, chases player.</li>
+                    <li><em>Attacks</em>: <code>DATA_PURGE</code> (Massive Beam), <code>MINION_SPAWN</code>.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h2>03. Core Mechanics</h2>
+
+        <h3>Resources</h3>
+        <ul>
+            <li><strong>INTEGRITY (HP)</strong>: Your structural health. 0 = Deletion (Game Over).</li>
+            <li><strong>M-RAM (Stamina)</strong>: Mental RAM. Used for abilities and movement. Regenerates based on
+                Clock Speed.</li>
+            <li><strong>CLOCK SPEED</strong>: Your action speed. Affects movement, attack rate, and regeneration.</li>
+            <li><strong>eBITS</strong>: Currency found in caches or from enemies.</li>
+        </ul>
+
+        <h3>Movement & Combat</h3>
+        <ul>
+            <li><strong>WASD</strong>: Move.</li>
+            <li><strong>SPACE</strong>: Jump.</li>
+            <li><strong>SHIFT</strong>: Sprint (Costs M-RAM).</li>
+            <li><strong>LMB</strong>: Primary Fire (Data Spike).</li>
+            <li><strong>RMB (Hold)</strong>: Charge Attack (Heavy Damage).</li>
+            <li><strong>Q</strong>: Interact / Unlock Kernel.</li>
+            <li><strong>R</strong>: Reload / Context Action.</li>
+        </ul>
+
+        <h2>04. The Loot System (L1 Cache)</h2>
+        <p>Caches are scattered throughout the maze. Accessing them triggers the <strong>Spectral Scroll</strong>
+            minigame.</p>
+
+        <h3>Spectral Scroll (Decryption)</h3>
+        <p>A 4-roller lock system. Match the tumbling numbers to the Target Code.</p>
+        <ul>
+            <li><strong>Targets</strong>: Shown at the top (e.g., <code>[4] [2] [9] [1]</code>).</li>
+            <li><strong>Controls</strong>: Click rollers or press <code>1</code>, <code>2</code>, <code>3</code>,
+                <code>4</code> to lock them.</li>
+        </ul>
+
+        <h3>Outcomes</h3>
+        <ul>
+            <li><span style="color: var(--cyan)">CRITICAL_SYNC</span>: Perfect Match. Reward: <strong>2x Loot + Buffer
+                    Overclocker</strong>.</li>
+            <li><span style="color: #00ff00">STABLE_HANDSHAKE</span>: Near Match (off by 1 allowed). Reward:
+                <strong>Standard Loot</strong>.</li>
+            <li><span style="color: var(--magenta)">LOGIC_BREACH</span>: Missed. Penalty: <strong>15 DMG + Bit-Mite
+                    Spawn</strong>.</li>
+            <li><span style="color: red">FATAL_ERROR</span>: Total Miss. Penalty: <strong>30 DMG + Cache
+                    Destroyed</strong>.</li>
+        </ul>
+
+        <h3>Loot Types</h3>
+        <ul>
+            <li><strong>E-Bit Cluster</strong>: Currency.</li>
+            <li><strong>M-RAM Injector</strong>: Restores Integrity/RAM. Use with <code>Quick Slot</code>.</li>
+            <li><strong>Logic Fragment</strong>: Story lore item.</li>
+            <li><strong>Buffer Overclocker</strong>: Buffs Clock Speed.</li>
+            <li><strong>Ghost Protocol</strong>: Temporary Invisibility.</li>
+            <li><strong>Kernel Spike</strong>: Instant Kill next target.</li>
+        </ul>
+
+        <h2>05. Game Modes</h2>
+        <ul>
+            <li><strong>Normal</strong>: Standard Run. Progression saves.</li>
+            <li><strong>Elite</strong>: Permadeath.</li>
+            <li><strong>Ghost</strong>: Exploration Mode. No combat, infinite resources.</li>
+            <li><strong>Bestiary (Floor 999)</strong>: Examine mob models in stasis.</li>
+        </ul>
+
+        <h2>06. Scoring</h2>
+        <p>You are rated on "Logic Alignment" (Cyan vs Magenta).</p>
+        <ul>
+            <li><strong>Cyan (Order)</strong>: Efficient play, full clears, perfect decryption.</li>
+            <li><strong>Magenta (Chaos)</strong>: Speedrunning, skipping caches, taking damage.</li>
+        </ul>
+
+        <h2>07. Tips from the Engineer</h2>
+        <div class="alert" style="border-color: var(--cyan); background: rgba(0,255,255,0.05);">
+            <ol>
+                <li><em>Don't rush the decryption.</em> A Logic Breach spawns a mob right on top of you.</li>
+                <li><em>Watch your RAM.</em> If you bottom out, you can't run or shoot.</li>
+                <li><em>Sentries track slowly.</em> Circle strafe them to avoid the beam.</li>
+                <li><em>Read the Fragments.</em> The story is not told, it is found.</li>
+            </ol>
+        </div>
+
+        <footer>
+            System Version: 0.9.4 (Beta) | LOG_END
+        </footer>
+    </div>
+
+</body>
+
+</html>

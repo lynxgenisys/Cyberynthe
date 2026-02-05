@@ -19,6 +19,7 @@ const _upDir = new THREE.Vector3(0, 1, 0);
 
 const PlayerController = () => {
     const body = useRef();
+    const sprintCostAccumulator = useRef(0);
     const [subscribeKeys, getKeys] = useKeyboardControls();
     const { camera } = useThree();
     const { updatePlayerPos, triggerScan, getLevelFromXP, playerRotationRef, enterBestiaryMode, setChargingWeapon } = useGame();
@@ -36,7 +37,7 @@ const PlayerController = () => {
 
     const { fireProjectile, fireBurst } = useCombat();
     const { lockResource, state: playerState } = usePlayer(); // Access full state
-    const { clockSpeed } = playerState.stats;
+    const { clockSpeed, mRamRegenBase } = playerState.stats;
 
     // CLOCK SPEED FACTOR: 3x Scaling (User Request)
     // 5% Stat -> 15% Boost (1.15x)
@@ -44,6 +45,7 @@ const PlayerController = () => {
 
     // Movement: 3.0 Base * Multiplier
     const SPEED = 3.0 * cycleMultiplier;
+
 
     // DEBUG: Prove Speed Update
     React.useEffect(() => {
@@ -73,8 +75,13 @@ const PlayerController = () => {
     React.useEffect(() => {
         if (gameState.gameMode !== 'ghost') return;
 
-        const handleMouseDownGlobal = (e) => { if (e.button === 2) window.ghostRightClick = true; };
-        const handleMouseUpGlobal = (e) => { if (e.button === 2) window.ghostRightClick = false; };
+        // SWAPPED PROTOCOL: Left Click (0) = Run, Right Click (2) = Scan (Handled in main listener)
+        const handleMouseDownGlobal = (e) => {
+            if (e.button === 0) window.ghostLeftClick = true;
+        };
+        const handleMouseUpGlobal = (e) => {
+            if (e.button === 0) window.ghostLeftClick = false;
+        };
 
         const handleKeyDownGhost = (e) => {
             if (e.key === 'Shift' && !e.repeat) {
@@ -87,7 +94,7 @@ const PlayerController = () => {
         window.addEventListener('keydown', handleKeyDownGhost);
 
         return () => {
-            window.ghostRightClick = false;
+            window.ghostLeftClick = false;
             window.ghostRunToggle = false;
             window.removeEventListener('mousedown', handleMouseDownGlobal);
             window.removeEventListener('mouseup', handleMouseUpGlobal);
@@ -104,8 +111,8 @@ const PlayerController = () => {
 
             // GHOST MODE: Controls Override (Only Click Actions here, State handled above)
             if (gameState.gameMode === 'ghost') {
-                // LEFT CLICK (0): TRIGGER SCAN (No Weapon)
-                if (e.button === 0) {
+                // RIGHT CLICK (2): TRIGGER SCAN (No Weapon) - SWAPPED
+                if (e.button === 2) {
                     if (lockResource(10)) triggerScan();
                 }
                 return;
@@ -169,10 +176,11 @@ const PlayerController = () => {
 
         const handleKeyDown = (e) => {
             if (!document.pointerLockElement) return;
-            if (gameState.gameMode === 'ghost') return; // Ghost keys handled in other effect
+            // if (gameState.gameMode === 'ghost') return; // REMOVED: Allow 'E' in ghost mode
 
             // 'E' -> SCAN PULSE (Green, 10 M-RAM)
             if (e.code === 'KeyE') {
+                // Allow Scan in Ghost Mode
                 if (lockResource(10)) {
                     triggerScan();
                 }
@@ -271,10 +279,50 @@ const PlayerController = () => {
             if (gameState.gameMode === 'ghost') {
                 // GHOST MODE: Check Ref Flags
                 const isRunToggled = window.ghostRunToggle || false;
-                const isRightClick = window.ghostRightClick || false;
-                if (isRunToggled || isRightClick) currentSpeed = SPEED * 1.6;
+                const isLeftClick = window.ghostLeftClick || false;
+                if (isRunToggled || isLeftClick) currentSpeed = SPEED * 1.6;
             } else {
-                if (run) currentSpeed = SPEED * 1.6;
+                if (run) {
+                    // SPRINT COST LOGIC (DYNAMIC TRICKLE)
+                    // Formula: ((ScrubRate + 1) - ClockSpeed%)
+                    // Ensures cost is always > Regen (unless Clock > 100%), causing net drain.
+                    const efficiency = clockSpeed / 100;
+                    const rawCost = (mRamRegenBase + 1.0) - efficiency;
+                    const costPerSec = Math.max(0.1, rawCost); // Clamp minimum
+
+                    // Accumulate cost
+                    sprintCostAccumulator.current += costPerSec * delta;
+
+                    let canSprint = true;
+
+                    // If debt > 1, try to pay
+                    if (sprintCostAccumulator.current >= 1) {
+                        const toPay = Math.floor(sprintCostAccumulator.current);
+                        if (lockResource(toPay)) {
+                            // Payment Success
+                            sprintCostAccumulator.current -= toPay;
+                        } else {
+                            // Payment Failed (Not enough RAM)
+                            canSprint = false;
+                            // Optionally clamp accumulator to prevent debt buildup on empty tank
+                            sprintCostAccumulator.current = Math.min(sprintCostAccumulator.current, 1.0);
+                        }
+                    } else {
+                        // Debt < 1. Check if we have ANY RAM at all just to be safe?
+                        // Actually, if we have 0 RAM, we can sprint for ~1 second until debt hits 1.
+                        // Strictly speaking, if mRamCurrent < 1, maybe deny sprint immediately?
+                        // Let's rely on the debt cycle. It gives a 1s 'grace' burst from 0, which is acceptable feel.
+                        // Or check state directly:
+                        if (playerState.stats.mRamCurrent < 1) canSprint = false;
+                    }
+
+                    if (canSprint) {
+                        currentSpeed = SPEED * 1.6;
+                    }
+                } else {
+                    // Not running, decay accumulator or keep it?
+                    // Better to keep it so you can't cheat by flutter-stepping.
+                }
             }
 
             if (_moveDir.lengthSq() > 0) {

@@ -1,0 +1,173 @@
+.profile-card {
+    max-width: 900px;
+    margin: 0 auto;
+    background: rgba(0, 18, 51, 0.8);
+    border: 2px solid #00FFFF;
+    padding: 20px;
+    font-family: 'Courier New', monospace;
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.3);
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #00AAAA;
+}
+
+.profile-ghost-id {
+    font-size: 24px;
+    color: #00FFFF;
+    text-shadow: 0 0 10px #00FFFF;
+    margin-bottom: 5px;
+    letter-spacing: 2px;
+}
+
+.profile-badge-primary {
+    font-size: 16px;
+    margin: 10px 0;
+    letter-spacing: 1px;
+}
+
+.profile-created {
+    font-size: 12px;
+    color: #00AAAA;
+    margin-top: 10px;
+}
+
+.profile-vitals {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.vital-stat {
+    background: rgba(0, 255, 255, 0.05);
+    padding: 10px;
+    border-left: 3px solid #00FFFF;
+}
+
+.vital-label {
+    font-size: 10px;
+    color: #00AAAA;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+}
+
+.vital-value {
+    font-size: 18px;
+    color: #00FFFF;
+    font-weight: bold;
+}
+
+.profile-section {
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: 12px;
+    color: #00FFFF;
+    margin-bottom: 10px;
+    letter-spacing: 1.5px;
+    border-bottom: 1px solid #00AAAA;
+    padding-bottom: 5px;
+}
+
+.resonance-bar-container {
+    position: relative;
+    padding: 20px 0;
+}
+
+.resonance-label-left,
+.resonance-label-right {
+    position: absolute;
+    top: 0;
+    font-size: 11px;
+    color: #00AAAA;
+    letter-spacing: 1px;
+}
+
+.resonance-label-left {
+    left: 0;
+}
+
+.resonance-label-right {
+    right: 0;
+}
+
+.resonance-bar {
+    height: 30px;
+    position: relative;
+    border: 2px solid #00AAAA;
+    margin-top: 25px;
+}
+
+.resonance-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #00FFFF 0%, #FFFFFF 50%, #EA00FF 100%);
+    opacity: 0.3;
+}
+
+.resonance-indicator {
+    position: absolute;
+    top: -5px;
+    width: 4px;
+    height: 40px;
+    background: #FFFFFF;
+    box-shadow: 0 0 15px #FFFFFF;
+    animation: flicker 2s infinite;
+}
+
+.badge-rack {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.badge-item {
+    padding: 8px;
+    text-align: center;
+    border: 2px solid;
+    font-size: 12px;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+}
+
+.badge-item.earned {
+    border-color: currentColor;
+    background: rgba(0, 255, 255, 0.1);
+    box-shadow: 0 0 10px currentColor;
+}
+
+.badge-item.locked {
+    border-color: #003333;
+    color: #003333;
+    opacity: 0.4;
+}
+
+.profile-note {
+    margin-top: 20px;
+    padding: 10px;
+    background: rgba(234, 0, 255, 0.1);
+    border-left: 4px solid #EA00FF;
+    font-size: 10px;
+    color: #EA00FF;
+    letter-spacing: 1px;
+}
+
+@keyframes flicker {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}

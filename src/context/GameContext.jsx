@@ -82,7 +82,18 @@ export const GameProvider = ({ children }) => {
         isChargingWeapon: false, // Data Spike v2 charge reticle
 
         // SYSTEM SIGNALS
-        manualExitSignal: false // Triggered by UI to end run gracefully
+        manualExitSignal: false, // Triggered by UI to end run gracefully
+
+        // DECRYPTION MINIGAME
+        isDecrypting: false,
+        decryptionCallback: null, // Function to call on success/fail
+
+        // MOB SPAWN QUEUE (For Security Breaches)
+        // MOB SPAWN QUEUE (For Security Breaches)
+        mobSpawnQueue: [], // Array of { type, x, z }
+
+        // VISUAL NOTIFICATIONS
+        floatingMessage: null // { text, color, timestamp, duration }
     });
 
     // FOG OF WAR (Mutable Grid)
@@ -143,8 +154,25 @@ export const GameProvider = ({ children }) => {
         const id = Date.now();
         setGameState(prev => ({
             ...prev,
-            notifications: [...prev.notifications, { id, msg, time: Date.now() }].slice(-5) // Keep last 5
+            notifications: [...prev.notifications, { id, msg, time: id }].slice(-10) // Keep last 10
         }));
+    };
+
+    const showFloatingMessage = (text, color = "text-cyan", duration = 3000) => {
+        setGameState(prev => ({
+            ...prev,
+            floatingMessage: { text, color, timestamp: Date.now(), duration }
+        }));
+
+        // Auto-clear happens via rendering logic or timeout
+        setTimeout(() => {
+            setGameState(prev => {
+                if (prev.floatingMessage && prev.floatingMessage.text === text) {
+                    return { ...prev, floatingMessage: null };
+                }
+                return prev;
+            });
+        }, duration);
     };
 
     const updateScannedTargets = (targets) => {
@@ -341,7 +369,7 @@ export const GameProvider = ({ children }) => {
                     bossSubtitle: subtitle ? { text: subtitle, duration: subDuration, timestamp: Date.now() + 600 } : prev.bossSubtitle,
 
                     // NARRATIVE VISUAL FILTERS
-                    visualFilter: (nextFloor === 11) ? 'SECTOR_02_NAVY' : ((nextFloor === 9) ? 'QUARANTINE_LUT' : ((nextFloor === 7) ? 'TEXTURE_BLEED' : prev.visualFilter)),
+                    visualFilter: (nextFloor === 11) ? 'SECTOR_02_NAVY' : ((nextFloor === 9) ? 'QUARANTINE_LUT' : ((nextFloor === 7) ? 'TEXTURE_BLEED' : 'NONE')),
 
                     // BUFF SYSTEM: Decrement floor counters
                     activeBuffs: prev.activeBuffs
@@ -394,6 +422,10 @@ export const GameProvider = ({ children }) => {
     const triggerScan = () => {
         fastStateRef.current.lastScanTime = Date.now();
         setGameState(prev => ({ ...prev, lastScanTime: fastStateRef.current.lastScanTime }));
+    };
+
+    const triggerCrit = () => {
+        setGameState(prev => ({ ...prev, critSignal: Date.now() }));
     };
 
     // SCAN PROGRESS TICKER
@@ -685,6 +717,48 @@ export const GameProvider = ({ children }) => {
     };
 
 
+    // DECRYPTION MINIGAME
+    const startDecryption = (callback) => {
+        setGameState(prev => ({
+            ...prev,
+            isDecrypting: true,
+            decryptionCallback: callback
+        }));
+    };
+
+    const completeDecryption = (result) => {
+        // Execute callback immediately with current state ref, OR rely on the fact that we have it in state
+        if (gameState.decryptionCallback) {
+            try {
+                gameState.decryptionCallback(result);
+            } catch (err) {
+                console.error("[GameContext] Decryption Callback Failed:", err);
+                addNotification("ERROR: LOOT_LOGIC_FAILURE");
+            }
+        }
+        setGameState(prev => ({
+            ...prev,
+            isDecrypting: false,
+            decryptionCallback: null
+        }));
+    };
+
+    // MOB SPAWNING
+    const triggerMobSpawn = (type, x, z) => {
+        setGameState(prev => ({
+            ...prev,
+            mobSpawnQueue: [...prev.mobSpawnQueue, { type, x, z, id: Date.now() + Math.random() }]
+        }));
+    };
+
+    // METHOD FOR MOB_MANAGER TO CONSUME QUEUE
+    const consumeMobQueue = () => {
+        const queue = gameState.mobSpawnQueue;
+        if (queue.length === 0) return [];
+        setGameState(prev => ({ ...prev, mobSpawnQueue: [] }));
+        return queue;
+    };
+
     return (
         <GameContext.Provider value={{
             gameState,
@@ -694,9 +768,11 @@ export const GameProvider = ({ children }) => {
             setGameState,
             checkPersistence,
             addNotification,
+            showFloatingMessage,
             markCacheLooted,
             updateScanningState,
             triggerScan,
+            triggerCrit,
             updateScannedTargets,
             updateBossStatus,
             setBossSubtitle,
@@ -731,6 +807,10 @@ export const GameProvider = ({ children }) => {
             // LOOT SYSTEM
             processLootDrop,
             useQuickSlot,
+            startDecryption, // NEW
+            completeDecryption, // NEW
+            triggerMobSpawn, // NEW
+            consumeMobQueue, // NEW
 
             // SYSTEM CONTROL
             triggerExitRun: () => setGameState(prev => ({ ...prev, manualExitSignal: true })),

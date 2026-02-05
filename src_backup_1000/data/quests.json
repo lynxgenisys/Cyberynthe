@@ -1,0 +1,369 @@
+[
+    {
+        "id": "PING_STORM",
+        "tier": 1,
+        "type": "NAVIGATION",
+        "title": "PING_STORM",
+        "description": "Visit 5 marked nodes in a specific, timed sequence.",
+        "reward": {
+            "type": "STAT",
+            "key": "clockSpeed",
+            "value": 1.5,
+            "duration": -1
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "SYSTEM_LAG",
+            "duration": 3
+        }
+    },
+    {
+        "id": "VOID_STEP",
+        "tier": 1,
+        "type": "NAVIGATION",
+        "title": "VOID_STEP",
+        "description": "Navigate a 10x10 area with invisible walls.",
+        "reward": {
+            "type": "ITEM",
+            "itemId": "NEURAL_LINK"
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "PACKET_LOSS",
+            "duration": 2
+        }
+    },
+    {
+        "id": "GRAVITY_LEAK",
+        "tier": 2,
+        "type": "NAVIGATION",
+        "title": "GRAVITY_LEAK",
+        "description": "Cross moving data-platforms over a void.",
+        "reward": {
+            "type": "CURRENCY",
+            "amount": 100
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "CORRUPTED_CACHE",
+            "duration": 1
+        }
+    },
+    {
+        "id": "GHOST_CHASE",
+        "tier": 1,
+        "type": "NAVIGATION",
+        "title": "GHOST_CHASE",
+        "description": "Catch a high-speed wireframe packet 3 times.",
+        "reward": {
+            "type": "STAT",
+            "key": "mRamMax",
+            "value": 20,
+            "duration": -1
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "M-RAM_LEAK",
+            "duration": 5
+        }
+    },
+    {
+        "id": "SUDO_KEY_HUNT",
+        "tier": 1,
+        "type": "NAVIGATION",
+        "title": "SUDO_KEY_HUNT",
+        "description": "Extract 3 key fragments from specific Sentries.",
+        "reward": {
+            "type": "ITEM",
+            "itemId": "DATA_SPIKE"
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "TRACE_DETECTED",
+            "duration": 99
+        }
+    },
+    {
+        "id": "MIRROR_NAV",
+        "tier": 2,
+        "type": "NAVIGATION",
+        "title": "MIRROR_NAV",
+        "description": "Controls are inverted for 60 seconds. Reach a specific node.",
+        "reward": {
+            "type": "STAT",
+            "key": "integrity",
+            "value": 50,
+            "duration": -1
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "SYSTEM_LAG",
+            "duration": 5
+        }
+    },
+    {
+        "id": "ZERO_WASTE",
+        "tier": 1,
+        "type": "COMBAT",
+        "title": "ZERO_WASTE",
+        "description": "Complete floor using < 5 active casts.",
+        "reward": {
+            "type": "ITEM",
+            "itemId": "BUFFER_REFRESH"
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "M-RAM_LEAK",
+            "duration": 5
+        }
+    },
+    {
+        "id": "PACIFIST_PROTOCOL",
+        "tier": 1,
+        "type": "COMBAT",
+        "title": "PACIFIST_PROTOCOL",
+        "description": "Reach exit with 0 kills.",
+        "reward": {
+            "type": "STAT",
+            "key": "mRamMax",
+            "value": 10,
+            "duration": -1
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "TRACE_DETECTED",
+            "duration": 1
+        }
+    },
+    {
+        "id": "OVERCLOCK_GAUNTLET",
+        "tier": 2,
+        "type": "COMBAT",
+        "title": "OVERCLOCK_GAUNTLET",
+        "description": "Kill 10 mobs while your HP slowly drains.",
+        "reward": {
+            "type": "ITEM",
+            "itemId": "LOGIC_ACCELERATOR"
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "CORRUPTED_CACHE",
+            "duration": 3
+        }
+    },
+    {
+        "id": "PRIORITY_TARGET",
+        "tier": 1,
+        "type": "COMBAT",
+        "title": "PRIORITY_TARGET",
+        "description": "Eliminate a Golden Sentry before it alerts the sector.",
+        "reward": {
+            "type": "CURRENCY",
+            "amount": 75
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "TRACE_DETECTED",
+            "duration": 5
+        }
+    },
+    {
+        "id": "MIRROR_MATCH",
+        "tier": 2,
+        "type": "COMBAT",
+        "title": "MIRROR_MATCH",
+        "description": "Defeat a ZOMBIE_PROCESS with your exact stats.",
+        "reward": {
+            "type": "ITEM",
+            "itemId": "SHRED_V1"
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "PACKET_LOSS",
+            "duration": 5
+        }
+    },
+    {
+        "id": "BIT_DRAIN",
+        "tier": 1,
+        "type": "RESOURCE",
+        "title": "BIT_DRAIN",
+        "description": "Start floor with 0 M-RAM; collect leaks to power up.",
+        "reward": {
+            "type": "CURRENCY",
+            "amount": 50
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "CORRUPTED_CACHE",
+            "duration": 1
+        }
+    },
+    {
+        "id": "TRINKET_HEIST",
+        "tier": 1,
+        "type": "RESOURCE",
+        "title": "TRINKET_HEIST",
+        "description": "Salvage a protected Fragment guarded by Elite Trackers.",
+        "reward": {
+            "type": "ITEM",
+            "itemId": "FLOPPY_DISK"
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "SYSTEM_LAG",
+            "duration": 3
+        }
+    },
+    {
+        "id": "RESOURCE_RE_ROUTE",
+        "tier": 1,
+        "type": "RESOURCE",
+        "title": "RESOURCE_RE-ROUTE",
+        "description": "Donate 25% eBits to a terminal (Moral Choice).",
+        "reward": {
+            "type": "STAT",
+            "key": "mRamRegen",
+            "value": 0.5,
+            "duration": 5
+        },
+        "penalty": {
+            "type": "CURRENCY",
+            "amount": -25
+        }
+    },
+    {
+        "id": "HIDDEN_PROXY",
+        "tier": 2,
+        "type": "RESOURCE",
+        "title": "SILENT_AUCTION",
+        "description": "Find the hidden Proxy who only stays for 120s.",
+        "reward": {
+            "type": "ITEM",
+            "itemId": "STEALTH_V2"
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "PACKET_LOSS",
+            "duration": 2
+        }
+    },
+    {
+        "id": "BLACKOUT",
+        "tier": 1,
+        "type": "GLITCH",
+        "title": "BLACKOUT",
+        "description": "Navigate with 95% reduced lighting.",
+        "reward": {
+            "type": "STAT",
+            "key": "scanSpeed",
+            "value": 2,
+            "duration": -1
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "TRACE_DETECTED",
+            "duration": 2
+        }
+    },
+    {
+        "id": "INPUT_LAG",
+        "tier": 1,
+        "type": "GLITCH",
+        "title": "INPUT_LAG",
+        "description": "Movement controls swap every 10 seconds.",
+        "reward": {
+            "type": "CURRENCY",
+            "amount": 150
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "SYSTEM_LAG",
+            "duration": 10
+        }
+    },
+    {
+        "id": "RECURSIVE_WALLS",
+        "tier": 2,
+        "type": "GLITCH",
+        "title": "RECURSIVE_WALLS",
+        "description": "Kills trigger wall shifts; the maze rearranges.",
+        "reward": {
+            "type": "ITEM",
+            "itemId": "CRYO_HEATSINK"
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "M-RAM_LEAK",
+            "duration": 5
+        }
+    },
+    {
+        "id": "DATA_VOLCANO",
+        "tier": 2,
+        "type": "GLITCH",
+        "title": "DATA_VOLCANO",
+        "description": "Cap a Magenta leak before it corrupts the sector.",
+        "reward": {
+            "type": "STAT",
+            "key": "integrity",
+            "value": 100,
+            "duration": -1
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "CORRUPTED_CACHE",
+            "duration": 5
+        }
+    },
+    {
+        "id": "ORPHAN_PROCESS",
+        "tier": 1,
+        "type": "MORAL",
+        "title": "ORPHAN_PROCESS",
+        "description": "Escort a non-hostile 'flickering' NPC to the exit.",
+        "reward": {
+            "type": "KARMA",
+            "lean": "CYAN"
+        },
+        "penalty": {
+            "type": "KARMA",
+            "lean": "MAGENTA"
+        }
+    },
+    {
+        "id": "LOGIC_LEAK",
+        "tier": 1,
+        "type": "MORAL",
+        "title": "LOGIC_LEAK",
+        "description": "Overwrite a mob's memory (CYAN) or delete it (MAGENTA).",
+        "reward": {
+            "type": "KARMA",
+            "lean": "CHOICE"
+        },
+        "penalty": {
+            "type": "DEBUFF",
+            "key": "TRACE_DETECTED",
+            "duration": 2
+        }
+    },
+    {
+        "id": "SYSTEM_SACRIFICE",
+        "tier": 2,
+        "type": "MORAL",
+        "title": "SYSTEM_SACRIFICE",
+        "description": "Trade 10 Max HP for a permanent +1 to Clock Speed.",
+        "reward": {
+            "type": "STAT",
+            "key": "clockSpeed",
+            "value": 1,
+            "duration": -1
+        },
+        "penalty": {
+            "type": "STAT",
+            "key": "integrity",
+            "value": -10,
+            "duration": -1
+        }
+    }
+]

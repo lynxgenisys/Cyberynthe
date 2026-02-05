@@ -28,7 +28,7 @@ const PointerUnlocker = ({ active }) => {
 
 function CoreInterface() {
   const { state: playerState, lockResource, healKernel, upgradeStat, applyBonus } = usePlayer();
-  const { gameState, advanceFloor, setGameState, loadSession, useQuickSlot } = useGame(); // Added setGameState/loadSession/useQuickSlot
+  const { gameState, advanceFloor, setGameState, loadSession, useQuickSlot, triggerScan } = useGame(); // Added triggerScan
   const { state: invState, addItem } = useInventory();
 
   // --- GAME STATE ---
@@ -83,8 +83,8 @@ function CoreInterface() {
   // --- GAME EFFECTS ---
   // Sync Pause State Effect & Track Pause Duration
   useEffect(() => {
-    // CENTRALIZED PAUSE TRIGGERS: Deck, Directives, or Lore Logs
-    const shouldPause = isDeckOpen || !!activeOffer || !!gameState.activeLoreLog;
+    // CENTRALIZED PAUSE TRIGGERS: Deck, Directives, Lore Logs, or Decryption
+    const shouldPause = isDeckOpen || !!activeOffer || !!gameState.activeLoreLog || gameState.isDecrypting;
 
     setGameState(prev => {
       // EDGE CASE: If already paused state matches, do nothing to prevent timer glitches
@@ -100,20 +100,24 @@ function CoreInterface() {
       }
       // PAUSE ENDING (RESUME)
       else {
-        const pauseDuration = prev.pauseStartTime ? (Date.now() - prev.pauseStartTime) : 0;
+        const durationOfPause = prev.pauseStartTime ? (Date.now() - prev.pauseStartTime) : 0;
         return {
           ...prev,
           isPaused: false,
           pauseStartTime: null,
-          totalPausedTime: (prev.totalPausedTime || 0) + pauseDuration
+          totalPausedTime: (prev.totalPausedTime || 0) + durationOfPause
         };
       }
     });
 
-  }, [isDeckOpen, activeOffer, gameState.activeLoreLog]);
+  }, [isDeckOpen, activeOffer, gameState.activeLoreLog, gameState.isDecrypting]);
 
   // HANDLERS
-  const handleScan = () => lockResource(15);
+  const handleScan = () => {
+    if (lockResource(15)) {
+      triggerScan();
+    }
+  };
   const handleNav = () => advanceFloor();
   const acceptOffer = () => {
     if (activeOffer.id === 'PHYSICAL_MEMORY') {
@@ -163,7 +167,7 @@ function CoreInterface() {
       const k = e.key.toLowerCase();
       // UI TOGGLES
       if (k === 'i') setIsDeckOpen(prev => !prev);
-      if (k === 'm') setShowDebug(prev => !prev);
+      if (k === 'm' && e.shiftKey) setShowDebug(prev => !prev);
 
       // ACTIONS
       if (k === 'e') handleScan();
@@ -267,7 +271,7 @@ function CoreInterface() {
         )}
         {gameState.visualFilter === 'TEXTURE_BLEED' && (
           /* Floor 7: Flickering Noise Overlay */
-          <div className="absolute inset-0 bg-white/5 mix-blend-difference pointer-events-none animate-[pulse_0.1s_infinite] z-40"></div>
+          <div className="absolute inset-0 bg-white/5 mix-blend-difference pointer-events-none animate-pulse z-40"></div>
         )}
 
       </div>
