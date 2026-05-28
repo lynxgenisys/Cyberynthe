@@ -57,6 +57,7 @@ function CoreInterface() {
   const confirmNewGame = () => {
     localStorage.removeItem('CyberSynthe_Save'); // Clear old save
     setIsInMenu(false);
+    setIsDeckOpen(false);
 
     if (initSystem) initSystem();
     if (initInventory) initInventory();
@@ -85,6 +86,7 @@ function CoreInterface() {
     if (saved) {
       loadSession(JSON.parse(saved));
       setIsInMenu(false);
+      setIsDeckOpen(false);
     }
   };
 

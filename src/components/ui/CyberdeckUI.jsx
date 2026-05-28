@@ -95,7 +95,7 @@ export default function CyberdeckUI({ onClose }) {
                     <div className="flex gap-4">
                         <button
                             onClick={() => {
-                                if (window.confirm("TERMINATE_SESSION? Progress on current floor will be archived.")) {
+                                if (window.confirm("TERMINATE_SESSION?\n(This will reset current floor progress.)")) {
                                     triggerExitRun(); // Trigger manual exit signal
                                 }
                             }}
