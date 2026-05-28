@@ -27,15 +27,16 @@ const PointerUnlocker = ({ active }) => {
 };
 
 function CoreInterface() {
-  const { state: playerState, lockResource, healKernel, upgradeStat, applyBonus } = usePlayer();
-  const { gameState, advanceFloor, setGameState, loadSession, useQuickSlot, triggerScan } = useGame(); // Added triggerScan
-  const { state: invState, addItem } = useInventory();
+  const { state: playerState, lockResource, healKernel, upgradeStat, applyBonus, initSystem } = usePlayer();
+  const { gameState, advanceFloor, setGameState, loadSession, useQuickSlot, triggerScan } = useGame();
+  const { state: invState, addItem, initInventory } = useInventory();
 
   // --- GAME STATE ---
   const [isDeckOpen, setIsDeckOpen] = useState(false);
   const [activeOffer, setActiveOffer] = useState(null);
   const [currentDirective, setCurrentDirective] = useState(null);
   const [showDebug, setShowDebug] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   // --- MENU STATE ---
   const [isInMenu, setIsInMenu] = useState(true);
@@ -57,6 +58,9 @@ function CoreInterface() {
     localStorage.removeItem('CyberSynthe_Save'); // Clear old save
     setIsInMenu(false);
 
+    if (initSystem) initSystem();
+    if (initInventory) initInventory();
+
     // Set Player Name
     setGameState(prev => ({
       ...prev,
@@ -68,7 +72,11 @@ function CoreInterface() {
       pauseStartTime: null, // Track specific pause instance
       totalDamageTaken: 0, // Reset Stats
       undetectedFloorCount: 0,
-      lootedCaches: []
+      lootedCaches: [],
+      eBits: 0,
+      xp: 0,
+      collectedFragments: [],
+      inventorySlots: [null, null]
     }));
   };
 
@@ -168,6 +176,7 @@ function CoreInterface() {
       // UI TOGGLES
       if (k === 'i') setIsDeckOpen(prev => !prev);
       if (k === 'm' && e.shiftKey) setShowDebug(prev => !prev);
+      if (k === 'h') setShowHelp(prev => !prev);
 
       // ACTIONS
       if (k === 'e') handleScan();
@@ -228,13 +237,20 @@ function CoreInterface() {
   }, [gameState.floorLevel, isInMenu]);
 
   const handleSplashStart = (mode) => {
+    if (initSystem) initSystem();
+    if (initInventory) initInventory();
+    
     setGameState(prev => ({
       ...prev,
       gameMode: mode,
       isInMenu: false,
       runStartTime: Date.now(),
       floorLevel: 1,
-      seed: btoa(Date.now().toString()).substring(0, 16) // Fresh Seed
+      seed: btoa(Date.now().toString()).substring(0, 16), // Fresh Seed
+      eBits: 0,
+      xp: 0,
+      collectedFragments: [],
+      inventorySlots: [null, null]
     }));
   };
 
@@ -382,6 +398,30 @@ function CoreInterface() {
       {/* LAYERS */}
       {showDebug && <DebugMazeView />}
       {isDeckOpen && <CyberdeckUI onClose={() => setIsDeckOpen(false)} />}
+      
+      {/* KEYMAPPINGS HELP OVERLAY */}
+      {(showHelp || gameState.isTransitioning) && (
+        <div className={`absolute z-[60] bg-black/50 backdrop-blur border border-cyan p-4 shadow-[0_0_15px_rgba(0,255,255,0.2)] text-cyan font-mono text-xs
+          ${gameState.isTransitioning ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' : 'right-4 top-1/2 -translate-y-1/2'}`}>
+          <h3 className="text-center font-bold mb-4 text-sm tracking-widest">[ KEYMAPPINGS ]</h3>
+          <ul className="space-y-2">
+            <li><span className="font-bold text-white">W/A/S/D / Arrows</span>: Move</li>
+            <li><span className="font-bold text-white">Space</span>: Jump</li>
+            <li><span className="font-bold text-white">Shift</span>: Run (Hold / Toggle)</li>
+            <li><span className="font-bold text-white">R</span>: Auto-Run Toggle</li>
+            <li><span className="font-bold text-white">Left Click</span>: Fire Ping</li>
+            <li><span className="font-bold text-white">Right Click</span>: Fire Shred (5 M-RAM)</li>
+            <li><span className="font-bold text-white">E</span>: Scan Pulse (10 M-RAM)</li>
+            <li><span className="font-bold text-white">F</span>: Interact</li>
+            <li><span className="font-bold text-white">I</span>: Cyberdeck / Inventory</li>
+            <li><span className="font-bold text-white">1 / 2</span>: Quick Slot Items</li>
+            <li><span className="font-bold text-white">Q / Space</span>: Minigames / Close Logs</li>
+            <li><span className="font-bold text-white">H</span>: Toggle this Help Window</li>
+            <li><span className="font-bold text-white">F11</span>: Toggle Fullscreen</li>
+            <li><span className="font-bold text-white">Esc</span>: Free Mouse / Pause</li>
+          </ul>
+        </div>
+      )}
 
     </div >
   );

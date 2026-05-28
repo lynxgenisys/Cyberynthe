@@ -126,16 +126,17 @@ const SessionTimer = memo(({ startTime, totalPausedTime, isPaused, pauseStartTim
 
         const updateTimer = () => {
             const now = Date.now();
-            // Net Time = Current - Start - TotalPaused - (CurrentRunningPause)
             const currentPauseDuration = (isPaused && pauseStartTime) ? (now - pauseStartTime) : 0;
-            const elapsed = now - startTime - (totalPausedTime || 0) - currentPauseDuration;
+            const elapsed = Math.max(0, now - startTime - (totalPausedTime || 0) - currentPauseDuration);
 
-            // Format HH:MM:SS
             const h = Math.floor(elapsed / 3600000).toString().padStart(2, '0');
             const m = Math.floor((elapsed % 3600000) / 60000).toString().padStart(2, '0');
             const s = Math.floor((elapsed % 60000) / 1000).toString().padStart(2, '0');
-            // Milliseconds for "Doomsday" flicker
-            const ms = Math.floor((elapsed % 1000) / 10).toString().padStart(2, '0');
+            
+            // Fix: ensure modulo correctly pads to 2 digits by multiplying/dividing cleanly
+            // elapsed % 1000 is 0-999. Divide by 10 gives 0-99.
+            const msRaw = Math.floor((elapsed % 1000) / 10);
+            const ms = msRaw.toString().padStart(2, '0');
 
             setTimeStr(`${h}:${m}:${s}:${ms}`);
         };
@@ -337,7 +338,7 @@ export default function HUD() {
 
     useEffect(() => {
         const handleInteractKey = (e) => {
-            if (e.code === 'KeyR' && !gameState.activeLoreLog && triggerInteract) triggerInteract();
+            if (e.code === 'KeyF' && !gameState.activeLoreLog && triggerInteract) triggerInteract();
         };
         window.addEventListener('keydown', handleInteractKey);
         return () => window.removeEventListener('keydown', handleInteractKey);
@@ -407,8 +408,8 @@ export default function HUD() {
             {gameState.interactionPrompt && !gameState.activeLoreLog && (
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50">
                     <div className="flex flex-col items-center animate-pulse">
-                        <div className="w-12 h-12 border-2 border-cyan rounded-full flex items-center justify-center mb-2 bg-black/50 backdrop-blur"><span className="text-xl font-bold text-cyan font-mono">R</span></div>
-                        <div className="text-sm font-bold text-cyan font-mono tracking-widest bg-black/80 px-3 py-1 border border-cyan/50">{gameState.interactionPrompt.replace("[R] ", "")}</div>
+                        <div className="w-12 h-12 border-2 border-cyan rounded-full flex items-center justify-center mb-2 bg-black/50 backdrop-blur"><span className="text-xl font-bold text-cyan font-mono">F</span></div>
+                        <div className="text-sm font-bold text-cyan font-mono tracking-widest bg-black/80 px-3 py-1 border border-cyan/50">{gameState.interactionPrompt.replace(/\[[A-Z]\]\s*/, "")}</div>
                     </div>
                 </div>
             )}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getTopScores } from '../../utils/supabase';
+import ProfileCard from './ProfileCard';
 import './LeaderboardPanel.css';
 
 /**
@@ -12,6 +13,14 @@ export default function LeaderboardPanel() {
     const [leaderboard, setLeaderboard] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedUserId, setSelectedUserId] = useState(null);
+    const [selectedUsername, setSelectedUsername] = useState(null);
+
+    const handleUserClick = (userId, username) => {
+        if (!userId) return; // Ghost users might not have IDs
+        setSelectedUserId(userId);
+        setSelectedUsername(username);
+    };
 
     // FETCH FROM SUPABASE
     useEffect(() => {
@@ -33,6 +42,7 @@ export default function LeaderboardPanel() {
                 const mapped = result.data.map((entry, index) => ({
                     rank: index + 1,
                     username: entry.player_name,
+                    userId: entry.user_id,
                     score: entry.score,
                     floor: entry.floor_reached,
                     time: entry.run_time,
@@ -69,7 +79,12 @@ export default function LeaderboardPanel() {
                             {entry.rank === 1 ? '👑' : entry.rank === 2 ? '⬡' : '◇'}
                         </div>
                         <div className="top3-rank">#{entry.rank}</div>
-                        <div className="top3-username">{entry.username}</div>
+                        <div 
+                            className="top3-username cursor-pointer hover:text-cyan hover:underline transition-colors"
+                            onClick={() => handleUserClick(entry.userId, entry.username)}
+                        >
+                            {entry.username}
+                        </div>
                         <div className="top3-badge">{entry.badge}</div>
                         <div className="top3-score">SCORE: {entry.score}</div>
                     </div>
@@ -87,7 +102,12 @@ export default function LeaderboardPanel() {
                 {top10.map((entry) => (
                     <div key={entry.rank} className="top10-row">
                         <div className="top10-rank">#{entry.rank}</div>
-                        <div className="top10-username">{entry.username}</div>
+                        <div 
+                            className="top10-username cursor-pointer hover:text-cyan hover:underline transition-colors"
+                            onClick={() => handleUserClick(entry.userId, entry.username)}
+                        >
+                            {entry.username}
+                        </div>
                         <div className="top10-badge">{entry.badge}</div>
                         <div className="top10-score">{entry.score}</div>
                     </div>
@@ -106,13 +126,34 @@ export default function LeaderboardPanel() {
                 {rest.map((entry) => (
                     <div key={entry.rank} className="rest-row">
                         <span className="rest-rank">#{entry.rank}</span>
-                        <span className="rest-username">{entry.username}</span>
+                        <span 
+                            className="rest-username cursor-pointer hover:text-cyan hover:underline transition-colors"
+                            onClick={() => handleUserClick(entry.userId, entry.username)}
+                        >
+                            {entry.username}
+                        </span>
                         <span className="rest-score">{entry.score}</span>
                     </div>
                 ))}
             </div>
         );
     };
+
+    if (selectedUserId) {
+        return (
+            <div className="leaderboard-panel relative h-full flex flex-col items-center justify-center">
+                <button 
+                    className="absolute top-4 left-4 z-50 border border-cyan text-cyan px-4 py-1 hover:bg-cyan hover:text-black font-mono text-xs shadow-[0_0_10px_#00FFFF] transition-colors"
+                    onClick={() => setSelectedUserId(null)}
+                >
+                    [ BACK_TO_LEDGER ]
+                </button>
+                <div className="w-full flex-1 overflow-y-auto mt-12 flex justify-center">
+                    <ProfileCard targetUserId={selectedUserId} targetUsername={selectedUsername} />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="leaderboard-panel">

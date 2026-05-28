@@ -25,6 +25,7 @@ const initialState = {
 };
 
 const ACTIONS = {
+    INIT_INVENTORY: 'INIT_INVENTORY',
     ADD_ITEM: 'ADD_ITEM',
     REMOVE_ITEM: 'REMOVE_ITEM',
     EQUIP_ITEM: 'EQUIP_ITEM',
@@ -34,6 +35,9 @@ const ACTIONS = {
 
 function inventoryReducer(state, action) {
     switch (action.type) {
+        case ACTIONS.INIT_INVENTORY:
+            return initialState;
+
         case ACTIONS.ADD_ITEM: {
             const { itemId, itemObj } = action.payload; // Support direct object
             const item = itemObj || ITEM_REGISTRY[itemId];
@@ -151,8 +155,10 @@ export const InventoryProvider = ({ children }) => {
         });
     };
 
+    const initInventory = () => dispatch({ type: ACTIONS.INIT_INVENTORY });
+
     return (
-        <InventoryContext.Provider value={{ state, addItem, equipItem, unequipItem }}>
+        <InventoryContext.Provider value={{ state, addItem, equipItem, unequipItem, initInventory }}>
             {children}
         </InventoryContext.Provider>
     );

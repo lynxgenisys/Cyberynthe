@@ -81,34 +81,37 @@ const PlayerController = () => {
         }
     }, [gameState.isDecrypting, gameState.activeLoreLog, gameState.isPaused, gameState.isInMenu]);
 
-    // GHOST MODE INPUT HANDLER (Isolated to prevent resets)
+    // GHOST MODE / AUTO-RUN INPUT HANDLER
     React.useEffect(() => {
-        if (gameState.gameMode !== 'ghost') return;
-
-        // SWAPPED PROTOCOL: Left Click (0) = Run, Right Click (2) = Scan (Handled in main listener)
         const handleMouseDownGlobal = (e) => {
+            if (gameState.gameMode !== 'ghost') return;
             if (e.button === 0) window.ghostLeftClick = true;
         };
         const handleMouseUpGlobal = (e) => {
+            if (gameState.gameMode !== 'ghost') return;
             if (e.button === 0) window.ghostLeftClick = false;
         };
 
-        const handleKeyDownGhost = (e) => {
-            if (e.key === 'Shift' && !e.repeat) {
+        const handleKeyDownGlobal = (e) => {
+            if (gameState.gameMode === 'ghost' && e.key === 'Shift' && !e.repeat) {
                 window.ghostRunToggle = !window.ghostRunToggle;
+            }
+            if (e.key.toLowerCase() === 'r' && !e.repeat) {
+                window.autoRunToggle = !window.autoRunToggle;
             }
         };
 
         window.addEventListener('mousedown', handleMouseDownGlobal);
         window.addEventListener('mouseup', handleMouseUpGlobal);
-        window.addEventListener('keydown', handleKeyDownGhost);
+        window.addEventListener('keydown', handleKeyDownGlobal);
 
         return () => {
             window.ghostLeftClick = false;
             window.ghostRunToggle = false;
+            window.autoRunToggle = false;
             window.removeEventListener('mousedown', handleMouseDownGlobal);
             window.removeEventListener('mouseup', handleMouseUpGlobal);
-            window.removeEventListener('keydown', handleKeyDownGhost);
+            window.removeEventListener('keydown', handleKeyDownGlobal);
         };
     }, [gameState.gameMode]);
 
@@ -288,13 +291,15 @@ const PlayerController = () => {
 
             // SPEED CALCULATION
             let currentSpeed = SPEED;
+            const isRunToggled = window.autoRunToggle || false;
+            
             if (gameState.gameMode === 'ghost') {
                 // GHOST MODE: Check Ref Flags
-                const isRunToggled = window.ghostRunToggle || false;
+                const isGhostRunToggled = window.ghostRunToggle || false;
                 const isLeftClick = window.ghostLeftClick || false;
-                if (isRunToggled || isLeftClick) currentSpeed = SPEED * 1.6;
+                if (isGhostRunToggled || isLeftClick || isRunToggled) currentSpeed = SPEED * 1.6;
             } else {
-                if (run) {
+                if (run || isRunToggled) {
                     // SPRINT COST LOGIC (DYNAMIC TRICKLE)
                     // Formula: ((ScrubRate + 1) - ClockSpeed%)
                     // Ensures cost is always > Regen (unless Clock > 100%), causing net drain.

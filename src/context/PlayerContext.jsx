@@ -221,11 +221,12 @@ export const PlayerProvider = ({ children }) => {
 
     const upgradeStat = (stat) => dispatch({ type: ACTIONS.UPGRADE_STAT, payload: { stat } });
     const applyBonus = (stat, amount = 1) => dispatch({ type: ACTIONS.APPLY_BONUS, payload: { stat, amount } });
+    const initSystem = () => dispatch({ type: ACTIONS.INIT_SYSTEM });
 
     return (
         <PlayerContext.Provider value={{
             state: { ...state, stats: { ...state.stats, ...effectiveStats, currentIntegrity: state.stats.currentIntegrity, mRamCurrent: state.stats.mRamCurrent } },
-            lockResource, damageKernel, healKernel, restoreRam, upgradeStat, applyBonus
+            lockResource, damageKernel, healKernel, restoreRam, upgradeStat, applyBonus, initSystem
         }}>
             {children}
         </PlayerContext.Provider>

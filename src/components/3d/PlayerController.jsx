@@ -30,7 +30,7 @@ export default function PlayerController() {
                 case 'KeyE':
                     triggerScan();
                     break;
-                case 'KeyR':
+                case 'KeyF':
                     triggerInteract();
                     break;
                 case 'Digit9':

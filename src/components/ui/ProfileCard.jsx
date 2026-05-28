@@ -8,7 +8,7 @@ import './ProfileCard.css';
  * PROFILE CARD: The "Hacker ID" - Player stats and badges
  * Shows lifetime achievements, resonance, and earned titles
  */
-export default function ProfileCard() {
+export default function ProfileCard({ targetUserId = null, targetUsername = null, onClose = null }) {
     const { gameState } = useGame();
     const [profileData, setProfileData] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
@@ -17,7 +17,7 @@ export default function ProfileCard() {
     React.useEffect(() => {
         async function loadProfile() {
             setLoading(true);
-            const result = await getPlayerStats(); // Defaults to current users ID
+            const result = await getPlayerStats(targetUserId); // Uses target ID if provided, else defaults to current user
 
             if (result.success) {
                 setProfileData(result.data);
@@ -34,7 +34,7 @@ export default function ProfileCard() {
             setLoading(false);
         }
         loadProfile();
-    }, []); // Run once on mount
+    }, [targetUserId]); // Run on mount or when target changes
 
     // Fallback while loading
     if (loading) return <div className="profile-card loading"><div className="animate-pulse">DECRYPTING_DOSSIE...</div></div>;
@@ -42,7 +42,7 @@ export default function ProfileCard() {
     const stats = profileData || {};
 
     const profile = {
-        username: gameState.playerName || 'GHOST_ID',
+        username: targetUsername || gameState.playerName || 'GHOST_ID',
         // created_at: Use current date or fetch from auth metadata if needed (simplified for now)
         current_level: getLevelFromXP(gameState.xp || 0), // Current session Level
 
