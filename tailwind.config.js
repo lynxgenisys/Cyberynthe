@@ -20,10 +20,15 @@ export default {
                 shimmer: {
                     '0%': { transform: 'translateX(-100%)' },
                     '100%': { transform: 'translateX(100%)' },
+                },
+                marquee: {
+                    '0%': { transform: 'translateX(100%)' },
+                    '100%': { transform: 'translateX(-100%)' },
                 }
             },
             animation: {
                 shimmer: 'shimmer 3s infinite linear',
+                marquee: 'marquee linear infinite',
             },
         },
     },

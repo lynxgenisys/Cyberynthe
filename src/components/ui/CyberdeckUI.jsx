@@ -14,7 +14,7 @@ import ChromaticContainer from './ChromaticContainer';
 
 export default function CyberdeckUI({ onClose }) {
     const { state, equipItem, unequipItem } = useInventory();
-    const { gameState, getLevelFromXP, getNextLevelXP, cycleNavMode, triggerExitRun } = useGame();
+    const { gameState, getLevelFromXP, getNextLevelXP, cycleNavMode, triggerExitRun, setMusicVolume, setIsMusicShuffle } = useGame();
     const { state: playerState, upgradeStat } = usePlayer();
 
     // UI Local State
@@ -92,6 +92,35 @@ export default function CyberdeckUI({ onClose }) {
                 {/* HEADER */}
                 <div className="flex justify-between items-center border-b border-cyan/30 pb-4 mb-6">
                     <h2 className="text-2xl text-cyan-glow font-bold tracking-widest">CYBERDECK_V1.0 // {gameState.playerName}</h2>
+                    
+                    {/* MUSIC CONTROLS */}
+                    <div className="flex items-center gap-4 bg-black/40 border border-cyan/30 p-2 rounded-sm mr-4">
+                        <div className="flex flex-col w-32 overflow-hidden">
+                            <div className="text-[9px] text-cyan font-bold tracking-widest">UPLINK_AUDIO</div>
+                            <div className="text-[10px] text-white font-mono whitespace-nowrap overflow-hidden">
+                                <span className="inline-block animate-[marquee_10s_linear_infinite]">
+                                    {gameState.currentTrackName || "MUSIC OFF"}
+                                </span>
+                            </div>
+                        </div>
+                        <input 
+                            type="range" 
+                            min="0" 
+                            max="1" 
+                            step="0.05" 
+                            value={gameState.musicVolume}
+                            onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
+                            className="w-20 accent-cyan cursor-pointer"
+                        />
+                        <button 
+                            onClick={() => setIsMusicShuffle(!gameState.isMusicShuffle)}
+                            className={`text-xs font-mono border px-2 py-1 transition-colors ${gameState.isMusicShuffle ? 'border-cyan text-cyan bg-cyan/10' : 'border-gray-600 text-gray-500'}`}
+                            title="Toggle Shuffle"
+                        >
+                            SHFL
+                        </button>
+                    </div>
+
                     <div className="flex gap-4">
                         <button
                             onClick={() => {

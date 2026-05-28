@@ -11,6 +11,7 @@ import TrinityHUD from './components/ui/TrinityHUD';
 import HUD from './components/ui/HUD';
 import Scene3D from './components/3d/Scene';
 import AudioManager from './components/systems/AudioManager';
+import MusicManager from './components/systems/MusicManager';
 import SplashScreen from './components/ui/SplashScreen';
 import RunTracker from './components/systems/RunTracker';
 
@@ -18,6 +19,7 @@ import RunTracker from './components/systems/RunTracker';
 const MemoScene = React.memo(() => <Scene3D />);
 const MemoHUD = React.memo(() => <HUD />);
 const MemoAudio = React.memo(() => <AudioManager />);
+const MemoMusic = React.memo(() => <MusicManager />);
 
 const PointerUnlocker = ({ active }) => {
   useEffect(() => {
@@ -266,7 +268,8 @@ function CoreInterface() {
 
       {/* 3D SCENE BACKGROUND */}
       <MemoScene />
-      <MemoAudio /> {/* AUDIO SYSTEM */}
+      <MemoAudio />
+      <MemoMusic />
       <RunTracker /> {/* RUN TRACKING & SCORING */}
 
       {/* GLOBAL HUD LAYER (Pass-through clicks) */}

@@ -93,7 +93,12 @@ export const GameProvider = ({ children }) => {
         mobSpawnQueue: [], // Array of { type, x, z }
 
         // VISUAL NOTIFICATIONS
-        floatingMessage: null // { text, color, timestamp, duration }
+        floatingMessage: null, // { text, color, timestamp, duration }
+
+        // AUDIO
+        musicVolume: parseFloat(localStorage.getItem('CyberSynthe_MusicVolume') || '0.5'),
+        isMusicShuffle: localStorage.getItem('CyberSynthe_MusicShuffle') === 'true',
+        currentTrackName: null
     });
 
     // FOG OF WAR (Mutable Grid)
@@ -803,6 +808,17 @@ export const GameProvider = ({ children }) => {
                 addNotification("KERNEL_UPDATED: PORTAL_UNLOCKED");
                 setGameState(prev => ({ ...prev, isKernelUnlocked: true, isPortalLocked: false, activeLoreLog: null }));
             },
+
+            // AUDIO EXPORTS
+            setMusicVolume: (volume) => {
+                localStorage.setItem('CyberSynthe_MusicVolume', volume);
+                setGameState(prev => ({ ...prev, musicVolume: volume }));
+            },
+            setIsMusicShuffle: (isShuffle) => {
+                localStorage.setItem('CyberSynthe_MusicShuffle', isShuffle);
+                setGameState(prev => ({ ...prev, isMusicShuffle: isShuffle }));
+            },
+            setCurrentTrackName: (name) => setGameState(prev => ({ ...prev, currentTrackName: name })),
 
             // LOOT SYSTEM
             processLootDrop,
