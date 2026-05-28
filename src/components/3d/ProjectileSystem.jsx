@@ -138,7 +138,7 @@ export default function ProjectileSystem() {
             mesh.setColorAt(i, tempColor);
         }
 
-        mesh.instanceMatrix.needsUpdate = true;
+        if (mesh.instanceMatrix) mesh.instanceMatrix.needsUpdate = true;
         if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     });
 

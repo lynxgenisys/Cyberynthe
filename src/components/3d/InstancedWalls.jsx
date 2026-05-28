@@ -171,7 +171,9 @@ const WallChunk = React.memo(({ chunkKey, instances, wallMaterial, cellSize, wal
                 }
             });
 
-            meshRef.current.instanceMatrix.needsUpdate = true;
+            if (meshRef.current.instanceMatrix) {
+                meshRef.current.instanceMatrix.needsUpdate = true;
+            }
             if (dirtyColors && meshRef.current.instanceColor) {
                 meshRef.current.instanceColor.needsUpdate = true;
             }

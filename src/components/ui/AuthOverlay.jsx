@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase, signInWithOtp, verifyOtp, claimInvite, updateProfile, signInWithPassword } from '../../utils/supabase';
+import { supabase, signInWithOtp, verifyOtp, claimInvite, updateProfile, signInWithPassword, signUpWithEmail } from '../../utils/supabase';
 
 // --- RENDER HELPERS (Defined OUTSIDE component to prevent re-mount focus loss) ---
 const Input = ({ type, placeholder, value, onChange }) => (
@@ -62,15 +62,17 @@ export default function AuthOverlay({ onLoginSuccess }) {
 
             if (!profile) {
                 // Step 3: Profile Creation Needed
-                setMsg("UPLINK_VERIFIED. IDENTITY_REQUIRED.");
-                setStatus('IDLE');
-                setMode('REGISTER_PROFILE');
-            } else if (!profile.invite_claimed) {
-                // Step 4: Ticket Needed
-                setMsg("IDENTITY_FOUND. CLEARANCE_REQUIRED.");
-                setStatus('IDLE');
-                setMode('REGISTER_TICKET');
-                setHackerId(profile.hacker_id);
+                const metaHackerId = session.user.user_metadata?.hacker_id;
+                if (metaHackerId) {
+                    await updateProfile(session.user.id, metaHackerId);
+                    setMsg("WELCOME_BACK_OPERATIVE.");
+                    setStatus('SUCCESS');
+                    setTimeout(() => onLoginSuccess(session.user.email), 1000);
+                } else {
+                    setMsg("UPLINK_VERIFIED. IDENTITY_REQUIRED.");
+                    setStatus('IDLE');
+                    setMode('REGISTER_PROFILE');
+                }
             } else {
                 // Fully Complete
                 setMsg("WELCOME_BACK_OPERATIVE.");
@@ -114,42 +116,22 @@ export default function AuthOverlay({ onLoginSuccess }) {
     };
 
     // --- 2. REGISTRATION FLOW (New User) ---
-    // A. Request OTP
-    const handleRequestOtp = async (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
         setStatus('LOADING');
-        setMsg("INITIATING_UPLINK...");
+        setMsg("BUILDING_DIGITAL_SELF...");
 
-        const result = await signInWithOtp(email);
+        const result = await signUpWithEmail(email, password, hackerId);
         if (result.success) {
-            setMsg("UPLINK_ESTABLISHED. ENTER_GHOST_CODE.");
+            setMsg("REGISTRATION_SUCCESSFUL. CHECK_EMAIL_TO_CONFIRM.");
             setStatus('IDLE');
-            setMode('REGISTER_OTP');
         } else {
-            setMsg(`CONNECTION_REFUSED: ${result.error}`);
+            setMsg(`REGISTRATION_FAILED: ${result.error}`);
             setStatus('ERROR');
         }
     };
 
-    // B. Verify OTP
-    const handleVerifyOtp = async (e) => {
-        e.preventDefault();
-        setStatus('LOADING');
-        setMsg("VERIFYING_SIGNATURE...");
-
-        const result = await verifyOtp(email, otp);
-        if (result.success) {
-            setMsg("SIGNATURE_ACCEPTED.");
-            setStatus('IDLE');
-            // Check if profile exists? For now assume new reg flow always goes to Profile
-            setMode('REGISTER_PROFILE');
-        } else {
-            setMsg(`INVALID_SIGNATURE: ${result.error}`);
-            setStatus('ERROR');
-        }
-    };
-
-    // C. Create Profile (Password + Username)
+    // Kept for backward compatibility if old users still need to set profile
     const handleRegisterProfile = async (e) => {
         e.preventDefault();
         setStatus('LOADING');
@@ -169,29 +151,12 @@ export default function AuthOverlay({ onLoginSuccess }) {
             const profileRes = await updateProfile(user.id, hackerId);
             if (profileRes.success) {
                 setMsg("IDENTITY_CONSTRUCTED.");
-                setStatus('IDLE');
-                setMode('REGISTER_TICKET');
+                setStatus('SUCCESS');
+                setTimeout(() => onLoginSuccess(email || user.email), 1500);
             } else {
                 setMsg(`PROFILE_ERROR: ${profileRes.error}`);
                 setStatus('ERROR');
             }
-        }
-    };
-
-    // D. Claim Ticket
-    const handleClaimTicket = async (e) => {
-        e.preventDefault();
-        setStatus('LOADING');
-        setMsg("VALIDATING_TICKET...");
-
-        const result = await claimInvite(ticket);
-        if (result.success) {
-            setMsg("TICKET_PUNCHED. WELCOME_TO_CYBERYNTHE.");
-            setStatus('SUCCESS');
-            setTimeout(() => onLoginSuccess(email), 1500);
-        } else {
-            setMsg(`INVALID_TICKET: ${result.error}`);
-            setStatus('ERROR');
         }
     };
 
@@ -208,9 +173,9 @@ export default function AuthOverlay({ onLoginSuccess }) {
                             <span className="text-xl font-bold text-cyan group-hover:text-white mb-1">LOGIN</span>
                             <span className="text-[10px] text-gray-500">EXISTING_ENTITY // PASSWORD</span>
                         </button>
-                        <button onClick={() => setMode('REGISTER_EMAIL')} className="group border border-magenta p-4 hover:bg-magenta/10 transition-all flex flex-col items-center">
+                        <button onClick={() => setMode('REGISTER')} className="group border border-magenta p-4 hover:bg-magenta/10 transition-all flex flex-col items-center">
                             <span className="text-xl font-bold text-magenta group-hover:text-white mb-1">REGISTER</span>
-                            <span className="text-[10px] text-gray-500">NEW_ENTITY // TICKET_REQUIRED</span>
+                            <span className="text-[10px] text-gray-500">NEW_ENTITY // SIGN_UP</span>
                         </button>
                     </div>
                 )}
@@ -225,22 +190,15 @@ export default function AuthOverlay({ onLoginSuccess }) {
                     </form>
                 )}
 
-                {mode === 'REGISTER_EMAIL' && (
-                    <form onSubmit={handleRequestOtp} className="flex flex-col gap-4 animate-fadeIn">
+                {mode === 'REGISTER' && (
+                    <form onSubmit={handleRegister} className="flex flex-col gap-4 animate-fadeIn">
                         <h3 className="text-lg text-magenta font-bold text-center mb-2">INIT_REGISTRATION</h3>
-                        <p className="text-xs text-gray-400 text-center mb-2">STEP 1: ESTABLISH COMMS</p>
-                        <Input type="email" placeholder="ENTER_EMAIL_ADDRES" value={email} onChange={setEmail} />
-                        <Button label="SEND_GHOST_CODE" color="magenta" disabled={status === 'LOADING'} />
+                        <p className="text-xs text-gray-400 text-center mb-2">CREATE_PERSONA</p>
+                        <Input type="email" placeholder="ENTER_EMAIL_ADDRESS" value={email} onChange={setEmail} />
+                        <Input type="text" placeholder="CHOOSE_USERNAME (HACKER_ID)" value={hackerId} onChange={setHackerId} />
+                        <Input type="password" placeholder="SET_PASSWORD" value={password} onChange={setPassword} />
+                        <Button label="ESTABLISH_UPLINK" color="magenta" disabled={status === 'LOADING'} />
                         <BackBtn onClick={() => { setMsg(''); setStatus(''); setMode('SELECT'); }} />
-                    </form>
-                )}
-
-                {mode === 'REGISTER_OTP' && (
-                    <form onSubmit={handleVerifyOtp} className="flex flex-col gap-4 animate-fadeIn">
-                        <h3 className="text-lg text-magenta font-bold text-center mb-2">VERIFY_UPLINK</h3>
-                        <p className="text-xs text-gray-400 text-center mb-2">STEP 2: CONFIRM OWNERSHIP</p>
-                        <Input type="text" placeholder="ENTER_6_DIGIT_CODE" value={otp} onChange={setOtp} />
-                        <Button label="VERIFY_CODE" color="magenta" disabled={status === 'LOADING'} />
                     </form>
                 )}
 
@@ -251,15 +209,6 @@ export default function AuthOverlay({ onLoginSuccess }) {
                         <Input type="text" placeholder="CHOOSE_USERNAME (HACKER_ID)" value={hackerId} onChange={setHackerId} />
                         <Input type="password" placeholder="SET_PASSWORD" value={password} onChange={setPassword} />
                         <Button label="SAVE_PROFILE" disabled={status === 'LOADING'} />
-                    </form>
-                )}
-
-                {mode === 'REGISTER_TICKET' && (
-                    <form onSubmit={handleClaimTicket} className="flex flex-col gap-4 animate-fadeIn">
-                        <h3 className="text-lg text-yellow-500 font-bold text-center mb-2">FINAL_CLEARANCE</h3>
-                        <p className="text-xs text-gray-400 text-center mb-2">STEP 4: PRESENT TICKET</p>
-                        <Input type="text" placeholder="ENTER_INVITE_TICKET" value={ticket} onChange={setTicket} />
-                        <Button label="PUNCH_TICKET" color="yellow-500" disabled={status === 'LOADING'} />
                     </form>
                 )}
 

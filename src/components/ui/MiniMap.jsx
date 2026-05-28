@@ -17,7 +17,9 @@ export const MiniMap = React.memo(() => {
     // KEYBINDINGS
     useEffect(() => {
         const handleKeys = (e) => {
-            if (e.code === 'KeyM') toggleTacticalView();
+            if (e.code === 'KeyM') {
+                if (import.meta.env.DEV) toggleTacticalView();
+            }
         };
         window.addEventListener('keydown', handleKeys);
         return () => window.removeEventListener('keydown', handleKeys);

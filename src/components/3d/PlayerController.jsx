@@ -35,7 +35,7 @@ export default function PlayerController() {
                     break;
                 case 'Digit9':
                 case 'Numpad9':
-                    if (typeof enterBestiaryMode === 'function') {
+                    if (typeof enterBestiaryMode === 'function' && import.meta.env.DEV) {
                         enterBestiaryMode();
                     }
                     break;

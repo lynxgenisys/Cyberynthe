@@ -71,6 +71,16 @@ const PlayerController = () => {
     const mouseDownTime = useRef(0);
     const [isCharging, setIsCharging] = useState(false);
 
+    // MOUSE LOCK RE-ENGAGE (Fix for Minigames)
+    React.useEffect(() => {
+        if (!gameState.isDecrypting && !gameState.activeLoreLog && !gameState.isPaused && !gameState.isInMenu) {
+            // Slight delay to allow DOM to settle
+            setTimeout(() => {
+                document.body.requestPointerLock();
+            }, 100);
+        }
+    }, [gameState.isDecrypting, gameState.activeLoreLog, gameState.isPaused, gameState.isInMenu]);
+
     // GHOST MODE INPUT HANDLER (Isolated to prevent resets)
     React.useEffect(() => {
         if (gameState.gameMode !== 'ghost') return;
@@ -185,7 +195,9 @@ const PlayerController = () => {
                     triggerScan();
                 }
             } else if (e.code === 'Digit9' || e.code === 'Numpad9') {
-                if (enterBestiaryMode) enterBestiaryMode();
+                if (import.meta.env.DEV) {
+                    if (enterBestiaryMode) enterBestiaryMode();
+                }
             }
         };
 

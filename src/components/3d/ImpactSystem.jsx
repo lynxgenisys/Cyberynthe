@@ -59,7 +59,7 @@ export default function ImpactSystem() {
             meshRef.current.setColorAt(i, p.color);
         }
 
-        meshRef.current.instanceMatrix.needsUpdate = true;
+        if (meshRef.current.instanceMatrix) meshRef.current.instanceMatrix.needsUpdate = true;
         if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
     });
 

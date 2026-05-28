@@ -1324,10 +1324,12 @@ export default function MobManager({ maze, floorLevel }) {
                                                     r === sentryBeamRef ? sentryBeamC :
                                                         r === bossScanRef ? bossScanC : sentryC
                 );
-                if (r === sentryTopRef || r === sentryMidRef || r === sentryBotRef || r === sentryHeartRef) {
+                if ((r === sentryTopRef || r === sentryMidRef || r === sentryBotRef || r === sentryHeartRef) && r.current.instanceColor) {
                     r.current.instanceColor.needsUpdate = true; // Enable Color Updates
                 }
-                r.current.instanceMatrix.needsUpdate = true;
+                if (r.current.instanceMatrix) {
+                    r.current.instanceMatrix.needsUpdate = true;
+                }
             }
         });
 

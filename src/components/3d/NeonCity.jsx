@@ -168,11 +168,11 @@ const NeonCity = ({ level = 1 }) => {
 
     // 2. Apply Matrices to Instances
     useEffect(() => {
-        if (wallMeshRef.current) {
+        if (wallMeshRef.current && wallMeshRef.current.instanceMatrix) {
             wallMatrices.forEach((matrix, i) => wallMeshRef.current.setMatrixAt(i, matrix));
             wallMeshRef.current.instanceMatrix.needsUpdate = true;
         }
-        if (floorMeshRef.current) {
+        if (floorMeshRef.current && floorMeshRef.current.instanceMatrix) {
             floorMatrices.forEach((matrix, i) => floorMeshRef.current.setMatrixAt(i, matrix));
             floorMeshRef.current.instanceMatrix.needsUpdate = true;
         }

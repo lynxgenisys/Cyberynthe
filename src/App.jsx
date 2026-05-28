@@ -171,7 +171,9 @@ function CoreInterface() {
 
       // ACTIONS
       if (k === 'e') handleScan();
-      if (k === '0') handleNav(); // DEBUG: Advance Floor
+      if (k === '0') {
+        if (import.meta.env.DEV) handleNav(); // DEBUG: Advance Floor
+      }
 
       // QUICK-SLOT INVENTORY
       if (k === '1') useQuickSlot?.(0);

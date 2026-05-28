@@ -45,6 +45,37 @@ export async function signInWithOtp(email) {
     }
 }
 
+// 1.2 Sign Up with Email, Password, and Username
+export async function signUpWithEmail(email, password, username) {
+    if (!supabase) return { success: false, error: "Supabase not initialized" };
+    try {
+        // First check if username is taken
+        const { data: existingUser } = await supabase
+            .from('profiles')
+            .select('hacker_id')
+            .ilike('hacker_id', username)
+            .maybeSingle();
+
+        if (existingUser) {
+            return { success: false, error: "Username is already taken." };
+        }
+
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: {
+                    hacker_id: username
+                }
+            }
+        });
+        if (error) throw error;
+        return { success: true, data };
+    } catch (err) {
+        return { success: false, error: err.message };
+    }
+}
+
 // 1.5 Login with Password (accepts Email OR Username)
 export async function signInWithPassword(loginId, password) {
     if (!supabase) return { success: false, error: "Supabase not initialized" };

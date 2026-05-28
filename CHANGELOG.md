@@ -1,5 +1,18 @@
 # CHANGELOG - CYBERYNTHE
 
+
+## [0.11.2] - 2026-02-04
+
+### Changed - INPUT REFINEMENTS
+- **Mouse Lock Fix**: Game now automatically re-locks mouse cursor to "LOOK" mode when exiting minigames (Spectral Scroll, Lore Logs), removing the need for an extra click.
+- **Dev Tools Security**: Disabled debug tools in Production builds.
+
+## [0.11.1] - 2026-02-04
+
+### Fixed - CRITICAL HOTFIX
+- **3D Render Crash**: Fixed `TypeError: Cannot set properties of null (setting 'needsUpdate')` that was constantly crashing the live build.
+  - Added safety checks for all instanced mesh updates in `MobManager`, `InstancedWalls`, `ProjectileSystem`, `ImpactSystem`, and `NeonCity`.
+
 ## [0.11.0] - 2026-02-04
 
 ### Added - SENTRY OVERHAUL & MINIGAMES
