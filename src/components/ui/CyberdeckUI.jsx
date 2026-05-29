@@ -19,6 +19,7 @@ export default function CyberdeckUI({ onClose }) {
 
     // UI Local State
     const [selectedItem, setSelectedItem] = useState(null);
+    const [activeTab, setActiveTab] = useState('inventory'); // 'inventory' | 'settings'
 
     // FORCE UNLOCK POINTER ON OPEN
     React.useEffect(() => {
@@ -86,12 +87,30 @@ export default function CyberdeckUI({ onClose }) {
                     {hoveredItem.rarity && <div className="text-[9px] text-magenta mt-2 uppercase tracking-wider">[{hoveredItem.rarity}]</div>}
                 </div>
             )}
-            {/* WIDENED CONTAINER: max-w-[90vw] for ultra-wide feel */}
-            <ChromaticContainer className="w-full max-w-[90vw] h-[90vh] flex flex-col pointer-events-auto p-8">
+            <ChromaticContainer className="w-full max-w-6xl h-full flex flex-col p-6 bg-gray-900/80">
 
                 {/* HEADER */}
-                <div className="flex justify-between items-center border-b border-cyan/30 pb-4 mb-6">
-                    <h2 className="text-2xl text-cyan-glow font-bold tracking-widest">CYBERDECK_V1.0 // {gameState.playerName}</h2>
+                <div className="flex justify-between items-end border-b border-cyan/30 pb-4 mb-6">
+                    <div className="flex items-center gap-6">
+                        <div>
+                            <h2 className="text-3xl font-bold text-cyan glitch-text">CYBERDECK_OS v0.12</h2>
+                            <div className="text-sm text-gray-400">ID: {gameState.playerName} // STATUS: ACTIVE</div>
+                        </div>
+                        <div className="flex gap-2 ml-4">
+                            <button 
+                                onClick={() => setActiveTab('inventory')}
+                                className={`px-4 py-2 border transition-all ${activeTab === 'inventory' ? 'border-cyan text-cyan bg-cyan/10' : 'border-gray-700 text-gray-500 hover:text-cyan'}`}
+                            >
+                                [ INVENTORY ]
+                            </button>
+                            <button 
+                                onClick={() => setActiveTab('settings')}
+                                className={`px-4 py-2 border transition-all ${activeTab === 'settings' ? 'border-magenta text-magenta bg-magenta/10' : 'border-gray-700 text-gray-500 hover:text-magenta'}`}
+                            >
+                                [ SETTINGS ]
+                            </button>
+                        </div>
+                    </div>
                     
                     {/* MUSIC CONTROLS */}
                     <div className="flex items-center gap-4 bg-black/40 border border-cyan/30 p-2 rounded-sm mr-4">
@@ -137,6 +156,7 @@ export default function CyberdeckUI({ onClose }) {
                 </div>
 
                 {/* MAIN CONTENT AREA */}
+                {activeTab === 'inventory' ? (
                 <div className="flex flex-1 gap-8 overflow-hidden mb-6">
 
                     {/* LEFT: KERNEL ARCHITECTURE (Stats) */}
@@ -300,6 +320,99 @@ export default function CyberdeckUI({ onClose }) {
                     </div>
 
                 </div>
+                ) : (
+                <div className="flex flex-1 gap-8 overflow-hidden mb-6">
+                    <div className="w-1/2 flex flex-col gap-6 overflow-y-auto pr-4">
+                        <h3 className="text-xl text-magenta font-bold border-b border-magenta/30 pb-2">SYSTEM SETTINGS</h3>
+                        
+                        <div className="bg-black/50 border border-gray-700 p-4">
+                            <h4 className="text-cyan mb-2">AUDIO PROTOCOLS</h4>
+                            <div className="flex items-center justify-between mb-4">
+                                <span>Master Volume</span>
+                                <input 
+                                    type="range" min="0" max="1" step="0.05" 
+                                    value={gameState.musicVolume}
+                                    onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
+                                    className="w-1/2 accent-cyan cursor-pointer"
+                                />
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span>Track Shuffle</span>
+                                <button 
+                                    onClick={() => setIsMusicShuffle(!gameState.isMusicShuffle)}
+                                    className={`px-4 py-1 border ${gameState.isMusicShuffle ? 'border-cyan text-cyan bg-cyan/10' : 'border-gray-600 text-gray-500'}`}
+                                >
+                                    {gameState.isMusicShuffle ? 'ENABLED' : 'DISABLED'}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="bg-black/50 border border-gray-700 p-4">
+                            <h4 className="text-cyan mb-2">NAVIGATION (MINI-MAP)</h4>
+                            <div className="flex items-center justify-between mb-2">
+                                <span>Display Mode</span>
+                                <button
+                                    onClick={cycleNavMode}
+                                    className="border border-cyan text-cyan px-4 py-1 hover:bg-cyan hover:text-black transition-colors"
+                                >
+                                    [{gameState.navSettings.mode}]
+                                </button>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-2">
+                                NOTE: Red blips indicate hostile logic entities. Cyan lines indicate unrevealed structural geometry.
+                            </p>
+                        </div>
+                        
+                        <div className="bg-black/50 border border-gray-700 p-4">
+                            <h4 className="text-cyan mb-2">PLAYER STATISTICS</h4>
+                            <div className="text-sm text-gray-300 space-y-1">
+                                <p>HACKER ID: {gameState.playerName}</p>
+                                <p>CURRENT FLOOR: {gameState.floorLevel}</p>
+                                <p>TOTAL eBITS ACCUMULATED: {gameState.eBits}</p>
+                                <p>TOTAL DAMAGE TAKEN: {gameState.totalDamageTaken}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="w-1/2 flex flex-col gap-6 overflow-y-auto pl-4 border-l border-gray-800">
+                        <h3 className="text-xl text-yellow-500 font-bold border-b border-yellow-500/30 pb-2">KEYBINDINGS</h3>
+                        <div className="bg-black/50 border border-gray-700 p-4">
+                            <ul className="space-y-3 text-sm text-gray-300">
+                                <li className="flex justify-between border-b border-gray-800 pb-1">
+                                    <span className="text-white">W A S D</span> <span>Movement</span>
+                                </li>
+                                <li className="flex justify-between border-b border-gray-800 pb-1">
+                                    <span className="text-white">Space</span> <span>Jump</span>
+                                </li>
+                                <li className="flex justify-between border-b border-gray-800 pb-1">
+                                    <span className="text-white">Shift</span> <span>Sprint (Hold)</span>
+                                </li>
+                                <li className="flex justify-between border-b border-gray-800 pb-1">
+                                    <span className="text-white">R</span> <span>Toggle Auto-Run</span>
+                                </li>
+                                <li className="flex justify-between border-b border-gray-800 pb-1">
+                                    <span className="text-white">E</span> <span className="text-cyan">Scan Pulse (-10 M-RAM)</span>
+                                </li>
+                                <li className="flex justify-between border-b border-gray-800 pb-1">
+                                    <span className="text-white">F</span> <span>Interact / Dismiss Menu</span>
+                                </li>
+                                <li className="flex justify-between border-b border-gray-800 pb-1">
+                                    <span className="text-white">I</span> <span>Open Cyberdeck</span>
+                                </li>
+                                <li className="flex justify-between border-b border-gray-800 pb-1">
+                                    <span className="text-white">1, 2</span> <span>Use Quickslot Item</span>
+                                </li>
+                                <li className="flex justify-between border-b border-gray-800 pb-1">
+                                    <span className="text-white">L Click</span> <span>Fire Standard Ping</span>
+                                </li>
+                                <li className="flex justify-between">
+                                    <span className="text-white">R Click</span> <span className="text-magenta">Fire Shred (-5 M-RAM)</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                )}
 
                 {/* BOTTOM: COMBAT ANALYTICS PANEL */}
                 <div className="h-32 border-t border-gray-800 pt-3 flex gap-3">

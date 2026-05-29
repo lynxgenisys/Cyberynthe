@@ -264,3 +264,48 @@ export async function getPlayerStats(targetUserId = null) {
         return { success: false, error: err.message };
     }
 }
+
+/**
+ * Save Game to Cloud (Supabase profiles table)
+ */
+export async function saveGameToCloud(saveData) {
+    if (!supabase) return { success: false, error: "Supabase not initialized" };
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: "Not authenticated" };
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .update({ save_data: saveData })
+            .eq('id', user.id);
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (err) {
+        console.error("Cloud Save Failed:", err);
+        return { success: false, error: err.message };
+    }
+}
+
+/**
+ * Load Game from Cloud
+ */
+export async function loadGameFromCloud() {
+    if (!supabase) return { success: false, error: "Supabase not initialized" };
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: "Not authenticated" };
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('save_data')
+            .eq('id', user.id)
+            .single();
+
+        if (error) throw error;
+        return { success: true, data: data?.save_data };
+    } catch (err) {
+        console.error("Cloud Load Failed:", err);
+        return { success: false, error: err.message };
+    }
+}

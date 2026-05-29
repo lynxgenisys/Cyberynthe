@@ -40,13 +40,18 @@ const ACTIONS = {
     HEAL: 'HEAL',
     RESTORE_RAM: 'RESTORE_RAM',
     UPGRADE_STAT: 'UPGRADE_STAT',
-    APPLY_BONUS: 'APPLY_BONUS'
+    APPLY_BONUS: 'APPLY_BONUS',
+    RESTORE_STATE: 'RESTORE_STATE'
 };
 
 function playerReducer(state, action) {
     switch (action.type) {
         case ACTIONS.INIT_SYSTEM:
             return initialState;
+
+        case ACTIONS.RESTORE_STATE:
+            return action.payload || initialState;
+
 
         case ACTIONS.RESTORE_RAM: {
             const { amount } = action.payload;
@@ -222,11 +227,12 @@ export const PlayerProvider = ({ children }) => {
     const upgradeStat = (stat) => dispatch({ type: ACTIONS.UPGRADE_STAT, payload: { stat } });
     const applyBonus = (stat, amount = 1) => dispatch({ type: ACTIONS.APPLY_BONUS, payload: { stat, amount } });
     const initSystem = () => dispatch({ type: ACTIONS.INIT_SYSTEM });
+    const loadPlayerState = (savedState) => dispatch({ type: ACTIONS.RESTORE_STATE, payload: savedState });
 
     return (
         <PlayerContext.Provider value={{
             state: { ...state, stats: { ...state.stats, ...effectiveStats, currentIntegrity: state.stats.currentIntegrity, mRamCurrent: state.stats.mRamCurrent } },
-            lockResource, damageKernel, healKernel, restoreRam, upgradeStat, applyBonus, initSystem
+            lockResource, damageKernel, healKernel, restoreRam, upgradeStat, applyBonus, initSystem, loadPlayerState
         }}>
             {children}
         </PlayerContext.Provider>

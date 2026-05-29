@@ -14,6 +14,7 @@ import AudioManager from './components/systems/AudioManager';
 import MusicManager from './components/systems/MusicManager';
 import SplashScreen from './components/ui/SplashScreen';
 import RunTracker from './components/systems/RunTracker';
+import { saveGameToCloud, loadGameFromCloud } from './utils/supabase';
 
 // MEMOIZED COMPONENTS to prevent Context-Thrash Re-renders
 const MemoScene = React.memo(() => <Scene3D />);
@@ -29,9 +30,9 @@ const PointerUnlocker = ({ active }) => {
 };
 
 function CoreInterface() {
-  const { state: playerState, lockResource, healKernel, upgradeStat, applyBonus, initSystem } = usePlayer();
+  const { state: playerState, lockResource, healKernel, upgradeStat, applyBonus, initSystem, loadPlayerState } = usePlayer();
   const { gameState, advanceFloor, setGameState, loadSession, useQuickSlot, triggerScan } = useGame();
-  const { state: invState, addItem, initInventory } = useInventory();
+  const { state: invState, addItem, initInventory, loadInventoryState } = useInventory();
 
   // --- GAME STATE ---
   const [isDeckOpen, setIsDeckOpen] = useState(false);
@@ -48,8 +49,18 @@ function CoreInterface() {
 
   // --- MENU LOGIC ---
   useEffect(() => {
-    const saved = localStorage.getItem('CyberSynthe_Save');
-    if (saved) setHasSave(true);
+    const checkSaves = async () => {
+      let hasLocal = !!localStorage.getItem('CyberSynthe_Save');
+      let hasCloud = false;
+      const { data: cloudSave } = await loadGameFromCloud();
+      if (cloudSave) {
+        hasCloud = true;
+      }
+      if (hasLocal || hasCloud) {
+        setHasSave(true);
+      }
+    };
+    checkSaves();
   }, []);
 
   const handleNewGameClick = () => {
@@ -83,16 +94,49 @@ function CoreInterface() {
     }));
   };
 
-  const handleResume = () => {
-    const saved = localStorage.getItem('CyberSynthe_Save');
-    if (saved) {
-      loadSession(JSON.parse(saved));
-      setIsInMenu(false);
-      setIsDeckOpen(false);
+  const handleResume = async () => {
+    setIsInMenu(false);
+    setIsDeckOpen(false);
+
+    let localSave = null;
+    const localStr = localStorage.getItem('CyberSynthe_Save');
+    if (localStr) localSave = JSON.parse(localStr);
+
+    let cloudSave = null;
+    const { data: cloudData } = await loadGameFromCloud();
+    if (cloudData) cloudSave = cloudData;
+
+    // Pick newest
+    let saveToUse = localSave;
+    if (cloudSave && (!localSave || cloudSave.timestamp > localSave.timestamp)) {
+        saveToUse = cloudSave;
+        console.log("Loaded Cloud Save (Newer)");
+    } else if (localSave) {
+        console.log("Loaded Local Save (Newer/Equal)");
+    }
+
+    if (saveToUse) {
+      if (saveToUse.gameState) loadSession(saveToUse);
+      if (saveToUse.playerState && loadPlayerState) loadPlayerState(saveToUse.playerState);
+      if (saveToUse.invState && loadInventoryState) loadInventoryState(saveToUse.invState);
     }
   };
 
   // --- GAME EFFECTS ---
+  // Global Save Effect
+  useEffect(() => {
+      if (gameState.saveSignal > 0) {
+          const bundle = {
+              gameState: { ...gameState, saveSignal: 0 }, // Don't persist the signal
+              playerState,
+              invState,
+              timestamp: Date.now()
+          };
+          localStorage.setItem('CyberSynthe_Save', JSON.stringify(bundle));
+          saveGameToCloud(bundle); // Async fire-and-forget
+      }
+  }, [gameState.saveSignal]);
+
   // Sync Pause State Effect & Track Pause Duration
   useEffect(() => {
     // CENTRALIZED PAUSE TRIGGERS: Deck, Directives, Lore Logs, or Decryption

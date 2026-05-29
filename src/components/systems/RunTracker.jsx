@@ -139,26 +139,23 @@ export default function RunTracker() {
 
         const submission = {
             player_name: gameState.playerName || 'GHOST_USER',
-            score: Math.floor(calculatedScore), // Force Integer
-            floor_reached: gameState.floorLevel,
-            // CORRECTED TIME: Subtract total paused time AND current pause session if active
-            run_time: Math.floor((Date.now() - gameState.runStartTime
+            score: Math.round(calculatedScore), 
+            floor_reached: Math.round(gameState.floorLevel),
+            run_time: Math.round((Date.now() - gameState.runStartTime
                 - (gameState.totalPausedTime || 0)
                 - (gameState.isPaused && gameState.pauseStartTime ? (Date.now() - gameState.pauseStartTime) : 0)
             ) / 1000),
             game_mode: gameState.gameMode,
-
-            // NEW METRICS (Leaderboard 2.0)
-            damage_taken: gameState.totalDamageTaken || 0,
-            mram_used: gameState.mramUsedCount || 0,
-            undetected_floors: finalScores.undetectedStreak || 0,
-            resonance: finalScores.resonanceFinal || 0.5,
-            ghost_score: finalScores.ghostScore || 0,
-            stability_score: finalScores.stabilityScore || 0,
+            damage_taken: Math.round(gameState.totalDamageTaken || 0),
+            mram_used: Math.round(gameState.mramUsedCount || 0),
+            undetected_floors: Math.round(finalScores.undetectedStreak || 0),
+            resonance: Number((finalScores.resonanceFinal || 0.5).toFixed(2)), // Usually float in DB, but just in case
+            ghost_score: Math.round(finalScores.ghostScore || 0),
+            stability_score: Math.round(finalScores.stabilityScore || 0),
 
             // Legacy JSON (Keep for debug/safety)
             platform_data: {
-                velocity: finalScores.velocityScore,
+                velocity: Math.round(finalScores.velocityScore || 0),
                 reason: finalScores.reason
             }
         };

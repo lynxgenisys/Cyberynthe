@@ -228,12 +228,7 @@ export const GameProvider = ({ children }) => {
     };
 
     const saveSession = () => {
-        const data = {
-            gameState,
-            timestamp: Date.now()
-        };
-        localStorage.setItem('CyberSynthe_Save', JSON.stringify(data));
-        addNotification("GAME SAVED: L1_CACHE_UPDATED");
+        setGameState(prev => ({ ...prev, saveSignal: (prev.saveSignal || 0) + 1 }));
     };
 
     const loadSession = (data) => {

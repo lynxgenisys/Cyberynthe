@@ -501,8 +501,8 @@ export default function MobManager({ maze, floorLevel }) {
                 const rand = Math.random();
                 let type = 'BIT_MITE';
                 if (floorLevel >= 11 && rand < 0.2) type = 'NULL_WISP';
-                else if (rand < 0.05) type = 'HUNTER';
-                else if (rand > 0.8) type = 'STATELESS_SENTRY';
+                else if (floorLevel >= 13 && rand < 0.05) type = 'HUNTER';
+                else if (floorLevel >= 9 && rand > 0.8) type = 'STATELESS_SENTRY';
                 const mob = MobLogic.createMob(type, floorLevel || 1);
                 if (mob) {
                     const newMob = { ...mob, instanceId: Math.random(), x: pos.x * 2, z: pos.z * 2 };
@@ -1044,6 +1044,15 @@ export default function MobManager({ maze, floorLevel }) {
                     tempObject.scale.setScalar(1);
                     tempObject.updateMatrix();
                     bossCore.current.setMatrixAt(bossC, tempObject.matrix); // Only 1 boss usually
+                    
+                    // Update Colors based on state
+                    const isCharging = mob.bossState === 'CHARGING';
+                    const isVulnerable = mob.isVulnerable;
+                    const color = isVulnerable ? "#FFFF00" : (isCharging ? "#00FFFF" : (mob.phase === 2 ? "#EA00FF" : "#00AAAA"));
+                    if (bossCoreMatRef.current) {
+                        bossCoreMatRef.current.color.set(color);
+                        bossCoreMatRef.current.emissive.set(isCharging ? color : "#000044");
+                    }
                 }
                 const t = state.clock.elapsedTime;
                 if (bossRing1Ref.current) {
@@ -1453,6 +1462,9 @@ export default function MobManager({ maze, floorLevel }) {
                 <cylinderGeometry args={[0.07, 0.07, 1, 8, 1, true]} /> {/* 30% Smaller Dia (0.1 -> 0.07) */}
                 <meshBasicMaterial color="#00FFFF" transparent opacity={0.6} depthWrite={false} side={THREE.DoubleSide} />
             </instancedMesh>
+            
+            {/* Boss Beam */}
+            {mobs.map(m => m.id === 'IO_SENTINEL' && <BossBeam key={`bossbeam-${m.instanceId}`} mob={m} maze={maze} />)}
 
             {/* RESTORED: Dynamic PointLights for Firing Sentries (Flare Effect) */}
             {mobs.map(m => m.id === 'STATELESS_SENTRY' && m.attackState === 'FIRING' && (

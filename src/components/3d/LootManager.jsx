@@ -15,7 +15,7 @@ import { rollLoot } from '../../engine/LootTable';
 const LootManager = React.memo(({ maze, floorLevel }) => {
     const [caches, setCaches] = useState([]);
     const { addItem } = useInventory();
-    const { gameState, setGameState, addNotification, markCacheLooted, updateScannedTargets, fastStateRef, processLootDrop, startDecryption, triggerMobSpawn } = useGame();
+    const { gameState, setGameState, addNotification, markCacheLooted, updateScannedTargets, fastStateRef, processLootDrop, startDecryption, triggerMobSpawn, showFloatingMessage } = useGame();
     const { damageKernel } = usePlayer();
 
     useMemo(() => {

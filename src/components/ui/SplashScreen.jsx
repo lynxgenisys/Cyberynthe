@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
 import ProfileCard from './ProfileCard';
 import LeaderboardPanel from './LeaderboardPanel';
-import AuthOverlay from './AuthOverlay';
 import { supabase, getProfile, signOut } from '../../utils/supabase';
+import AboutPage from './AboutPage';
 import './SplashScreen.css';
 
 /**
@@ -12,10 +12,11 @@ import './SplashScreen.css';
  */
 export default function SplashScreen({ onStart, hasSave, onResume }) {
     const { setGameState } = useGame();
-    const [activeTab, setActiveTab] = useState('play'); // 'play' | 'profile' | 'ledger'
+    const [activeTab, setActiveTab] = useState('play'); // 'play' | 'profile' | 'ledger' | 'about'
     const [selectedMode, setSelectedMode] = useState('normal'); // 'normal' | 'hardcore' | 'ghost'
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [checkingAuth, setCheckingAuth] = useState(true);
+    const [welcomeDismissed, setWelcomeDismissed] = useState(false);
 
     // AUTH CHECK
     useEffect(() => {
@@ -67,7 +68,36 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
         onStart?.(selectedMode);
     };
 
+    // F KEY TO DISMISS WELCOME
+    useEffect(() => {
+        if (welcomeDismissed) return;
+        const handleKey = (e) => {
+            if (e.key.toLowerCase() === 'f') {
+                setWelcomeDismissed(true);
+            }
+        };
+        window.addEventListener('keydown', handleKey);
+        return () => window.removeEventListener('keydown', handleKey);
+    }, [welcomeDismissed]);
+
     if (checkingAuth) return <div className="splash-screen"><div className="splash-content">INITIALIZING_SECURE_CONNECTION...</div></div>;
+    
+    if (!welcomeDismissed) {
+        return (
+            <div className="absolute inset-0 bg-black z-[100] flex flex-col items-center justify-center text-center p-8 cursor-pointer"
+                 onClick={() => setWelcomeDismissed(true)}>
+                <h1 className="text-4xl font-bold text-cyan mb-4 glitch-text">Welcome to Cyberynthe!</h1>
+                <p className="text-gray-400 font-mono text-sm animate-pulse">(Click, Or press F key to continue)</p>
+                <button 
+                    className="mt-12 border border-magenta text-magenta px-8 py-3 hover:bg-magenta hover:text-black transition-all font-mono"
+                    onClick={(e) => { e.stopPropagation(); setWelcomeDismissed(true); }}
+                >
+                    [ ACKNOWLEDGE ]
+                </button>
+            </div>
+        );
+    }
+
     if (!isAuthenticated) return <AuthOverlay onLoginSuccess={handleAuthComplete} />;
 
     const renderPlayTab = () => (
@@ -123,7 +153,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                 </button>
             </div>
 
-            <div className="splash-version">v0.11.0 | PRODUCTION_READY</div>
+            <div className="splash-version">v0.12.0 | PRODUCTION_READY</div>
         </div>
     );
 
@@ -148,6 +178,12 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                 >
                     LEDGER
                 </button>
+                <button
+                    className={`nav-tab ${activeTab === 'about' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('about')}
+                >
+                    ABOUT
+                </button>
                 <div className="flex-1"></div> {/* Spacer */}
                 <button
                     className="nav-tab text-red-500 hover:text-red-400 border-red-900/30"
@@ -161,6 +197,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                 {activeTab === 'play' && renderPlayTab()}
                 {activeTab === 'profile' && <ProfileCard />}
                 {activeTab === 'ledger' && <LeaderboardPanel />}
+                {activeTab === 'about' && <AboutPage />}
             </div>
         </div>
     );

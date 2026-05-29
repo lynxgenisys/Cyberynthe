@@ -12,6 +12,7 @@ const LoreOverlay = () => {
     const [displayedText, setDisplayedText] = useState('');
     const [decryptProgress, setDecryptProgress] = useState(0);
     const [hexScroll, setHexScroll] = useState(0);
+    const [canDismiss, setCanDismiss] = useState(false);
 
     const isVisible = gameState.showLoreOverlay && gameState.currentFragment;
     const fragment = gameState.currentFragment;
@@ -72,19 +73,29 @@ const LoreOverlay = () => {
         }));
     };
 
-    // Global keyboard listener for E key
+    // 4-Second Mandatory Read
     useEffect(() => {
         if (!isVisible) return;
+        setCanDismiss(false);
+        const timer = setTimeout(() => {
+            setCanDismiss(true);
+        }, 4000);
+        return () => clearTimeout(timer);
+    }, [isVisible]);
+
+    // Global keyboard listener for F key
+    useEffect(() => {
+        if (!isVisible || !canDismiss) return;
 
         const handleKeyPress = (e) => {
-            if (e.key === 'e' || e.key === 'E' || e.key === 'Escape') {
+            if (e.key === 'f' || e.key === 'F' || e.key === 'Escape') {
                 handleClose();
             }
         };
 
         window.addEventListener('keydown', handleKeyPress);
         return () => window.removeEventListener('keydown', handleKeyPress);
-    }, [isVisible]);
+    }, [isVisible, canDismiss]);
 
     if (!isVisible) return null;
 
@@ -228,19 +239,21 @@ const LoreOverlay = () => {
                 <div style={{
                     textAlign: 'center',
                     fontSize: '12px',
-                    color: '#888888',
+                    color: canDismiss ? '#00FFFF' : '#444444',
                     textTransform: 'uppercase',
                     letterSpacing: '1px',
-                    marginTop: '20px'
+                    marginTop: '20px',
+                    animation: canDismiss ? 'pulse 2s infinite' : 'none'
                 }}>
-                    Press [E] to close
+                    {canDismiss ? 'Press [F] to close' : 'DECRYPTING... PLEASE WAIT...'}
                 </div>
 
                 {/* Keyboard listener */}
                 <div
                     tabIndex={0}
                     onKeyDown={(e) => {
-                        if (e.key === 'e' || e.key === 'E' || e.key === 'Escape') {
+                        if (!canDismiss) return;
+                        if (e.key === 'f' || e.key === 'F' || e.key === 'Escape') {
                             handleClose();
                         }
                     }}
