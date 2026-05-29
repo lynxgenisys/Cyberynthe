@@ -276,12 +276,14 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
                 >
                     [ DOSSIER ]
                 </button>
-                <button 
-                    className={`px-3 py-1 text-xs font-bold border transition-colors ${activeTab === 'lore' ? 'border-magenta bg-magenta text-black' : 'border-magenta/30 text-magenta hover:bg-magenta/20'}`}
-                    onClick={() => setActiveTab('lore')}
-                >
-                    [ SYSTEM_ARCHIVE ]
-                </button>
+                {!targetUserId && (
+                    <button 
+                        className={`px-3 py-1 text-xs font-bold border transition-colors ${activeTab === 'lore' ? 'border-magenta bg-magenta text-black' : 'border-magenta/30 text-magenta hover:bg-magenta/20'}`}
+                        onClick={() => setActiveTab('lore')}
+                    >
+                        [ SYSTEM_ARCHIVE ]
+                    </button>
+                )}
             </div>
 
             {activeTab === 'dossier' ? renderDossier() : renderLoreArchive()}
