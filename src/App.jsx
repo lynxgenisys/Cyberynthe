@@ -82,6 +82,7 @@ function CoreInterface() {
       floorLevel: 1, // Ensure reset
       seed: btoa(Date.now().toString()).substring(0, 16), // Fresh Seed
       runStartTime: Date.now(), // Start Session Timer
+      runSessions: 1, // Track how many times this run has been started/resumed
       totalPausedTime: 0, // Track cumulative pause duration
       pauseStartTime: null, // Track specific pause instance
       totalDamageTaken: 0, // Reset Stats

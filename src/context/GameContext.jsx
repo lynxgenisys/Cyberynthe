@@ -251,6 +251,9 @@ export const GameProvider = ({ children }) => {
         state.isTransitioning = false;
         state.isPaused = false;
         state.activeLoreLog = null;
+        
+        // Increment session count
+        state.runSessions = (state.runSessions || 1) + 1;
 
         setGameState(state);
         addNotification("SESSION_RESTORED");

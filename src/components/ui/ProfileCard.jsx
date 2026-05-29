@@ -56,6 +56,7 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
         cache_xp: saveState?.gameState ? (saveState.gameState.xp || 0) : (gameState.xp || 0),
         cache_floor: saveState?.gameState ? (saveState.gameState.floorLevel || 1) : (gameState.floorLevel || 0),
         cache_ebits: saveState?.gameState ? (saveState.gameState.eBits || 0) : (gameState.eBits || 0),
+        cache_sessions: saveState?.gameState ? (saveState.gameState.runSessions || 1) : (gameState.runSessions || 1),
         cache_time: saveState ? Math.floor(((saveState.totalPausedTime || 0)) / 1000) : 0, 
         
         // REAL DB STATS
@@ -138,6 +139,7 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
                         <span>XP: <span className="text-white">{profile.cache_xp}</span></span>
                         <span>FLOOR: <span className="text-white">{profile.cache_floor}</span></span>
                         <span>eBITS: <span className="text-white">{profile.cache_ebits}</span></span>
+                        <span>SESSIONS: <span className="text-white">{profile.cache_sessions}</span></span>
                     </div>
                 ) : (
                     <div className="text-gray-500 italic">NO_ACTIVE_SESSION_FOUND</div>
