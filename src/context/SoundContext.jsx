@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useRef, useEffect, useState } from 'react';
+import menuTrack1 from '../assets/OST/Menus/Sleeping_Among_Moons.mp3';
 
 const SoundContext = createContext();
 
@@ -45,53 +46,22 @@ export const SoundProvider = ({ children }) => {
     const menuMusicTimeoutRef = useRef(null);
 
     const playMenuMusic = () => {
-        if (!audioCtxRef.current || audioCtxRef.current.state === 'suspended') return;
-        if (menuMusicTimeoutRef.current) return; // Already playing
-
-        const ctx = audioCtxRef.current;
-        const notes = [110, 130.81, 164.81, 220, 164.81, 130.81]; // A2, C3, E3, A3, E3, C3 (Dark Am Arpeggio)
-        let noteIndex = 0;
-
-        const scheduleNote = () => {
-            if (!audioCtxRef.current) return;
-            if (ctx.state === 'suspended') {
-                menuMusicTimeoutRef.current = setTimeout(scheduleNote, 100);
-                return;
-            }
-
-            const t = ctx.currentTime;
-            const osc = ctx.createOscillator();
-            const filter = ctx.createBiquadFilter();
-            const gain = ctx.createGain();
-
-            osc.type = 'sawtooth';
-            osc.frequency.value = notes[noteIndex];
-            
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(800, t);
-            filter.frequency.exponentialRampToValueAtTime(100, t + 0.25);
-
-            gain.gain.setValueAtTime(0.08, t);
-            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
-
-            osc.connect(filter);
-            filter.connect(gain);
-            gain.connect(ctx.destination);
-
-            osc.start(t);
-            osc.stop(t + 0.25);
-
-            noteIndex = (noteIndex + 1) % notes.length;
-            menuMusicTimeoutRef.current = setTimeout(scheduleNote, 250); // 250ms per note
-        };
-
-        scheduleNote();
+        if (!menuMusicTimeoutRef.current) {
+            menuMusicTimeoutRef.current = new Audio(menuTrack1);
+            menuMusicTimeoutRef.current.loop = true;
+            menuMusicTimeoutRef.current.volume = 0.3;
+        }
+        
+        // Browsers require interaction before playing
+        menuMusicTimeoutRef.current.play().catch(e => {
+            console.log("Audio autoplay blocked until interaction:", e);
+        });
     };
 
     const stopMenuMusic = () => {
         if (menuMusicTimeoutRef.current) {
-            clearTimeout(menuMusicTimeoutRef.current);
-            menuMusicTimeoutRef.current = null;
+            menuMusicTimeoutRef.current.pause();
+            menuMusicTimeoutRef.current.currentTime = 0;
         }
     };
 
