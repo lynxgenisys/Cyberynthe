@@ -4,6 +4,7 @@ import { MobLogic } from '../../engine/MobAI';
 import { useCombat } from '../../context/CombatContext';
 import { useGame } from '../../context/GameContext';
 import { usePlayer } from '../../context/PlayerContext';
+import { useSound } from '../../context/SoundContext';
 import * as THREE from 'three';
 import { useInventory } from '../../context/InventoryContext';
 
@@ -178,6 +179,7 @@ export default function MobManager({ maze, floorLevel }) {
     const { gameState, setGameState, addNotification, setBossSubtitle, updateBossStatus, fastStateRef, getLevelFromXP, getNextLevelXP, setInteractionPrompt, updateScannedTargets, triggerCrit, consumeMobQueue } = useGame();
     const { triggerImpact, mobDamageBuffer, mobPositionBuffer, mobLifeBuffer, mobTypeBuffer, mobStatusBuffer } = useCombat();
     const { damageKernel, lockResource } = usePlayer(); // Import damage handler
+    const { playSFX } = useSound();
 
     // CONSUME SPAWN QUEUE (From GameContext)
     useFrame(() => {
@@ -782,11 +784,11 @@ export default function MobManager({ maze, floorLevel }) {
                 // 1. BIT_MITE: NIBBLE (Melee)
                 if (mob.id === 'BIT_MITE') {
                     if (dist < 1.5) { // Melee Range
-                        if ((mob.attackCooldown || 0) <= 0) {
+                        if (mob.attackTimer <= 0) {
                             damageKernel(2); // 2 DMG
-                            triggerImpact({ x: playerPos.x, y: 1, z: playerPos.z }, "#FF0000");
-                            addNotification("WARNING: HULL_BREACH (BIT_MITE)");
-                            mob.attackCooldown = 1.0; // 1s Cooldown
+                            playSFX('mob_attack');
+                            triggerImpact({ x: playerPos.x, y: 1.5, z: playerPos.z }, "#FF0000"); // Red screen flash essentially
+                            mob.attackTimer = 1.0;
                         }
                     }
                 }
@@ -852,10 +854,11 @@ export default function MobManager({ maze, floorLevel }) {
                             if (isLineOfSight) {
                                 const bx = -Math.sin(mob.rotationY), bz = -Math.cos(mob.rotationY);
                                 const dot = (targetDx * bx + targetDz * bz);
-                                if (dot > 0) {
+                                if (mob.attackTimer <= 0 && mob.bossState !== 'FIRING') {
                                     damageKernel(10); // 10 HP Damage
-                                    addNotification("ALERT: DATA_STREAM_IMPACT");
-                                    triggerImpact({ x: playerPos.x, y: 1, z: playerPos.z }, "#00FFFF");
+                                    playSFX('mob_attack');
+                                    triggerImpact({ x: playerPos.x, y: 1.5, z: playerPos.z }, "#FF0000");
+                                    mob.attackTimer = 2.0; // Slow attacks
                                 }
                             } else {
                                 // Optional: Impact wall effect?
@@ -971,8 +974,9 @@ export default function MobManager({ maze, floorLevel }) {
                     const dot = pDx * bx + pDz * bz;
                     // Perpendicular distance
                     const cross = pDx * bz - pDz * bx; // 2D cross product magnitude
+                    const beamDist = Math.abs(cross);
 
-                    if (dot > 0 && Math.abs(cross) < 1.5) { // 1.5 width tolerance
+                    if (dot > 0 && beamDist < 1.5) { // 1.5 width tolerance
                         // Raycast check for walls (Occlusion)
                         let hasLineOfSight = true;
                         if (dot < 40 && maze && maze.grid) {
@@ -992,8 +996,11 @@ export default function MobManager({ maze, floorLevel }) {
                         if (hasLineOfSight && dot < 40) { // Max range
                             // BESTIARY: No outgoing damage from mobs
                             if (floorLevel !== 999) {
-                                damageKernel(40 * delta); // 40 DPS
-                                if (Math.random() < 0.1) triggerImpact(playerPos, "#00FFFF");
+                                if (beamDist < 1.0) { // Cylinder radius
+                                    damageKernel(40 * delta); // 40 DPS
+                                    playSFX('mob_attack');
+                                    if (Math.random() < 0.1) triggerImpact({ x: playerPos.x, y: 1.5, z: playerPos.z }, "#00FFFF"); // Blue sparks
+                                }
                             }
                         }
                     }
@@ -1098,6 +1105,7 @@ export default function MobManager({ maze, floorLevel }) {
 
             if (mob.currentHp <= 0 && !mob.isDead) {
                 mob.isDead = true;
+                playSFX('mob_death');
                 mobsDirty = true;
 
                 // BESTIARY (Floor 999): Track for respawn and override XP

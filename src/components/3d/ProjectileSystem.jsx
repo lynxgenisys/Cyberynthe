@@ -2,6 +2,7 @@ import React, { useRef, useMemo, useLayoutEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useCombat } from '../../context/CombatContext';
 import { useGame } from '../../context/GameContext';
+import { useSound } from '../../context/SoundContext';
 import * as THREE from 'three';
 
 /**
@@ -15,6 +16,7 @@ const MAX_PROJECTILES = 200;
 export default function ProjectileSystem() {
     const { positionBuffer, velocityBuffer, lifeBuffer, typeBuffer, mobPositionBuffer, mobLifeBuffer, mobTypeBuffer, mobDamageBuffer, mobStatusBuffer, MAX_PROJECTILES, MAX_MOBS, triggerImpact } = useCombat();
     const { gameState, getLevelFromXP } = useGame();
+    const { playSFX } = useSound();
     const meshRef = useRef();
 
     // Reusable Temporary Objects
@@ -95,6 +97,7 @@ export default function ProjectileSystem() {
 
                         const impactColor = (tArr[i] === 1 && playerLevel >= 5) ? '#00FF00' : (tArr[i] === 1 ? '#EA00FF' : '#00FFFF');
                         triggerImpact({ x: px, y: py, z: pz }, impactColor);
+                        playSFX('hit');
                         break;
                     }
                 }
@@ -108,6 +111,7 @@ export default function ProjectileSystem() {
                     lArr[i] = 0;
                     const impactColor = (tArr[i] === 1 && playerLevel >= 5) ? '#00FF00' : (tArr[i] === 1 ? '#EA00FF' : '#00FFFF');
                     triggerImpact({ x: px, y: py, z: pz }, impactColor);
+                    playSFX('miss');
                     continue;
                 }
             }
@@ -117,6 +121,7 @@ export default function ProjectileSystem() {
                 lArr[i] = 0;
                 const impactColor = (tArr[i] === 1 && playerLevel >= 5) ? '#00FF00' : (tArr[i] === 1 ? '#EA00FF' : '#00FFFF');
                 triggerImpact({ x: px, y: 0, z: pz }, impactColor);
+                playSFX('miss');
                 continue;
             }
 

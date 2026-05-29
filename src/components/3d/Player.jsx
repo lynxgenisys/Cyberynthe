@@ -5,6 +5,7 @@ import { KeyboardControls, PointerLockControls, useKeyboardControls } from '@rea
 import { useGame } from '../../context/GameContext'; // Import Logic Breach Link
 import { useCombat } from '../../context/CombatContext';
 import { usePlayer } from '../../context/PlayerContext';
+import { useSound } from '../../context/SoundContext';
 import * as THREE from 'three';
 
 // CONSTANTS Moved to PlayerController for easier tuning
@@ -23,6 +24,7 @@ const PlayerController = () => {
     const [subscribeKeys, getKeys] = useKeyboardControls();
     const { camera } = useThree();
     const { updatePlayerPos, triggerScan, getLevelFromXP, playerRotationRef, enterBestiaryMode, setChargingWeapon } = useGame();
+    const { playSFX } = useSound();
 
     // Raycaster for ground check
     const rapier = useRapier();
@@ -54,6 +56,14 @@ const PlayerController = () => {
         // addNotification(`SYSTEM_SYNC: SPEED_CALIBRATED [${(SPEED).toFixed(2)}m/s]`);
     }, [SPEED]); // Only fire when SPEED changes (e.g. on upgrade)
 
+    const prevIntegrity = useRef(playerState.stats.integrity);
+    React.useEffect(() => {
+        if (playerState.stats.integrity < prevIntegrity.current) {
+            playSFX('player_hurt');
+        }
+        prevIntegrity.current = playerState.stats.integrity;
+    }, [playerState.stats.integrity, playSFX]);
+
     const JUMP_FORCE = 4.375; // +25% Total Boost (Final Calibration)
     const CELL_SIZE = 2;   // Must match MazeRenderer
 
@@ -70,6 +80,7 @@ const PlayerController = () => {
     // INPUT STATE
     const mouseDownTime = useRef(0);
     const [isCharging, setIsCharging] = useState(false);
+    const footstepTimer = useRef(0);
 
     // MOUSE LOCK RE-ENGAGE (Fix for Minigames)
     React.useEffect(() => {
@@ -149,6 +160,7 @@ const PlayerController = () => {
 
                 if (lockResource(5)) {
                     fireProjectile(spawnPos, direction, 'SHRED');
+                    playSFX('shoot');
                 }
             }
         };
@@ -178,12 +190,16 @@ const PlayerController = () => {
 
             // CHARGE SHOT (Hold > 1000ms)
             if (canBurst && duration > 1000) {
-                if (lockResource(25)) // higher cost, efficiency
+                if (lockResource(25)) { // higher cost, efficiency
                     fireBurst(spawnPos, direction, 'PING');
+                    playSFX('shoot');
+                }
             } else {
                 // STANDARD TAP
-                if (lockResource(10)) // 10 M-RAM for single shot
+                if (lockResource(10)) { // 10 M-RAM for single shot
                     fireProjectile(spawnPos, direction, 'PING');
+                    playSFX('shoot');
+                }
             }
         };
 
@@ -344,6 +360,19 @@ const PlayerController = () => {
 
             if (_moveDir.lengthSq() > 0) {
                 _moveDir.normalize().multiplyScalar(currentSpeed);
+                // AUDIO: Footsteps
+                if (hit && hit.toi < 2.0) { // Grounded
+                    footstepTimer.current += delta;
+                    const footstepInterval = isSprinting ? 0.3 : 0.45;
+                    if (footstepTimer.current > footstepInterval) {
+                        playSFX('footstep');
+                        footstepTimer.current = 0;
+                    }
+                } else {
+                    footstepTimer.current = 0;
+                }
+            } else {
+                footstepTimer.current = 0;
             }
 
             // Apply Velocity

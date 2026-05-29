@@ -4,6 +4,7 @@ import { PlayerProvider, usePlayer } from './context/PlayerContext';
 import { GameProvider, useGame } from './context/GameContext';
 import { InventoryProvider, useInventory } from './context/InventoryContext';
 import { CombatProvider } from './context/CombatContext';
+import { SoundProvider } from './context/SoundContext';
 import { DirectiveEngine } from './engine/DirectiveEngine';
 import DebugMazeView from './components/Debug/DebugMazeView';
 import CyberdeckUI from './components/ui/CyberdeckUI';
@@ -482,11 +483,13 @@ export default function App() {
     <div className="w-full h-screen bg-black overflow-hidden relative">
       <GameProvider>
         <InventoryProvider>
-          <PlayerProvider>
-            <CombatProvider>
-              <CoreInterface />
-            </CombatProvider>
-          </PlayerProvider>
+          <SoundProvider>
+            <PlayerProvider>
+              <CombatProvider>
+                <CoreInterface />
+              </CombatProvider>
+            </PlayerProvider>
+          </SoundProvider>
         </InventoryProvider>
       </GameProvider>
     </div>
