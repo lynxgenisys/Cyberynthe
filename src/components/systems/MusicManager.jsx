@@ -104,7 +104,7 @@ export default function MusicManager() {
             audio.removeEventListener('ended', handleEnded);
             audio.pause(); // Cleanup pause
         };
-    }, [currentZone, trackIndex]); // Removed musicVolume/isMusicShuffle to prevent track restart
+    }, [currentZone, trackIndex, audioUnlocked]); // Removed musicVolume/isMusicShuffle to prevent track restart
 
     // 3. React to Volume Changes dynamically without restarting track
     useEffect(() => {
