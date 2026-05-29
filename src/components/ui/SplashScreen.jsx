@@ -3,6 +3,7 @@ import { useGame } from '../../context/GameContext';
 import ProfileCard from './ProfileCard';
 import LeaderboardPanel from './LeaderboardPanel';
 import { supabase, getProfile, signOut } from '../../utils/supabase';
+import { useSound } from '../../context/SoundContext';
 import AboutPage from './AboutPage';
 import './SplashScreen.css';
 
@@ -12,6 +13,7 @@ import './SplashScreen.css';
  */
 export default function SplashScreen({ onStart, hasSave, onResume }) {
     const { setGameState } = useGame();
+    const { playMenuMusic, stopMenuMusic } = useSound();
     const [activeTab, setActiveTab] = useState('play'); // 'play' | 'profile' | 'ledger' | 'about'
     const [selectedMode, setSelectedMode] = useState('normal'); // 'normal' | 'hardcore' | 'ghost'
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -68,17 +70,27 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
         onStart?.(selectedMode);
     };
 
-    // F KEY TO DISMISS WELCOME
+    // F KEY TO DISMISS WELCOME AND AUDIO TRIGGERS
     useEffect(() => {
-        if (welcomeDismissed) return;
+        if (welcomeDismissed) {
+            playMenuMusic();
+        }
+
         const handleKey = (e) => {
             if (e.key.toLowerCase() === 'f') {
                 setWelcomeDismissed(true);
             }
         };
         window.addEventListener('keydown', handleKey);
-        return () => window.removeEventListener('keydown', handleKey);
-    }, [welcomeDismissed]);
+        return () => {
+            window.removeEventListener('keydown', handleKey);
+        };
+    }, [welcomeDismissed, playMenuMusic]);
+
+    // STOP MUSIC ON UNMOUNT
+    useEffect(() => {
+        return () => stopMenuMusic();
+    }, [stopMenuMusic]);
 
     if (checkingAuth) return <div className="splash-screen"><div className="splash-content">INITIALIZING_SECURE_CONNECTION...</div></div>;
     
