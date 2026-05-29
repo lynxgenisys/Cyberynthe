@@ -46,11 +46,11 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
         username: targetUsername || gameState.playerName || 'GHOST_ID',
         
         // Active Cache (Save State)
-        cache_mode: saveState ? (saveState.gameMode || 'normal') : 'NONE',
-        cache_level: saveState ? getLevelFromXP(saveState.xp || 0) : 0,
-        cache_xp: saveState ? (saveState.xp || 0) : 0,
-        cache_floor: saveState ? (saveState.floorLevel || 1) : 0,
-        cache_ebits: saveState ? (saveState.eBits || 0) : 0,
+        cache_mode: saveState?.gameState ? (saveState.gameState.gameMode || 'normal') : 'NONE',
+        cache_level: saveState?.gameState ? getLevelFromXP(saveState.gameState.xp || 0) : 0,
+        cache_xp: saveState?.gameState ? (saveState.gameState.xp || 0) : 0,
+        cache_floor: saveState?.gameState ? (saveState.gameState.floorLevel || 1) : 0,
+        cache_ebits: saveState?.gameState ? (saveState.gameState.eBits || 0) : 0,
         cache_time: saveState ? Math.floor(((saveState.totalPausedTime || 0)) / 1000) : 0, // Fallback placeholder if timestamp missing, but realistically saveState tracks playtime differently. Let's just say we don't have accurate run time in saveState easily without logic. We will skip exact run time if not tracked.
         
         // REAL DB STATS
