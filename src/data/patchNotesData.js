@@ -1,5 +1,16 @@
 export const patchNotes = [
     {
+        version: "v0.12.1",
+        date: "2026-05-29",
+        categories: {
+            "Added": [
+                "Lore Archive: A new tab inside the Profile Card dossier to track and re-read decrypted System Fragments.",
+                "Persistent Lore: Unlocked System Fragments now permanently save to your Cloud profile across all runs.",
+                "Expanded Badge System: Added 18 new legacy titles and achievements covering combat, ghost mode, and exploration."
+            ]
+        }
+    },
+    {
         version: "v0.12.0",
         date: "2026-05-28",
         categories: {

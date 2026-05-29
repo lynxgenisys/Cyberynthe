@@ -195,13 +195,19 @@ export default function RunTracker() {
                         currentLifetimeKills[mobId] = (currentLifetimeKills[mobId] || 0) + count;
                     }
 
+                    // Merge unlocked fragments
+                    const currentFragments = profile.unlocked_fragments || [];
+                    const sessionFragments = gameState.collectedFragments || [];
+                    const mergedFragments = Array.from(new Set([...currentFragments, ...sessionFragments]));
+
                     // Push update
                     await supabase.from('profiles').update({
                         total_runs: (profile.total_runs || 0) + 1,
                         total_deaths: (profile.total_deaths || 0) + 1, // Assumes every run ends in death/completion
                         total_kills: (profile.total_kills || 0) + submission.session_kills,
                         deepest_dives: currentDives,
-                        lifetime_kills: currentLifetimeKills
+                        lifetime_kills: currentLifetimeKills,
+                        unlocked_fragments: mergedFragments
                     }).eq('id', user.id);
                 }
             });

@@ -1,16 +1,19 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useGame } from '../../context/GameContext';
 import { getLevelFromXP } from '../../utils/scoring';
 import { getPlayerStats } from '../../utils/supabase';
+import { LORE_FRAGMENTS } from '../../engine/LoreManager';
 import './ProfileCard.css';
 
 /**
- * PROFILE CARD: The "Hacker ID" - Player stats and badges
+ * PROFILE CARD: The "Hacker ID" - Player stats, badges, and Lore Archive
  */
 export default function ProfileCard({ targetUserId = null, targetUsername = null, onClose = null }) {
     const { gameState } = useGame();
     const [profileData, setProfileData] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
+    const [activeTab, setActiveTab] = useState('dossier'); // 'dossier' | 'lore'
+    const [selectedLore, setSelectedLore] = useState(null);
 
     // Fetch REAL lifetime stats from Supabase
     React.useEffect(() => {
@@ -27,6 +30,7 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
                     avg_resonance: 0.5,
                     deepest_dives: { normal: 0, hardcore: 0, ghost: 0 },
                     lifetime_kills: {},
+                    unlocked_fragments: [],
                     save_data: null
                 });
             }
@@ -40,6 +44,7 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
     const stats = profileData || {};
     const dives = stats.deepest_dives || { normal: 0, hardcore: 0, ghost: 0 };
     const kills = stats.lifetime_kills || {};
+    const unlockedFragments = stats.unlocked_fragments || [];
     const saveState = stats.save_data || null;
 
     const profile = {
@@ -69,15 +74,39 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
     if (profile.best_normal >= 10 || profile.best_hardcore >= 5) profile.badges.push('[EXPLORER]');
     if (profile.best_normal >= 25 || profile.best_hardcore >= 15) profile.badges.push('[DEEP_DIVER]');
     if (profile.best_normal >= 50 || profile.best_hardcore >= 30) profile.badges.push('[VOID_WALKER]');
+    if (profile.best_normal >= 100 || profile.best_hardcore >= 100 || profile.best_ghost >= 100) profile.badges.push('[SYSTEM_ARCHITECT]');
+    
     if (profile.cache_level >= 5) profile.badges.push('[OVERCLOCKED]');
+    if (profile.cache_level >= 15) profile.badges.push('[SINGULARITY]');
+    
     if ((kills['IO_SENTINEL'] || 0) + (kills['STATELESS_SENTRY'] || 0) >= 5) profile.badges.push('[SLAYER]');
+    if ((kills['BIT_MITE'] || 0) >= 500) profile.badges.push('[MITE_SQUASHER]');
+    if ((kills['HUNTER'] || 0) >= 50) profile.badges.push('[HUNTER_KILLER]');
+    if ((kills['NULL_WISP'] || 0) >= 100) profile.badges.push('[WISP_BANE]');
+    
+    if (profile.best_ghost >= 10) profile.badges.push('[GLITCH_IN_THE_SYSTEM]');
+    if (profile.best_ghost >= 25) profile.badges.push('[SPECTER]');
+    if (profile.best_ghost >= 50) profile.badges.push('[PHANTOM]');
+    
+    if (profile.best_hardcore >= 50) profile.badges.push('[IRON_WILL]');
+    
+    if (stats.total_ebits >= 10000) profile.badges.push('[DATA_BROKER]');
+    if (stats.total_ebits >= 100000) profile.badges.push('[CORP_RAIDER]');
+    
+    if (unlockedFragments.length >= 25) profile.badges.push('[LOREMASTER]');
+    if (unlockedFragments.length >= 50) profile.badges.push('[ARCHIVIST]');
+
+    if (profile.resonance_lifetime > 0.95) profile.badges.push('[CHAOS_THEORIST]');
+    if (profile.resonance_lifetime < 0.05) profile.badges.push('[LAW_BRINGER]');
 
     const getBadgeColor = (badge) => {
-        if (badge.includes('VOID_WALKER')) return '#FFD700'; // Gold
-        if (badge.includes('DEEP_DIVER')) return '#EA00FF'; // Magenta
-        if (badge.includes('EXPLORER')) return '#00FFFF'; // Cyan
-        if (badge.includes('OVERCLOCKED')) return '#FFA500'; // Orange
-        if (badge.includes('SLAYER')) return '#FF0000'; // Red
+        if (badge.includes('VOID_WALKER') || badge.includes('SYSTEM_ARCHITECT')) return '#FFD700'; // Gold
+        if (badge.includes('DEEP_DIVER') || badge.includes('PHANTOM') || badge.includes('ARCHIVIST')) return '#EA00FF'; // Magenta
+        if (badge.includes('EXPLORER') || badge.includes('SPECTER') || badge.includes('LOREMASTER')) return '#00FFFF'; // Cyan
+        if (badge.includes('OVERCLOCKED') || badge.includes('SINGULARITY')) return '#FFA500'; // Orange
+        if (badge.includes('SLAYER') || badge.includes('IRON_WILL')) return '#FF0000'; // Red
+        if (badge.includes('CHAOS_THEORIST')) return '#EA00FF'; 
+        if (badge.includes('LAW_BRINGER')) return '#00FFFF';
         return '#00AAAA'; // Dim Cyan
     };
 
@@ -97,8 +126,8 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
         );
     };
 
-    return (
-        <div className="profile-card">
+    const renderDossier = () => (
+        <>
             {/* LCACHE INFO (Active Run Save) */}
             <div className="profile-header bg-black/50 border border-cyan/30 p-2 mb-4 text-xs font-mono">
                 <div className="text-cyan mb-1 font-bold">» ACTIVE_LCACHE_DATA</div>
@@ -182,9 +211,83 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
                     {!profile.badges.includes('[OVERCLOCKED]') && <div className="badge-item locked">[OVERCLOCKED]</div>}
                 </div>
             </div>
+        </>
+    );
+
+    const renderLoreArchive = () => (
+        <div className="lore-archive space-y-4">
+            <div className="text-xs text-gray-400 mb-4 border-b border-cyan/30 pb-2">
+                UNLOCKED FRAGMENTS: {unlockedFragments.length} / {LORE_FRAGMENTS.length}
+            </div>
+            
+            {selectedLore ? (
+                <div className="lore-reader bg-black/80 border border-cyan p-6 relative">
+                    <button 
+                        className="absolute top-2 right-4 text-cyan hover:text-white"
+                        onClick={() => setSelectedLore(null)}
+                    >
+                        [ CLOSE ]
+                    </button>
+                    <h3 className="text-xl text-cyan mb-4">{selectedLore.title}</h3>
+                    <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
+                        {selectedLore.text}
+                    </p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 gap-2">
+                    {LORE_FRAGMENTS.map(frag => {
+                        const isUnlocked = unlockedFragments.includes(frag.id);
+                        return (
+                            <button
+                                key={frag.id}
+                                disabled={!isUnlocked}
+                                onClick={() => setSelectedLore(frag)}
+                                className={`text-left p-3 border font-mono text-sm transition-colors ${
+                                    isUnlocked 
+                                        ? 'border-cyan/50 text-cyan bg-cyan/5 hover:bg-cyan/20 cursor-pointer' 
+                                        : 'border-gray-800 text-gray-600 bg-black/40 cursor-not-allowed'
+                                }`}
+                            >
+                                {isUnlocked ? `>> [DECRYPTED] ${frag.title}` : `>> [ENCRYPTED_DATA_NODE_0${frag.id}]`}
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
+        </div>
+    );
+
+    return (
+        <div className="profile-card relative pb-10">
+            {onClose && (
+                <button 
+                    onClick={onClose}
+                    className="absolute top-2 right-4 text-cyan hover:text-white z-10"
+                >
+                    [X]
+                </button>
+            )}
+
+            {/* TAB NAV */}
+            <div className="flex gap-2 mb-4 border-b border-cyan/30 pb-2">
+                <button 
+                    className={`px-3 py-1 text-xs font-bold border transition-colors ${activeTab === 'dossier' ? 'border-cyan bg-cyan text-black' : 'border-cyan/30 text-cyan hover:bg-cyan/20'}`}
+                    onClick={() => setActiveTab('dossier')}
+                >
+                    [ DOSSIER ]
+                </button>
+                <button 
+                    className={`px-3 py-1 text-xs font-bold border transition-colors ${activeTab === 'lore' ? 'border-magenta bg-magenta text-black' : 'border-magenta/30 text-magenta hover:bg-magenta/20'}`}
+                    onClick={() => setActiveTab('lore')}
+                >
+                    [ SYSTEM_ARCHIVE ]
+                </button>
+            </div>
+
+            {activeTab === 'dossier' ? renderDossier() : renderLoreArchive()}
 
             {/* NOTE */}
-            <div className="profile-note">
+            <div className="profile-note mt-6">
                 ⚡ SECURE_UPLINK // DATA_SOURCE: OFFICIAL_LEDGER
             </div>
         </div>
