@@ -45,18 +45,19 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
     const profile = {
         username: targetUsername || gameState.playerName || 'GHOST_ID',
         
-        // Active Cache (Save State)
-        cache_mode: saveState?.gameState ? (saveState.gameState.gameMode || 'normal') : 'NONE',
-        cache_level: saveState?.gameState ? getLevelFromXP(saveState.gameState.xp || 0) : 0,
-        cache_xp: saveState?.gameState ? (saveState.gameState.xp || 0) : 0,
-        cache_floor: saveState?.gameState ? (saveState.gameState.floorLevel || 1) : 0,
-        cache_ebits: saveState?.gameState ? (saveState.gameState.eBits || 0) : 0,
-        cache_time: saveState ? Math.floor(((saveState.totalPausedTime || 0)) / 1000) : 0, // Fallback placeholder if timestamp missing, but realistically saveState tracks playtime differently. Let's just say we don't have accurate run time in saveState easily without logic. We will skip exact run time if not tracked.
+        // Active Cache (Save State) fallback to live local session if playing
+        cache_mode: saveState?.gameState ? (saveState.gameState.gameMode || 'normal') : (gameState.gameMode || 'NONE'),
+        cache_level: saveState?.gameState ? getLevelFromXP(saveState.gameState.xp || 0) : getLevelFromXP(gameState.xp || 0),
+        cache_xp: saveState?.gameState ? (saveState.gameState.xp || 0) : (gameState.xp || 0),
+        cache_floor: saveState?.gameState ? (saveState.gameState.floorLevel || 1) : (gameState.floorLevel || 0),
+        cache_ebits: saveState?.gameState ? (saveState.gameState.eBits || 0) : (gameState.eBits || 0),
+        cache_time: saveState ? Math.floor(((saveState.totalPausedTime || 0)) / 1000) : 0, 
         
         // REAL DB STATS
         total_runs: stats.total_runs || 0,
         total_ebits: (stats.total_ebits || 0).toLocaleString(),
-        best_normal: dives.normal || 0,
+        // Fallback to max_floor for legacy records prior to deepest_dives addition
+        best_normal: Math.max(dives.normal || 0, stats.max_floor || 0),
         best_hardcore: dives.hardcore || 0,
         best_ghost: dives.ghost || 0,
         resonance_lifetime: stats.avg_resonance !== undefined ? stats.avg_resonance : 0.5,
