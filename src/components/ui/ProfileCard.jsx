@@ -129,6 +129,17 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
 
     const renderDossier = () => (
         <>
+            {/* HEADER */}
+            <div className="profile-header">
+                <div className="profile-ghost-id">[GHOST_ID]: {profile.username}</div>
+                <div className="profile-badge-primary" style={{ color: getBadgeColor(profile.badges[profile.badges.length - 1]) }}>
+                    STATUS: {profile.badges[profile.badges.length - 1]}
+                </div>
+                <div className="profile-created text-xs">
+                    TOTAL_RUNS_LOGGED: {profile.total_runs}
+                </div>
+            </div>
+
             {/* LCACHE INFO (Active Run Save) */}
             <div className="profile-header bg-black/50 border border-cyan/30 p-2 mb-4 text-xs font-mono">
                 <div className="text-cyan mb-1 font-bold">» ACTIVE_LCACHE_DATA</div>
@@ -144,17 +155,6 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
                 ) : (
                     <div className="text-gray-500 italic">NO_ACTIVE_SESSION_FOUND</div>
                 )}
-            </div>
-
-            {/* HEADER */}
-            <div className="profile-header">
-                <div className="profile-ghost-id">[GHOST_ID]: {profile.username}</div>
-                <div className="profile-badge-primary" style={{ color: getBadgeColor(profile.badges[profile.badges.length - 1]) }}>
-                    STATUS: {profile.badges[profile.badges.length - 1]}
-                </div>
-                <div className="profile-created text-xs">
-                    TOTAL_RUNS_LOGGED: {profile.total_runs}
-                </div>
             </div>
 
             {/* DEEPEST DIVES */}
