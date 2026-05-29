@@ -247,6 +247,11 @@ export const GameProvider = ({ children }) => {
             state.isPortalLocked = true;
         }
 
+        // CORRECTION: Force clean transition state to prevent stuck UI/Controls
+        state.isTransitioning = false;
+        state.isPaused = false;
+        state.activeLoreLog = null;
+
         setGameState(state);
         addNotification("SESSION_RESTORED");
     };
