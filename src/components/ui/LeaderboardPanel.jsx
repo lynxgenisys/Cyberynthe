@@ -1,15 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { getTopScores } from '../../utils/supabase';
+import { getTopScores, getTopAccomplishments } from '../../utils/supabase';
 import ProfileCard from './ProfileCard';
 import './LeaderboardPanel.css';
 
+const DESCRIPTIONS = {
+    velocity: "Velocity Score: Measures Distance over Time with a heavily weighted curve.",
+    depth: "Deepest Dive: Maximum floor reached before termination.",
+    kills: "Most Kills: Maximum number of enemies purged during a single run.",
+    stealth: "Stealth Partition (Ghost Score): Measures undetected progression speed across all cleared floors.",
+    tot_kills: "Lifetime Kills: Total number of enemies purged across all runs.",
+    tot_runs: "Total Runs: Total number of sessions initiated.",
+    tot_deaths: "Total Deaths: Total number of times the session was terminated."
+};
+
 /**
  * LEADERBOARD PANEL: Top 100 scoreboard with category tabs
- * Emphasizes Top 3, Top 10, and displays up to Top 100
  */
 export default function LeaderboardPanel() {
-    const [activeBoard, setActiveBoard] = useState('depth'); // depth | velocity | stealth | etc
-    const [modeFilter, setModeFilter] = useState(null); // null (ALL) | normal | hardcore | ghost
+    // Top-Level Tabs: NORMAL, HARDCORE, GHOST, ACCOMPLISHMENTS
+    const [activeMode, setActiveMode] = useState('normal'); 
+    
+    // Sub-tabs depending on Mode
+    const [activeMetric, setActiveMetric] = useState('velocity'); 
+
     const [leaderboard, setLeaderboard] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -22,50 +35,74 @@ export default function LeaderboardPanel() {
         setSelectedUsername(username);
     };
 
+    // When mode changes, ensure metric is valid for that mode
+    useEffect(() => {
+        if (activeMode === 'accomplishments') {
+            if (['tot_kills', 'tot_runs', 'tot_deaths'].indexOf(activeMetric) === -1) {
+                setActiveMetric('tot_kills');
+            }
+        } else if (activeMode === 'ghost') {
+            if (['velocity', 'depth', 'stealth'].indexOf(activeMetric) === -1) {
+                setActiveMetric('velocity');
+            }
+        } else {
+            if (['velocity', 'depth', 'kills'].indexOf(activeMetric) === -1) {
+                setActiveMetric('velocity');
+            }
+        }
+    }, [activeMode]);
+
     // FETCH FROM SUPABASE
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
             setError(null);
 
-            // MAP UI TABS TO DATABASE COLUMNS
-            let sortColumn = 'score'; // Default (Velocity)
-            if (activeBoard === 'depth') sortColumn = 'floor_reached';
-            if (activeBoard === 'stealth') sortColumn = 'undetected_floors'; // Using streak (V2 column)
-            if (activeBoard === 'stability') sortColumn = 'stability_score'; // (V2 column)
-            if (activeBoard === 'ghost') sortColumn = 'ghost_score';         // (V2 column)
+            if (activeMode === 'accomplishments') {
+                let sortCol = 'total_kills';
+                if (activeMetric === 'tot_runs') sortCol = 'total_runs';
+                if (activeMetric === 'tot_deaths') sortCol = 'total_deaths';
 
-            const result = await getTopScores(modeFilter, 100, sortColumn);
-
-            if (result.success) {
-                // Map DB schema to UI schema
-                const mapped = result.data.map((entry, index) => ({
-                    rank: index + 1,
-                    username: entry.player_name,
-                    userId: entry.user_id,
-                    score: entry.score,
-                    floor: entry.floor_reached,
-                    time: entry.run_time,
-                    mode: entry.game_mode,
-                    // Badges derived from stats
-                    badge: entry.score > 50000 ? '[ELITE]' : '[USER]'
-                }));
-                setLeaderboard(mapped);
+                const result = await getTopAccomplishments(sortCol, 100);
+                if (result.success) {
+                    const mapped = result.data.map((entry, index) => ({
+                        rank: index + 1,
+                        username: entry.hacker_id || 'UNKNOWN_ID',
+                        userId: entry.id,
+                        score: entry[sortCol] || 0,
+                        badge: (entry[sortCol] || 0) > 1000 ? '[ELITE]' : '[USER]'
+                    }));
+                    setLeaderboard(mapped);
+                } else {
+                    setError(result.error);
+                }
             } else {
-                setError(result.error);
+                let sortColumn = 'score'; // Default (Velocity)
+                if (activeMetric === 'depth') sortColumn = 'floor_reached';
+                if (activeMetric === 'stealth') sortColumn = 'ghost_score'; 
+                if (activeMetric === 'kills') sortColumn = 'session_kills'; 
+
+                const result = await getTopScores(activeMode, 100, sortColumn);
+
+                if (result.success) {
+                    const mapped = result.data.map((entry, index) => ({
+                        rank: index + 1,
+                        username: entry.player_name,
+                        userId: entry.user_id,
+                        score: entry[sortColumn] || 0,
+                        badge: entry.score > 50000 ? '[ELITE]' : '[USER]'
+                    }));
+                    setLeaderboard(mapped);
+                } else {
+                    setError(result.error);
+                }
             }
+            
             setIsLoading(false);
         };
 
         fetchData();
-    }, [modeFilter, activeBoard]);
-
-    const boards = [
-        { id: 'velocity', label: 'VELOCITY_SCORE', metric: 'Score' },
-        { id: 'depth', label: 'DEEPEST_DIVE', metric: 'Floor' },
-        { id: 'stealth', label: 'STEALTH_PARTITION', metric: 'Streak' },
-        { id: 'stability', label: 'SYSTEM_STABILITY', metric: 'Rating' },
-    ];
+    }, [activeMode, activeMetric]);
 
     const renderTopThree = () => {
         const top3 = leaderboard.slice(0, 3);
@@ -86,53 +123,31 @@ export default function LeaderboardPanel() {
                             {entry.username}
                         </div>
                         <div className="top3-badge">{entry.badge}</div>
-                        <div className="top3-score">SCORE: {entry.score}</div>
+                        <div className="top3-score">{entry.score}</div>
                     </div>
                 ))}
             </div>
         );
     };
 
-    const renderTopTen = () => {
-        const top10 = leaderboard.slice(3, 10);
-        if (top10.length === 0) return null;
+    const renderList = (startIndex, endIndex, header = null) => {
+        const list = leaderboard.slice(startIndex, endIndex);
+        if (list.length === 0) return null;
 
         return (
-            <div className="leaderboard-top10">
-                {top10.map((entry) => (
-                    <div key={entry.rank} className="top10-row">
-                        <div className="top10-rank">#{entry.rank}</div>
+            <div className={startIndex === 3 ? "leaderboard-top10" : "leaderboard-rest"}>
+                {header && <div className="rest-header">{header}</div>}
+                {list.map((entry) => (
+                    <div key={entry.rank} className={startIndex === 3 ? "top10-row" : "rest-row"}>
+                        <div className={startIndex === 3 ? "top10-rank" : "rest-rank"}>#{entry.rank}</div>
                         <div 
-                            className="top10-username cursor-pointer hover:text-cyan hover:underline transition-colors"
+                            className={`${startIndex === 3 ? "top10-username" : "rest-username"} cursor-pointer hover:text-cyan hover:underline transition-colors`}
                             onClick={() => handleUserClick(entry.userId, entry.username)}
                         >
                             {entry.username}
                         </div>
-                        <div className="top10-badge">{entry.badge}</div>
-                        <div className="top10-score">{entry.score}</div>
-                    </div>
-                ))}
-            </div>
-        );
-    };
-
-    const renderRestOfList = () => {
-        const rest = leaderboard.slice(10);
-        if (rest.length === 0) return null;
-
-        return (
-            <div className="leaderboard-rest">
-                <div className="rest-header">TOP 11-100:</div>
-                {rest.map((entry) => (
-                    <div key={entry.rank} className="rest-row">
-                        <span className="rest-rank">#{entry.rank}</span>
-                        <span 
-                            className="rest-username cursor-pointer hover:text-cyan hover:underline transition-colors"
-                            onClick={() => handleUserClick(entry.userId, entry.username)}
-                        >
-                            {entry.username}
-                        </span>
-                        <span className="rest-score">{entry.score}</span>
+                        {startIndex === 3 && <div className="top10-badge">{entry.badge}</div>}
+                        <div className={startIndex === 3 ? "top10-score" : "rest-score"}>{entry.score}</div>
                     </div>
                 ))}
             </div>
@@ -155,47 +170,67 @@ export default function LeaderboardPanel() {
         );
     }
 
+    // Top Tabs
+    const topTabs = [
+        { id: 'normal', label: 'NORMAL' },
+        { id: 'hardcore', label: 'HARDCORE' },
+        { id: 'ghost', label: 'GHOST' },
+        { id: 'accomplishments', label: 'ACCOMPLISHMENTS' }
+    ];
+
+    // Sub Tabs generator
+    let subTabs = [];
+    if (activeMode === 'accomplishments') {
+        subTabs = [
+            { id: 'tot_kills', label: 'TOTAL KILLS' },
+            { id: 'tot_runs', label: 'TOTAL RUNS' },
+            { id: 'tot_deaths', label: 'TOTAL DEATHS' }
+        ];
+    } else if (activeMode === 'ghost') {
+        subTabs = [
+            { id: 'velocity', label: 'VELOCITY SCORE' },
+            { id: 'depth', label: 'DEEPEST DIVE' },
+            { id: 'stealth', label: 'STEALTH PARTITION' }
+        ];
+    } else {
+        subTabs = [
+            { id: 'velocity', label: 'VELOCITY SCORE' },
+            { id: 'depth', label: 'DEEPEST DIVE' },
+            { id: 'kills', label: 'MOST KILLS' }
+        ];
+    }
+
     return (
         <div className="leaderboard-panel">
-            {/* BOARD TABS */}
-            <div className="leaderboard-tabs">
-                {boards.map(board => (
+            {/* MODE FILTER (Now Top Level) */}
+            <div className="mode-filter">
+                {topTabs.map(tab => (
                     <button
-                        key={board.id}
-                        className={`board-tab ${activeBoard === board.id ? 'active' : ''}`}
-                        onClick={() => setActiveBoard(board.id)}
+                        key={tab.id}
+                        className={`filter-btn ${activeMode === tab.id ? 'active' : ''}`}
+                        onClick={() => setActiveMode(tab.id)}
                     >
-                        {board.label}
+                        {tab.label}
                     </button>
                 ))}
             </div>
 
-            {/* MODE FILTER */}
-            <div className="mode-filter">
-                <button
-                    className={`filter-btn ${modeFilter === null ? 'active' : ''}`}
-                    onClick={() => setModeFilter(null)}
-                >
-                    ALL
-                </button>
-                <button
-                    className={`filter-btn ${modeFilter === 'normal' ? 'active' : ''}`}
-                    onClick={() => setModeFilter('normal')}
-                >
-                    NORMAL
-                </button>
-                <button
-                    className={`filter-btn ${modeFilter === 'hardcore' ? 'active' : ''}`}
-                    onClick={() => setModeFilter('hardcore')}
-                >
-                    HARDCORE
-                </button>
-                <button
-                    className={`filter-btn ${modeFilter === 'ghost' ? 'active' : ''}`}
-                    onClick={() => setModeFilter('ghost')}
-                >
-                    GHOST
-                </button>
+            {/* BOARD TABS (Now Sub Level) */}
+            <div className="leaderboard-tabs">
+                {subTabs.map(tab => (
+                    <button
+                        key={tab.id}
+                        className={`board-tab ${activeMetric === tab.id ? 'active' : ''}`}
+                        onClick={() => setActiveMetric(tab.id)}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* DESCRIPTION LINE */}
+            <div className="text-cyan text-xs font-mono mb-4 text-center px-4 animate-pulse">
+                {DESCRIPTIONS[activeMetric]}
             </div>
 
             {isLoading ? (
@@ -206,12 +241,10 @@ export default function LeaderboardPanel() {
                 <>
                     {/* TOP 3 */}
                     {renderTopThree()}
-
                     {/* TOP 4-10 */}
-                    {renderTopTen()}
-
+                    {renderList(3, 10)}
                     {/* TOP 11-100 */}
-                    {renderRestOfList()}
+                    {renderList(10, 100, "TOP 11-100:")}
                 </>
             )}
 

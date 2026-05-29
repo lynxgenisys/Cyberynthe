@@ -241,6 +241,28 @@ export async function getTopScores(mode = null, limit = 100, sortBy = 'score') {
 }
 
 /**
+ * Fetch top accomplishments from profiles table
+ */
+export async function getTopAccomplishments(sortBy = 'total_kills', limit = 100) {
+    if (!supabase) {
+        return { success: false, error: "Supabase not initialized." };
+    }
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('id, hacker_id, total_kills, total_runs, total_deaths')
+            .order(sortBy, { ascending: false, nullsFirst: false })
+            .limit(limit);
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (err) {
+        console.error("Error fetching accomplishments:", err);
+        return { success: false, error: err.message };
+    }
+}
+
+/**
  * Get aggregated lifetime stats for a user (Profile Card)
  * Uses the custom Database Function 'get_player_stats'
  */

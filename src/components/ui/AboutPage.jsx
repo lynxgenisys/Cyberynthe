@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { patchNotes } from '../../data/patchNotesData';
 
 const AboutPage = () => {
-    return (
-        <div className="w-full h-full flex flex-col p-8 text-cyan bg-black/80 font-mono overflow-y-auto">
-            <h1 className="text-4xl font-bold mb-6 text-magenta glitch-text">[ CYBERYNTHE v0.12.0 ]</h1>
-            
+    const [activeTab, setActiveTab] = useState('archive'); // 'archive' | 'patch_notes'
+
+    const renderArchive = () => (
+        <>
             <section className="mb-8">
                 <h2 className="text-2xl mb-2 text-yellow-500">{">>"} DIRECTIVE OVERVIEW</h2>
                 <p className="text-sm text-gray-300 leading-relaxed max-w-3xl">
@@ -52,6 +53,80 @@ const AboutPage = () => {
                 </ul>
             </section>
 
+            <section className="mb-8">
+                <h2 className="text-2xl mb-2 text-yellow-500">{">>"} SCORING MECHANICS</h2>
+                <div className="space-y-4 text-sm text-gray-300">
+                    <div>
+                        <h3 className="text-cyan font-bold">Velocity Score (Distance over Time)</h3>
+                        <p>The system assigns a "target par time" for each floor (60s base + 5s per floor depth). If you beat that par time, your score multiplies exponentially. The deeper the floor you speedrun, the higher the multiplier. <br/><span className="text-xs text-gray-500">Formula: Σ ((60s + 5s per floor) / ActualTime) * Floor</span></p>
+                    </div>
+                    <div>
+                        <h3 className="text-cyan font-bold">System Stability (Survival Efficiency)</h3>
+                        <p>Rewards descending deep into the maze while taking as close to zero damage as possible and conserving M-RAM injectors. Any damage taken or injectors used severely drops this score. <br/><span className="text-xs text-gray-500">Formula: (CurrentFloor * 1000) / (TotalDamageTaken + (MRAM_Used * 50) + 1)</span></p>
+                    </div>
+                    <div>
+                        <h3 className="text-cyan font-bold">Stealth Partition (Ghost Score)</h3>
+                        <p>Exclusive to "Ghost Mode". This measures pure speed and evasion, rewarding clearing as many floors as possible without triggering combat or taking damage. <br/><span className="text-xs text-gray-500">Formula: (TotalFloors * 10000) / TotalTimeInMilliseconds</span></p>
+                    </div>
+                </div>
+            </section>
+        </>
+    );
+
+    const renderPatchNotes = () => (
+        <div className="space-y-8">
+            {patchNotes.map((patch, index) => (
+                <div key={index} className="border border-cyan/20 bg-black/40 p-6 relative">
+                    <div className="absolute top-0 right-0 bg-cyan text-black px-3 py-1 text-xs font-bold">
+                        {patch.date}
+                    </div>
+                    <h3 className="text-2xl text-cyan mb-4">{patch.version}</h3>
+                    <div className="space-y-6 text-sm text-gray-300">
+                        {Object.entries(patch.categories).map(([category, items]) => (
+                            <div key={category}>
+                                <h4 className={`text-lg font-bold mb-2 border-b pb-1 
+                                    ${category === 'Added' ? 'text-green-400 border-green-400/30' : 
+                                      category === 'Fixed' ? 'text-magenta border-magenta/30' : 
+                                      category === 'Changed' ? 'text-yellow-500 border-yellow-500/30' : 
+                                      'text-blue-400 border-blue-400/30'}`}
+                                >
+                                    [{category}]
+                                </h4>
+                                <ul className="list-disc pl-5 space-y-1">
+                                    {items.map((item, i) => (
+                                        <li key={i}>{item}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+
+    return (
+        <div className="w-full h-full flex flex-col p-8 text-cyan bg-black/80 font-mono overflow-y-auto">
+            <div className="flex justify-between items-end mb-6 border-b border-cyan/30 pb-4">
+                <h1 className="text-4xl font-bold text-magenta glitch-text">[ CYBERYNTHE v0.12.0 ]</h1>
+                
+                <div className="flex gap-4">
+                    <button 
+                        className={`px-4 py-2 border transition-colors ${activeTab === 'archive' ? 'border-cyan bg-cyan text-black' : 'border-cyan text-cyan hover:bg-cyan/20'}`}
+                        onClick={() => setActiveTab('archive')}
+                    >
+                        SYSTEM_ARCHIVE
+                    </button>
+                    <button 
+                        className={`px-4 py-2 border transition-colors ${activeTab === 'patch_notes' ? 'border-magenta bg-magenta text-black' : 'border-magenta text-magenta hover:bg-magenta/20'}`}
+                        onClick={() => setActiveTab('patch_notes')}
+                    >
+                        UPDATE_LOG
+                    </button>
+                </div>
+            </div>
+
+            {activeTab === 'archive' ? renderArchive() : renderPatchNotes()}
         </div>
     );
 };

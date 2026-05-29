@@ -152,6 +152,7 @@ export default function RunTracker() {
             resonance: Number((finalScores.resonanceFinal || 0.5).toFixed(2)), // Usually float in DB, but just in case
             ghost_score: Math.round(finalScores.ghostScore || 0),
             stability_score: Math.round(finalScores.stabilityScore || 0),
+            session_kills: Math.round(gameState.sessionKills || 0),
 
             // Legacy JSON (Keep for debug/safety)
             platform_data: {
@@ -169,6 +170,42 @@ export default function RunTracker() {
 
         // Log final scores (will be sent to Supabase later)
         console.log('[RUN_TRACKER] Run ended:', finalScores);
+
+        // Update Lifetime Profile Stats in Supabase
+        if (result.success) {
+            import('../../utils/supabase').then(async ({ supabase }) => {
+                if (!supabase) return;
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+                
+                // Fetch current profile
+                const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+                if (profile) {
+                    const currentDives = profile.deepest_dives || { normal: 0, hardcore: 0, ghost: 0 };
+                    const currentLifetimeKills = profile.lifetime_kills || {};
+                    
+                    // Update deepest dive for this mode
+                    if (submission.floor_reached > (currentDives[submission.game_mode] || 0)) {
+                        currentDives[submission.game_mode] = submission.floor_reached;
+                    }
+                    
+                    // Add session mob kills to lifetime
+                    const sessionMobs = gameState.sessionMobKills || {};
+                    for (const [mobId, count] of Object.entries(sessionMobs)) {
+                        currentLifetimeKills[mobId] = (currentLifetimeKills[mobId] || 0) + count;
+                    }
+
+                    // Push update
+                    await supabase.from('profiles').update({
+                        total_runs: (profile.total_runs || 0) + 1,
+                        total_deaths: (profile.total_deaths || 0) + 1, // Assumes every run ends in death/completion
+                        total_kills: (profile.total_kills || 0) + submission.session_kills,
+                        deepest_dives: currentDives,
+                        lifetime_kills: currentLifetimeKills
+                    }).eq('id', user.id);
+                }
+            });
+        }
 
         // Store in localStorage for now (will be Supabase later)
         const runHistory = JSON.parse(localStorage.getItem('CyberSynthe_RunHistory') || '[]');

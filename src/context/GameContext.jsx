@@ -44,8 +44,10 @@ export const GameProvider = ({ children }) => {
         // SCORING TRACKING
         runStartTime: null, // Timestamp when run starts
         floorTimes: [], // Array of {floor, startTime, endTime}
-        totalDamageTaken: 0,
         mramUsedCount: 0,
+        sessionKills: 0, // NEW: Track total kills in the current run
+        sessionMobKills: {}, // NEW: Track specific mob kills { 'BIT_MITE': 5, etc }
+        totalDamageTaken: 0,
         undetectedFloorCount: 0,
         wasDetectedThisFloor: false,
 
@@ -216,6 +218,11 @@ export const GameProvider = ({ children }) => {
                 // Reset to Floor 1, Seed Reset
                 setGameState(prev => ({
                     ...prev,
+                    floorTimes: [],
+                    mramUsedCount: 0,
+                    sessionKills: 0,
+                    sessionMobKills: {},
+                    totalPausedTime: 0,
                     floorLevel: 1,
                     sectorId: 1,
                     seed: btoa(Date.now().toString()).substring(0, 16)

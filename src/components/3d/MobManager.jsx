@@ -1124,11 +1124,19 @@ export default function MobManager({ maze, floorLevel }) {
                     rewardEBits = Math.floor(rewardXP / 4);
                 }
 
-                setGameState(prev => ({
-                    ...prev,
-                    xp: prev.xp + rewardXP,
-                    eBits: prev.eBits + rewardEBits
-                }));
+                setGameState(prev => {
+                    const currentMobKills = prev.sessionMobKills || {};
+                    return {
+                        ...prev,
+                        xp: prev.xp + rewardXP,
+                        eBits: prev.eBits + rewardEBits,
+                        sessionKills: (prev.sessionKills || 0) + 1,
+                        sessionMobKills: {
+                            ...currentMobKills,
+                            [mob.id]: (currentMobKills[mob.id] || 0) + 1
+                        }
+                    };
+                });
 
                 addNotification(`ENTITY_PURGED: ${mob.name} +${rewardXP} XP +${rewardEBits} eBITS`);
                 if (mob.id === 'IO_SENTINEL') { setBossSubtitle("REBOOT_ABORTED.", 3000); setBossKey({ x: mob.x, z: mob.z }); updateBossStatus({ active: false }); }

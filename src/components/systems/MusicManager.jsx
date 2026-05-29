@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useGame } from '../../context/GameContext';
 
 // Load all MP3 files dynamically
-const menuTracksRaw = import.meta.glob('../../assets/OST/Menus/*.mp3', { eager: true, as: 'url' });
-const levelTracksRaw = import.meta.glob('../../assets/OST/Levels/*.mp3', { eager: true, as: 'url' });
-const bossTracksRaw = import.meta.glob('../../assets/OST/BOSS/*.mp3', { eager: true, as: 'url' });
+const menuTracksRaw = import.meta.glob('../../assets/OST/Menus/*.mp3', { eager: true, query: '?url', import: 'default' });
+const levelTracksRaw = import.meta.glob('../../assets/OST/Levels/*.mp3', { eager: true, query: '?url', import: 'default' });
+const bossTracksRaw = import.meta.glob('../../assets/OST/BOSS/*.mp3', { eager: true, query: '?url', import: 'default' });
 
 // Extract file name for display
 const formatTrackName = (path) => {
@@ -22,10 +22,26 @@ const tracks = {
 export default function MusicManager() {
     const { gameState, setCurrentTrackName } = useGame();
     const audioRef = useRef(new Audio());
+    const [audioUnlocked, setAudioUnlocked] = useState(false);
     
     // Internal state to track current playlist
     const [currentZone, setCurrentZone] = useState('MENUS');
     const [trackIndex, setTrackIndex] = useState(0);
+
+    // Audio Unlocker: Wait for first interaction to unblock autoplay
+    useEffect(() => {
+        const unlock = () => {
+            setAudioUnlocked(true);
+            window.removeEventListener('click', unlock);
+            window.removeEventListener('keydown', unlock);
+        };
+        window.addEventListener('click', unlock);
+        window.addEventListener('keydown', unlock);
+        return () => {
+            window.removeEventListener('click', unlock);
+            window.removeEventListener('keydown', unlock);
+        };
+    }, []);
 
     // 1. Determine current zone
     useEffect(() => {
@@ -49,6 +65,8 @@ export default function MusicManager() {
 
     // 2. Play Audio based on zone & index
     useEffect(() => {
+        if (!audioUnlocked) return; // Wait for user interaction first
+
         const audio = audioRef.current;
         const playlist = tracks[currentZone];
         if (!playlist || playlist.length === 0) return;
@@ -64,7 +82,7 @@ export default function MusicManager() {
         audio.volume = gameState.musicVolume;
         
         if (gameState.musicVolume > 0) {
-            audio.play().catch(e => console.warn("Audio autoplay blocked by browser, user interaction required."));
+            audio.play().catch(e => console.warn("Audio playback failed:", e));
             setCurrentTrackName(track.name);
         } else {
             setCurrentTrackName("MUSIC OFF");

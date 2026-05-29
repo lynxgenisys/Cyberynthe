@@ -6,7 +6,6 @@ import './ProfileCard.css';
 
 /**
  * PROFILE CARD: The "Hacker ID" - Player stats and badges
- * Shows lifetime achievements, resonance, and earned titles
  */
 export default function ProfileCard({ targetUserId = null, targetUsername = null, onClose = null }) {
     const { gameState } = useGame();
@@ -17,52 +16,60 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
     React.useEffect(() => {
         async function loadProfile() {
             setLoading(true);
-            const result = await getPlayerStats(targetUserId); // Uses target ID if provided, else defaults to current user
-
+            const result = await getPlayerStats(targetUserId); 
             if (result.success) {
                 setProfileData(result.data);
             } else {
-                // Fallback for new/offline users
                 setProfileData({
                     total_runs: 0,
                     total_ebits: 0,
                     max_floor: 0,
-                    sentinel_kills: 0,
-                    avg_resonance: 0.5
+                    avg_resonance: 0.5,
+                    deepest_dives: { normal: 0, hardcore: 0, ghost: 0 },
+                    lifetime_kills: {},
+                    save_data: null
                 });
             }
             setLoading(false);
         }
         loadProfile();
-    }, [targetUserId]); // Run on mount or when target changes
+    }, [targetUserId]); 
 
-    // Fallback while loading
     if (loading) return <div className="profile-card loading"><div className="animate-pulse">DECRYPTING_DOSSIE...</div></div>;
 
     const stats = profileData || {};
+    const dives = stats.deepest_dives || { normal: 0, hardcore: 0, ghost: 0 };
+    const kills = stats.lifetime_kills || {};
+    const saveState = stats.save_data || null;
 
     const profile = {
         username: targetUsername || gameState.playerName || 'GHOST_ID',
-        // created_at: Use current date or fetch from auth metadata if needed (simplified for now)
-        current_level: getLevelFromXP(gameState.xp || 0), // Current session Level
-
+        
+        // Active Cache (Save State)
+        cache_mode: saveState ? (saveState.gameMode || 'normal') : 'NONE',
+        cache_level: saveState ? getLevelFromXP(saveState.xp || 0) : 0,
+        cache_xp: saveState ? (saveState.xp || 0) : 0,
+        cache_floor: saveState ? (saveState.floorLevel || 1) : 0,
+        cache_ebits: saveState ? (saveState.eBits || 0) : 0,
+        cache_time: saveState ? Math.floor(((saveState.totalPausedTime || 0)) / 1000) : 0, // Fallback placeholder if timestamp missing, but realistically saveState tracks playtime differently. Let's just say we don't have accurate run time in saveState easily without logic. We will skip exact run time if not tracked.
+        
         // REAL DB STATS
         total_runs: stats.total_runs || 0,
         total_ebits: (stats.total_ebits || 0).toLocaleString(),
-        best_floor_normal: stats.max_floor || 0,
-        sentinel_kills: stats.sentinel_kills || 0,
+        best_normal: dives.normal || 0,
+        best_hardcore: dives.hardcore || 0,
+        best_ghost: dives.ghost || 0,
         resonance_lifetime: stats.avg_resonance !== undefined ? stats.avg_resonance : 0.5,
 
-        fragments_found: gameState.collectedFragments?.length || 0, // Still local for now
         badges: ['[USER]']
     };
 
     // Calculate dynamic badges based on REAL Stats
-    if (profile.best_floor_normal >= 10) profile.badges.push('[EXPLORER]');
-    if (profile.best_floor_normal >= 25) profile.badges.push('[DEEP_DIVER]');
-    if (profile.best_floor_normal >= 50) profile.badges.push('[VOID_WALKER]');
-    if (profile.current_level >= 5) profile.badges.push('[OVERCLOCKED]');
-    if (profile.sentinel_kills >= 5) profile.badges.push('[SLAYER]');
+    if (profile.best_normal >= 10 || profile.best_hardcore >= 5) profile.badges.push('[EXPLORER]');
+    if (profile.best_normal >= 25 || profile.best_hardcore >= 15) profile.badges.push('[DEEP_DIVER]');
+    if (profile.best_normal >= 50 || profile.best_hardcore >= 30) profile.badges.push('[VOID_WALKER]');
+    if (profile.cache_level >= 5) profile.badges.push('[OVERCLOCKED]');
+    if ((kills['IO_SENTINEL'] || 0) + (kills['STATELESS_SENTRY'] || 0) >= 5) profile.badges.push('[SLAYER]');
 
     const getBadgeColor = (badge) => {
         if (badge.includes('VOID_WALKER')) return '#FFD700'; // Gold
@@ -75,7 +82,6 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
 
     const renderResonanceBar = () => {
         const resonance = profile.resonance_lifetime;
-        // ethicsScore is 0..1, where 0.5 is neutral
         const position = resonance * 100;
 
         return (
@@ -83,10 +89,7 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
                 <div className="resonance-label-left">ORDER</div>
                 <div className="resonance-bar">
                     <div className="resonance-gradient" />
-                    <div
-                        className="resonance-indicator"
-                        style={{ left: `${position}%` }}
-                    />
+                    <div className="resonance-indicator" style={{ left: `${position}%` }} />
                 </div>
                 <div className="resonance-label-right">CHAOS</div>
             </div>
@@ -95,34 +98,61 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
 
     return (
         <div className="profile-card">
+            {/* LCACHE INFO (Active Run Save) */}
+            <div className="profile-header bg-black/50 border border-cyan/30 p-2 mb-4 text-xs font-mono">
+                <div className="text-cyan mb-1 font-bold">» ACTIVE_LCACHE_DATA</div>
+                {saveState ? (
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-gray-300">
+                        <span>MODE: <span className="text-white">{profile.cache_mode.toUpperCase()}</span></span>
+                        <span>LVL: <span className="text-white">{profile.cache_level}</span></span>
+                        <span>XP: <span className="text-white">{profile.cache_xp}</span></span>
+                        <span>FLOOR: <span className="text-white">{profile.cache_floor}</span></span>
+                        <span>eBITS: <span className="text-white">{profile.cache_ebits}</span></span>
+                    </div>
+                ) : (
+                    <div className="text-gray-500 italic">NO_ACTIVE_SESSION_FOUND</div>
+                )}
+            </div>
+
             {/* HEADER */}
             <div className="profile-header">
                 <div className="profile-ghost-id">[GHOST_ID]: {profile.username}</div>
                 <div className="profile-badge-primary" style={{ color: getBadgeColor(profile.badges[profile.badges.length - 1]) }}>
                     STATUS: {profile.badges[profile.badges.length - 1]}
                 </div>
-                <div className="profile-created">
-                    LEVEL: {profile.current_level} // RUNS_LOGGED: {profile.total_runs}
+                <div className="profile-created text-xs">
+                    TOTAL_RUNS_LOGGED: {profile.total_runs}
                 </div>
             </div>
 
-            {/* VITALS */}
-            <div className="profile-vitals">
-                <div className="vital-stat">
-                    <div className="vital-label">TOTAL_ASSETS_EXTRACTED:</div>
-                    <div className="vital-value">{profile.total_ebits} eBits</div>
+            {/* DEEPEST DIVES */}
+            <div className="profile-section">
+                <div className="section-title">DEEPEST_DIVES (RECORDS):</div>
+                <div className="flex gap-4 text-sm font-mono mt-2">
+                    <div className="border border-cyan/30 p-2 flex-1 text-center bg-black/40">
+                        <div className="text-cyan mb-1">NORMAL</div>
+                        <div>Floor {profile.best_normal}</div>
+                    </div>
+                    <div className="border border-red-500/30 p-2 flex-1 text-center bg-black/40">
+                        <div className="text-red-500 mb-1">HARDCORE</div>
+                        <div>Floor {profile.best_hardcore}</div>
+                    </div>
+                    <div className="border border-purple-500/30 p-2 flex-1 text-center bg-black/40">
+                        <div className="text-purple-400 mb-1">GHOST</div>
+                        <div>Floor {profile.best_ghost}</div>
+                    </div>
                 </div>
-                <div className="vital-stat">
-                    <div className="vital-label">DEEPEST_DIVE (RECORD):</div>
-                    <div className="vital-value">Floor {profile.best_floor_normal}</div>
-                </div>
-                <div className="vital-stat">
-                    <div className="vital-label">FRAGMENTS_DECRYPTED:</div>
-                    <div className="vital-value">{profile.fragments_found} / 50</div>
-                </div>
-                <div className="vital-stat">
-                    <div className="vital-label">SENTINEL_ELIMINATIONS:</div>
-                    <div className="vital-value">{profile.sentinel_kills}</div>
+            </div>
+
+            {/* LIFETIME KILLS */}
+            <div className="profile-section">
+                <div className="section-title">LIFETIME_KILLS:</div>
+                <div className="grid grid-cols-2 gap-2 text-xs font-mono mt-2 bg-black/40 p-2 border border-cyan/20">
+                    <div className="flex justify-between"><span>BIT_MITE:</span> <span className="text-cyan">{kills['BIT_MITE'] || 0}</span></div>
+                    <div className="flex justify-between"><span>NULL_WISP:</span> <span className="text-cyan">{kills['NULL_WISP'] || 0}</span></div>
+                    <div className="flex justify-between"><span>LOGIC_HUNTER:</span> <span className="text-cyan">{kills['HUNTER'] || 0}</span></div>
+                    <div className="flex justify-between"><span>STATELESS_SENTRY:</span> <span className="text-cyan">{kills['STATELESS_SENTRY'] || 0}</span></div>
+                    <div className="flex justify-between"><span>IO_SENTINEL:</span> <span className="text-red-500">{kills['IO_SENTINEL'] || 0}</span></div>
                 </div>
             </div>
 
@@ -145,7 +175,6 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
                             {badge}
                         </div>
                     ))}
-                    {/* Locked badges */}
                     {!profile.badges.includes('[EXPLORER]') && <div className="badge-item locked">[EXPLORER]</div>}
                     {!profile.badges.includes('[DEEP_DIVER]') && <div className="badge-item locked">[DEEP_DIVER]</div>}
                     {!profile.badges.includes('[VOID_WALKER]') && <div className="badge-item locked">[VOID_WALKER]</div>}
