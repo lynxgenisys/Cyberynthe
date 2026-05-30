@@ -6,7 +6,21 @@ export const patchNotes = [
             "Added": [
                 "Mobile Integration: Seamless cross-play integration within a unified codebase via device detection logic.",
                 "Touch Controls: Added Virtual Joystick for movement and swipe-to-look camera panning.",
-                "Mobile HUD Overlay: Implemented dedicated thumb-friendly virtual buttons for Jumping, Firing, Shredding, Scanning, and Interaction."
+                "Mobile HUD Overlay: Implemented dedicated thumb-friendly virtual buttons for Jumping, Firing, Shredding, Scanning, and Interaction.",
+                "Support Links: Added a Buy Me A Coffee widget to the main menu.",
+                "Audio Scape: Added a new ping/loot collection sound effect for collecting data fragments."
+            ],
+            "Changed": [
+                "Inventory System Unification: Enforced a global 999 max stack limit for items across both the player's Cyberdeck Backpack and the HUD Quick-Slots.",
+                "Mob AI Spawning: Null Wisps now utilize a BFS pathfinding algorithm to spawn Bit Mites along valid maze paths rather than arbitrarily behind walls.",
+                "Mob AI Logic: Null Wisps now reverse orbit direction when directly targeted by the player's crosshair.",
+                "Sentry Scaling: Increased global Sentry spawn rate by 40% and updated base spawn levels.",
+                "Floor 9 Event: Guaranteed Sentry spawn at the exit portal which drops a new 'Full Recovery' green-magenta pulsing item."
+            ],
+            "Fixed": [
+                "Player Controller Crash: Fixed a critical ReferenceError where isMobile was undefined when initializing the game on mobile devices.",
+                "Split-Brain Saving / Leaderboard Crosstalk: localStorage saves are now strictly namespaced to the authenticated Supabase user.id. Logging into an alternate profile on the same PC will no longer bleed saves or attribute progress incorrectly.",
+                "MobManager Syntax: Scrubbed an orphaned block of AI logic that was previously breaking the production Rollup build."
             ]
         }
     },

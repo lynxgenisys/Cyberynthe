@@ -20,6 +20,46 @@
 - **Split-Brain Saving / Leaderboard Crosstalk**: `localStorage` saves are now strictly namespaced to the authenticated Supabase `user.id`. Logging into an alternate profile on the same PC will no longer bleed saves or attribute progress incorrectly.
 - **MobManager Syntax**: Scrubbed an orphaned block of AI logic that was previously breaking the production Rollup build.
 
+## [0.12.2] - 2026-05-29
+
+### Added
+- **Compact HUD Logs**: A new system setting to shrink the HUD notification log to 2 messages.
+- **L2_CACHE Persistence**: Explicit floor transition saves that guarantee progress updates on boss defeats.
+
+### Changed
+- **Combat Tuning**: Bit Flip now unlocks dynamically on floor 2/level 3 via a special dancing Mite drop.
+- **Audio Overhaul**: Fully wired Data Spike Synth attacks and continuous Charge attacks with menu music cycling.
+
+### Fixed
+- **Interaction HUD**: Raised synchronization prompts to clear the reticle.
+- **Stuck Prompts**: Walk-away fading for Ghost Shard prompts.
+- **Inventory Bug**: Fixed an issue where new items wouldn't auto-send to the backpack when quickslots were full.
+- **Import Crash**: Re-added AuthOverlay to fix the white screen crash on load.
+
+## [0.12.1] - 2026-05-29
+
+### Added
+- **Lore Archive**: A new tab inside the Profile Card dossier to track and re-read decrypted System Fragments.
+- **Persistent Lore**: Unlocked System Fragments now permanently save to your Cloud profile across all runs.
+- **Expanded Badge System**: Added 18 new legacy titles and achievements covering combat, ghost mode, and exploration.
+
+## [0.12.0] - 2026-05-28
+
+### Added
+- **Cloud Saves**: Game state, player inventory, and progression are now securely backed up to Supabase.
+- **Settings Tab**: A new configuration panel within the Cyberdeck for adjusting preferences.
+- **Music & Audio Systems**: Full OST integration for Menus, Levels, and Boss encounters with volume controls and shuffle capabilities.
+- **Patch Notes/Update Log**: A complete historical archive of all system changes available in the About page.
+
+### Changed
+- **Leaderboards 2.0**: Restructured with tabs for Normal, Hardcore, Ghost, and Accomplishments.
+- **Profile Dossiers**: Now feature lifetime kills broken down by mob type, active Lcache (Current Run) tracking, and Deepest Dives separated by game mode.
+- **Spawn Balancing**: Sentinels no longer spawn until floor 9, and Hunters wait until floor 13.
+
+### Fixed
+- **Music Autoplay**: Fixed browser restrictions blocking menu music from initializing on load.
+- **JSX & React Warnings**: Cleaned up various syntax errors in the UI components.
+
 ## [0.11.2] - 2026-02-04
 
 ### Changed - INPUT REFINEMENTS
