@@ -274,11 +274,19 @@ const NotificationLog = memo(({ logs }) => {
     return (
         <div className="w-96 flex flex-col-reverse gap-1 items-start justify-end pointer-events-none mask-image-linear-gradient mb-28">
             {logs.map((log, i) => {
-                let baseColor = "text-cyan-glow border-cyan";
-                if (/THREAT|NEUTRALIZED|KILL|HOSTILE/.test(log.msg)) baseColor = "text-red-500 border-red-500";
-                else if (/ITEM|STORED|INVENTORY|CACHE/.test(log.msg)) baseColor = "text-green-500 border-green-500";
+                let baseColor = log.color ? `text-[${log.color}] border-[${log.color}]` : "text-cyan-glow border-cyan";
+                if (!log.color) {
+                    if (/THREAT|NEUTRALIZED|KILL|HOSTILE/.test(log.msg)) baseColor = "text-red-500 border-red-500";
+                    else if (/ITEM|STORED|INVENTORY|CACHE/.test(log.msg)) baseColor = "text-green-500 border-green-500";
+                }
+                const animation = log.sticky ? "animate-pulse" : "animate-fade-in-up";
+                const isLevelUp = log.msg.includes("ACCESS_LEVEL_INCREASED");
+                const finalClass = isLevelUp 
+                    ? `text-sm font-bold font-mono px-3 py-2 bg-black/80 border-l-4 text-cyan-400 border-cyan-400 drop-shadow-[0_0_10px_#00FFFF] animate-pulse`
+                    : `text-xs font-mono px-2 py-1 bg-black/60 border-l-2 ${baseColor} ${animation}`;
+                
                 return (
-                    <div key={`${log.id}-${i}`} className={`text-xs font-mono px-2 py-1 bg-black/60 border-l-2 ${baseColor} animate-fade-in-up`}>
+                    <div key={`${log.id}-${i}`} className={finalClass}>
                         <span className="text-gray-500 mr-2">[{new Date(log.time).toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" })}]</span>
                         {renderMessage(log.msg)}
                     </div>
@@ -304,7 +312,10 @@ export default function HUD() {
         currentLevel: getLevelFromXP(gameState.xp || 0)
     }), [playerState.stats, gameState.xp, getLevelFromXP]);
 
-    const logs = useMemo(() => [...gameState.notifications].reverse(), [gameState.notifications]);
+    const logs = useMemo(() => {
+        const rev = [...gameState.notifications].reverse();
+        return gameState.compactHUDLogs ? rev.slice(0, 2) : rev;
+    }, [gameState.notifications, gameState.compactHUDLogs]);
 
     // SCRAMBLE ANIMATION
     const [scramble, setScramble] = useState(0);
@@ -406,7 +417,7 @@ export default function HUD() {
             </div>
 
             {gameState.interactionPrompt && !gameState.activeLoreLog && (
-                <div className="absolute left-1/2 top-[60%] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50">
+                <div className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50">
                     <div className="flex flex-col items-center animate-pulse">
                         <div className="w-12 h-12 border-2 border-cyan rounded-full flex items-center justify-center mb-2 bg-black/50 backdrop-blur"><span className="text-xl font-bold text-cyan font-mono">F</span></div>
                         <div className="text-sm font-bold text-cyan font-mono tracking-widest bg-black/80 px-3 py-1 border border-cyan/50">{gameState.interactionPrompt.replace(/\[[A-Z]\]\s*/, "")}</div>

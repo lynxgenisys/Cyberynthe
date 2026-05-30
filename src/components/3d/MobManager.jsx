@@ -7,6 +7,7 @@ import { usePlayer } from '../../context/PlayerContext';
 import { useSound } from '../../context/SoundContext';
 import * as THREE from 'three';
 import { useInventory } from '../../context/InventoryContext';
+import SparkDrop from './SparkDrop';
 
 import biteMiteSkinSrc from '../../assets/mobs/Bite_Mite_Skin.webp';
 import wispSkinSrc from '../../assets/mobs/null_wisp_skin.webp';
@@ -84,7 +85,7 @@ const KernelShard = ({ position, maze }) => {
     const meshRef = useRef();
     const { setInteractionPrompt, lastInteractTime, setActiveLoreLog, fastStateRef, setGameState } = useGame();
     const [isCollected, setIsCollected] = useState(false);
-    const lastProcessedRef = useRef(0);
+    const lastProcessedRef = useRef({ time: 0, isPrompting: false });
 
     useFrame((state, delta) => {
         if (!meshRef.current || isCollected) return;
@@ -93,10 +94,14 @@ const KernelShard = ({ position, maze }) => {
         const playerPos = fastStateRef.current.playerWorldPos;
         if (playerPos) {
             const dx = playerPos.x - position.x, dz = playerPos.z - position.z;
-            if (dx * dx + dz * dz < 9.0) {
-                setInteractionPrompt("[R] SYNCHRONIZE SHARD");
-                if (lastInteractTime && lastInteractTime > lastProcessedRef.current) {
-                    lastProcessedRef.current = lastInteractTime;
+            const isNear = dx * dx + dz * dz < 9.0;
+            if (isNear) {
+                if (!lastProcessedRef.current.isPrompting) {
+                    setInteractionPrompt("[F] SYNCHRONIZE SHARD");
+                    lastProcessedRef.current.isPrompting = true;
+                }
+                if (lastInteractTime && lastInteractTime > (lastProcessedRef.current.time || 0)) {
+                    lastProcessedRef.current.time = lastInteractTime;
                     setIsCollected(true);
                     setInteractionPrompt(null);
                     setActiveLoreLog({
@@ -106,6 +111,9 @@ const KernelShard = ({ position, maze }) => {
                     });
                     setGameState(prev => ({ ...prev, isPortalLocked: false }));
                 }
+            } else if (lastProcessedRef.current.isPrompting) {
+                setInteractionPrompt(null);
+                lastProcessedRef.current.isPrompting = false;
             }
         }
     });
@@ -175,6 +183,9 @@ export default function MobManager({ maze, floorLevel }) {
     const mobKillCounter = useRef({}); // Track mob types killed
     const bestiaryDeadMobs = useRef([]); // Bestiary respawn queue
     const [bossKey, setBossKey] = useState(null);
+    const [sparks, setSparks] = useState([]);
+    const sparksRef = useRef([]);
+    const shardDroppedRef = useRef(false);
 
     const { gameState, setGameState, addNotification, setBossSubtitle, updateBossStatus, fastStateRef, getLevelFromXP, getNextLevelXP, setInteractionPrompt, updateScannedTargets, triggerCrit, consumeMobQueue } = useGame();
     const { triggerImpact, mobDamageBuffer, mobPositionBuffer, mobLifeBuffer, mobTypeBuffer, mobStatusBuffer } = useCombat();
@@ -474,6 +485,8 @@ export default function MobManager({ maze, floorLevel }) {
 
     useEffect(() => {
         if (!maze || !maze.grid) return;
+        sparksRef.current = [];
+        setSparks([]);
         const newMobs = []; const deadEnds = [];
         maze.grid.forEach((row, z) => {
             row.forEach((cell, x) => {
@@ -609,10 +622,9 @@ export default function MobManager({ maze, floorLevel }) {
                     }
                 }
 
-                // SHRED v2 DOT logic (Level 5+ Only)
+                // SHRED v2 DOT logic
                 if (mob.isHacked) {
-                    // SHRED doesn't exist before level 5
-                    if (playerLevel < 5) {
+                    if (!gameState.hasUnlockedDoT) {
                         mob.isHacked = false;
                         return;
                     }
@@ -623,13 +635,8 @@ export default function MobManager({ maze, floorLevel }) {
                     if (!mob.hackDamageTick) mob.hackDamageTick = 0;
                     mob.hackDamageTick += delta;
 
-                    // Damage per tick: 2 @ lvl1, 3 @ lvl3, 4 @ lvl5+
-                    let tickDamage;
-                    if (playerLevel <= 2) tickDamage = 2;
-                    else if (playerLevel <= 4) tickDamage = 3;
-                    else tickDamage = 4; // 4 at level 5+
-
-
+                    // Damage per tick: 4 + 0.2 per level
+                    let tickDamage = 4 + (playerLevel * 0.2);
 
                     // Tick timing: 2s at level 1, -0.1s per level (minimum 0.5s)
                     const tickInterval = Math.max(0.5, 2.0 - (playerLevel * 0.1));
@@ -1137,7 +1144,6 @@ export default function MobManager({ maze, floorLevel }) {
                     return {
                         ...prev,
                         xp: prev.xp + rewardXP,
-                        eBits: prev.eBits + rewardEBits,
                         sessionKills: (prev.sessionKills || 0) + 1,
                         sessionMobKills: {
                             ...currentMobKills,
@@ -1146,7 +1152,21 @@ export default function MobManager({ maze, floorLevel }) {
                     };
                 });
 
-                addNotification(`ENTITY_PURGED: ${mob.name} +${rewardXP} XP +${rewardEBits} eBITS`);
+                // Spark Drop Logic
+                const isSpecial = mob.id === 'BIT_MITE' && floorLevel > 1 && getLevelFromXP(gameState.xp) >= 3 && !gameState.hasUnlockedDoT && !shardDroppedRef.current;
+                if (isSpecial) shardDroppedRef.current = true;
+
+                const newSpark = {
+                    id: Math.random().toString(),
+                    x: mob.x,
+                    z: mob.z,
+                    eBits: rewardEBits,
+                    isSpecial: isSpecial
+                };
+                sparksRef.current.push(newSpark);
+                setSparks([...sparksRef.current]);
+
+                addNotification(`ENTITY_PURGED: ${mob.name} +${rewardXP} XP`);
                 if (mob.id === 'IO_SENTINEL') { setBossSubtitle("REBOOT_ABORTED.", 3000); setBossKey({ x: mob.x, z: mob.z }); updateBossStatus({ active: false }); }
             }
 
@@ -1365,6 +1385,36 @@ export default function MobManager({ maze, floorLevel }) {
             if (state.clock.elapsedTime - lastSyncRef.current > 0.1) { setMobs([...surviving]); lastSyncRef.current = state.clock.elapsedTime; }
         }
 
+        // --- SPARK COLLECTION LOGIC ---
+        if (sparksRef.current.length > 0) {
+            let sparksDirty = false;
+            const remainingSparks = sparksRef.current.filter(spark => {
+                const dx = spark.x - playerPos.x;
+                const dz = spark.z - playerPos.z;
+                const distSq = dx * dx + dz * dz;
+
+                if (distSq < 4.0) { // Collection radius (2m)
+                    if (spark.isSpecial) {
+                        setGameState(prev => ({ ...prev, hasUnlockedDoT: true }));
+                        addNotification("LOGIC_SHARD_ACQUIRED: BIT_FLIP_DOT_UNLOCKED", "#EA00FF");
+                        playSFX('powerup');
+                    } else {
+                        setGameState(prev => ({ ...prev, eBits: (prev.eBits || 0) + spark.eBits }));
+                        addNotification(`+${spark.eBits} eBITS`, "#00FFFF");
+                        playSFX('coin');
+                    }
+                    sparksDirty = true;
+                    return false; // Remove collected spark
+                }
+                return true; // Keep
+            });
+
+            if (sparksDirty) {
+                sparksRef.current = remainingSparks;
+                setSparks([...remainingSparks]);
+            }
+        }
+
         // Update mini-map with scanned targets
         // Update mini-map with scanned targets (SAFE APPEND)
         if (scannedTargets.length > 0) {
@@ -1491,6 +1541,16 @@ export default function MobManager({ maze, floorLevel }) {
                     color="#EA00FF"
                     distance={8}
                     decay={2}
+                />
+            ))}
+
+            {/* Render Physical Sparks */}
+            {sparks.map(s => (
+                <SparkDrop 
+                    key={s.id} 
+                    position={[s.x, 1.0, s.z]} 
+                    isSpecial={s.isSpecial} 
+                    color={s.isSpecial ? "#EA00FF" : "#00FFFF"} 
                 />
             ))}
         </group>

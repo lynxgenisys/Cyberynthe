@@ -14,7 +14,7 @@ import ChromaticContainer from './ChromaticContainer';
 
 export default function CyberdeckUI({ onClose }) {
     const { state, equipItem, unequipItem } = useInventory();
-    const { gameState, getLevelFromXP, getNextLevelXP, cycleNavMode, triggerExitRun, setMusicVolume, setIsMusicShuffle } = useGame();
+    const { gameState, getLevelFromXP, getNextLevelXP, cycleNavMode, triggerExitRun, setMusicVolume, setIsMusicShuffle, setCompactHUDLogs } = useGame();
     const { state: playerState, upgradeStat } = usePlayer();
 
     // UI Local State
@@ -34,9 +34,20 @@ export default function CyberdeckUI({ onClose }) {
     const availablePoints = totalPoints - spentPoints;
 
     // ATTACK STATS CALCULATION
-    const baseSpikeDmg = 2 + (level * 1.5);
-    const burstDmg = baseSpikeDmg * 1.5; // Rough estimate for burst multiplier if applicable, or just per bullet
+    const baseSpikeDmg = 10 + (level * 1.5);
+    const burstDmg = 25; // Flat charge damage
     const canBurst = level >= 5;
+    
+    // BUFF CALCULATION
+    const activeBuffs = gameState.activeBuffs || [];
+    let speedBuff = 0;
+    let cdBuff = 0;
+    activeBuffs.forEach(buff => {
+        if (buff.type === 'SPEED') speedBuff += buff.buffValue;
+        if (buff.type === 'COOLDOWN') cdBuff += buff.buffValue; // Negative value usually
+    });
+
+    const displayClockSpeed = playerState.stats.clockSpeed + speedBuff;
 
     // HANDLERS
     const handleBackpackClick = (item) => {
@@ -214,12 +225,12 @@ export default function CyberdeckUI({ onClose }) {
                             />
                             {/* CLOCK SPEED */}
                             <StatRow
-                                label="CLOCK_SPD"
-                                value={playerState.stats.clockSpeed + '%'}
-                                alloc={(playerState.allocations?.clock || 0) + (playerState.bonuses?.clock || 0)}
+                                label="[CLOCK_CYCLE]"
+                                value={displayClockSpeed + '%'}
+                                upgraded={speedBuff > 0}
+                                onUpgrade={() => handleUpgrade('clock')}
                                 canUpgrade={availablePoints > 0}
-                                onUpgrade={() => upgradeStat('clock')}
-                                color="green-500"
+                                color="#00FFFF"
                             />
                             {/* REGEN */}
                             <StatRow
@@ -348,6 +359,19 @@ export default function CyberdeckUI({ onClose }) {
                         </div>
 
                         <div className="bg-black/50 border border-gray-700 p-4">
+                            <h4 className="text-cyan mb-2">HUD PROTOCOLS</h4>
+                            <div className="flex items-center justify-between">
+                                <span>Compact Notification Log</span>
+                                <button 
+                                    onClick={() => setCompactHUDLogs(!gameState.compactHUDLogs)}
+                                    className={`px-4 py-1 border ${gameState.compactHUDLogs ? 'border-cyan text-cyan bg-cyan/10' : 'border-gray-600 text-gray-500'}`}
+                                >
+                                    {gameState.compactHUDLogs ? 'ENABLED' : 'DISABLED'}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="bg-black/50 border border-gray-700 p-4">
                             <h4 className="text-cyan mb-2">NAVIGATION (MINI-MAP)</h4>
                             <div className="flex items-center justify-between mb-2">
                                 <span>Display Mode</span>
@@ -428,21 +452,27 @@ export default function CyberdeckUI({ onClose }) {
                                 <h4 className="text-green-400 font-bold text-xs mb-1">DATA_SPIKE [LMB]</h4>
                                 <div className="text-[9px] text-gray-400">Standard Projectile</div>
                             </div>
-                            <div className="flex justify-between items-end text-xs font-mono mt-1">
-                                <div className="text-green-300">DMG: {baseSpikeDmg.toFixed(1)}</div>
-                                <div className="text-blue-400">COST: 10</div>
+                            <div className="space-y-2 mt-4 text-sm font-mono tracking-wider">
+                                <div className="flex justify-between"><span className="text-gray-400">COST:</span> <span className="text-cyan-400">5 M-RAM</span></div>
+                                <div className="flex justify-between"><span className="text-gray-400">DAMAGE:</span> <span className="text-white">{baseSpikeDmg.toFixed(1)}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-400">CHARGE:</span> <span className="text-green-400">{(1.0 / ((100 + (displayClockSpeed * 3)) / 100)).toFixed(2)}s</span></div>
                             </div>
                         </div>
 
                         {/* ATTACK 2: BIT FLIP (RMB) */}
-                        <div className={`border p-3 flex flex-col justify-between transition-all duration-500 ${level >= 5 ? 'border-magenta/60 bg-magenta/20 shadow-[0_0_10px_#FF00FF]' : 'border-magenta/30 bg-magenta/5 type-v1'}`}>
-                            <div>
-                                <h4 className="text-magenta font-bold text-xs mb-1">{level >= 5 ? "BIT_FLIP_V2 [RMB]" : "BIT_FLIP_V1 [RMB]"}</h4>
-                                <div className="text-[9px] text-gray-400">{level >= 5 ? "Viral DOT / Shred" : "Standard Driver"}</div>
-                            </div>
-                            <div className="flex justify-between items-end text-xs font-mono mt-1">
-                                <div className="text-magenta">DMG: {level >= 5 ? "DOT" : "BASE"}</div>
-                                <div className="text-blue-400">COST: 5</div>
+                        <div className="bg-[#111122] border border-[#222244] p-4 relative group">
+                            <h4 className="text-magenta font-bold tracking-[0.2em] mb-2">[ BIT FLIP ]</h4>
+                            <p className="text-xs text-gray-400 h-10">Data shredding anomaly. Triggers Logic Breach status.</p>
+                            
+                            <div className="space-y-2 mt-4 text-sm font-mono tracking-wider">
+                                <div className="flex justify-between"><span className="text-gray-400">COST:</span> <span className="text-magenta">5 M-RAM</span></div>
+                                <div className="flex justify-between"><span className="text-gray-400">DAMAGE:</span> <span className="text-white">3.0</span></div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-400">HACK DoT:</span> 
+                                    <span className={gameState.hasUnlockedDoT ? "text-green-400" : "text-gray-600"}>
+                                        {gameState.hasUnlockedDoT ? `${(4 + level * 0.2).toFixed(1)}/tick` : "LOCKED"}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
@@ -454,7 +484,7 @@ export default function CyberdeckUI({ onClose }) {
                             </div>
                             <div className="flex flex-col gap-0.5 text-[10px] font-mono mt-1">
                                 <div className="flex justify-between"><span className="text-orange-300">DMG:</span> <span>{canBurst ? burstDmg.toFixed(1) : "-"}</span></div>
-                                <div className="flex justify-between"><span className="text-gray-400">CHARGE:</span> <span className="text-green-400">{(1.0 / ((100 + (playerState.stats.clockSpeed * 3)) / 100)).toFixed(2)}s</span></div>
+                                <div className="flex justify-between"><span className="text-gray-400">CHARGE:</span> <span className="text-green-400">{(1.0 / ((100 + (displayClockSpeed * 3)) / 100)).toFixed(2)}s</span></div>
                             </div>
                         </div>
 

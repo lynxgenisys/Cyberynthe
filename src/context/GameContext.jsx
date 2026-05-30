@@ -99,6 +99,9 @@ export const GameProvider = ({ children }) => {
 
         // AUDIO
         musicVolume: parseFloat(localStorage.getItem('CyberSynthe_MusicVolume') || '0.5'),
+        sfxVolume: parseFloat(localStorage.getItem('CyberSynthe_SfxVolume') || '0.7'),
+        masterVolume: parseFloat(localStorage.getItem('CyberSynthe_MasterVolume') || '1.0'),
+        compactHUDLogs: localStorage.getItem('CyberSynthe_CompactLogs') === 'true',
         isMusicShuffle: localStorage.getItem('CyberSynthe_MusicShuffle') === 'true',
         currentTrackName: null
     });
@@ -157,12 +160,21 @@ export const GameProvider = ({ children }) => {
         }));
     };
 
-    const addNotification = (msg) => {
+    const addNotification = (msg, color = null, sticky = false) => {
         const id = Date.now();
         setGameState(prev => ({
             ...prev,
-            notifications: [...prev.notifications, { id, msg, time: id }].slice(-10) // Keep last 10
+            notifications: [...prev.notifications, { id, msg, time: id, color, sticky }].slice(-10) // Keep last 10
         }));
+
+        if (sticky) {
+            setTimeout(() => {
+                setGameState(prev => ({
+                    ...prev,
+                    notifications: prev.notifications.filter(n => n.id !== id)
+                }));
+            }, 4000);
+        }
     };
 
     const showFloatingMessage = (text, color = "text-cyan", duration = 3000) => {
@@ -312,9 +324,6 @@ export const GameProvider = ({ children }) => {
     };
 
     const advanceFloor = () => {
-        // 0. AUTO-SAVE (L1 CACHE LOGIC)
-        saveSession();
-
         // 1. SIGNAL TRANSITION START (Unmounts Maze)
         setGameState(prev => ({ ...prev, isTransitioning: true, interactionPrompt: null }));
 
@@ -340,6 +349,9 @@ export const GameProvider = ({ children }) => {
                 // We set this here so it appears exactly when the floor loads
                 let subtitle = null;
                 let subDuration = 0;
+
+                // Fire L2 Cache notification
+                addNotification(`[L2_CACHE_SYNC] :: State Data Archived (Floor ${nextFloor})`, "#00FF00");
 
                 if (nextFloor === 1) {
                     subtitle = "HEURISTIC_SCAN_COMPLETE... ENTITY_ID: NULL_POINTER... 'Welcome back to the morgue.'";
@@ -392,10 +404,11 @@ export const GameProvider = ({ children }) => {
                         .filter(buff => buff.floorsRemaining > 0),
 
                     // MINI-MAP: Clear scanned targets on floor change
-                    scannedTargets: []
+                    scannedTargets: [],
+                    saveSignal: (prev.saveSignal || 0) + 1
                 };
 
-                // EXPLICIT RESET of Discovery Grid (MOVED BEFORE RETURN)
+                // EXPLICIT RESET of Discovery Grid
                 discoveryRef.current = [];
 
                 return nextState;
@@ -507,7 +520,7 @@ export const GameProvider = ({ children }) => {
         const currentLevel = getLevelFromXP(gameState.xp);
         if (currentLevel > gameState.scannerLevel) { // Use scannerLevel as proxy for Player Level for now
             // LEVEL UP DETECTED
-            addNotification(`ACCESS_LEVEL_INCREASED: ${currentLevel}`);
+            addNotification(`ACCESS_LEVEL_INCREASED: ${currentLevel}`, "#00FFFF", true);
             setBossSubtitle("USER_PRIVILEGE_ELEVATED... PROCESSING_POWER: EXPANDED.", 4000);
 
             // Update State
@@ -522,7 +535,7 @@ export const GameProvider = ({ children }) => {
     };
 
     // LOOT SYSTEM: Process item drops from Data Nodes
-    const processLootDrop = (lootItem) => {
+    const processLootDrop = (lootItem, playerAPI = null, inventoryAPI = null) => {
         if (!lootItem) return;
 
         const { type, name, description, color } = lootItem;
@@ -538,7 +551,10 @@ export const GameProvider = ({ children }) => {
                     setGameState(prev => ({ ...prev, eBits: (prev.eBits || 0) + lootItem.value }));
                     break;
                 case 'MRAM_INJECTOR':
-                    setGameState(prev => ({ ...prev, playerIntegrity: Math.min(100, (prev.playerIntegrity || 100) + 40), playerMRAM: Math.min(100, (prev.playerMRAM || 100) + 40) }));
+                    if (playerAPI) {
+                        playerAPI.heal(40);
+                        playerAPI.restoreRam(40);
+                    }
                     break;
                 case 'LOGIC_FRAGMENT':
                     if (lootItem.fragmentId !== undefined) {
@@ -589,9 +605,12 @@ export const GameProvider = ({ children }) => {
                 break;
 
             case 'MRAM_INJECTOR':
-                // AUTO-INJECT LOGIC: If full Health/MRAM, Store it. If critical, Use it?
                 // Standard Logic: Always Store, User chooses when to use.
-                addToInventory(lootItem);
+                if (inventoryAPI) {
+                    inventoryAPI.addItem(lootItem);
+                } else {
+                    addToInventory(lootItem);
+                }
                 break;
 
             case 'LOGIC_FRAGMENT':
@@ -629,8 +648,12 @@ export const GameProvider = ({ children }) => {
             case 'KERNEL_SPIKE':
             case 'SECTOR_BREACH':
             case 'CORE_SWAP':
-                // Add to quick-slot inventory
-                addToInventory(lootItem);
+                // Add to inventory backpack
+                if (inventoryAPI) {
+                    inventoryAPI.addItem(lootItem);
+                } else {
+                    addToInventory(lootItem); // Fallback
+                }
                 break;
 
             default:
@@ -816,6 +839,10 @@ export const GameProvider = ({ children }) => {
             unlockKernel: () => {
                 addNotification("KERNEL_UPDATED: PORTAL_UNLOCKED");
                 setGameState(prev => ({ ...prev, isKernelUnlocked: true, isPortalLocked: false, activeLoreLog: null }));
+            },
+            setCompactHUDLogs: (isCompact) => {
+                localStorage.setItem('CyberSynthe_CompactLogs', isCompact);
+                setGameState(prev => ({ ...prev, compactHUDLogs: isCompact }));
             },
 
             // AUDIO EXPORTS

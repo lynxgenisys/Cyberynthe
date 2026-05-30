@@ -5,6 +5,7 @@ import LeaderboardPanel from './LeaderboardPanel';
 import { supabase, getProfile, signOut } from '../../utils/supabase';
 import { useSound } from '../../context/SoundContext';
 import AboutPage from './AboutPage';
+import AuthOverlay from './AuthOverlay';
 import './SplashScreen.css';
 
 /**

@@ -16,7 +16,7 @@ const LootManager = React.memo(({ maze, floorLevel }) => {
     const [caches, setCaches] = useState([]);
     const { addItem } = useInventory();
     const { gameState, setGameState, addNotification, markCacheLooted, updateScannedTargets, fastStateRef, processLootDrop, startDecryption, triggerMobSpawn, showFloatingMessage } = useGame();
-    const { damageKernel } = usePlayer();
+    const { damageKernel, heal, restoreRam } = usePlayer();
 
     useMemo(() => {
         const newCaches = [];
@@ -102,15 +102,18 @@ const LootManager = React.memo(({ maze, floorLevel }) => {
         const collectedFragments = gameState.collectedFragments || [];
         const lootItem = rollLoot(floorLevel, collectedFragments);
 
+        const playerAPI = { heal, restoreRam };
+        const inventoryAPI = { addItem };
+
         if (processLootDrop) {
-            processLootDrop(lootItem);
+            processLootDrop(lootItem, playerAPI, inventoryAPI);
         } else {
             if (lootItem.type === 'EBIT_CLUSTER') {
                 setGameState(prev => ({ ...prev, eBits: (prev.eBits || 0) + lootItem.value }));
                 addNotification(`[DE-FRAGMENTED]: ${lootItem.description}`);
             }
         }
-    }, [floorLevel, markCacheLooted, addNotification, setGameState, gameState.collectedFragments, processLootDrop, startDecryption, triggerMobSpawn, damageKernel]);
+    }, [floorLevel, markCacheLooted, addNotification, setGameState, gameState.collectedFragments, processLootDrop, startDecryption, triggerMobSpawn, damageKernel, heal, restoreRam, addItem]);
 
     // Scan detection loop for caches
     useFrame(() => {

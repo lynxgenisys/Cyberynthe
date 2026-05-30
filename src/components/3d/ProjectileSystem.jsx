@@ -87,15 +87,16 @@ export default function ProjectileSystem() {
 
                     if (mdx * mdx + mdy * mdy + mdz * mdz < hitRadiusSq) {
                         lArr[i] = 0;
-                        // Data Spike damage: 2 base + 1.5 per level
-                        const dataSpikeBaseDamage = 2 + (playerLevel * 1.5);
-                        mobDamageBuffer.current[m] += (tArr[i] === 0 ? dataSpikeBaseDamage : 25);
-                        // Logic Breach: Apply Hacked status if Shred V2 (Type 1, Lvl 5+)
-                        if (tArr[i] === 1 && playerLevel >= 5 && mobStatusBuffer && mobStatusBuffer.current) {
+                        // Data Spike damage: 10 base + 1.5 per level
+                        const dataSpikeBaseDamage = 10 + (playerLevel * 1.5);
+                        // Shred (tArr[i] === 1) damage: 3 flat
+                        mobDamageBuffer.current[m] += (tArr[i] === 0 ? dataSpikeBaseDamage : 3);
+                        // Logic Breach: Apply Hacked status if Shred V2 (Type 1) and DoT is unlocked
+                        if (tArr[i] === 1 && gameState.hasUnlockedDoT && mobStatusBuffer && mobStatusBuffer.current) {
                             mobStatusBuffer.current[m] = 1;
                         }
 
-                        const impactColor = (tArr[i] === 1 && playerLevel >= 5) ? '#00FF00' : (tArr[i] === 1 ? '#EA00FF' : '#00FFFF');
+                        const impactColor = (tArr[i] === 1 && gameState.hasUnlockedDoT) ? '#00FF00' : (tArr[i] === 1 ? '#EA00FF' : '#00FFFF');
                         triggerImpact({ x: px, y: py, z: pz }, impactColor);
                         playSFX('hit');
                         break;

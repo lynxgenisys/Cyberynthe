@@ -40,10 +40,16 @@ const PlayerController = () => {
     const { fireProjectile, fireBurst } = useCombat();
     const { lockResource, state: playerState } = usePlayer(); // Access full state
     const { clockSpeed, mRamRegenBase } = playerState.stats;
+    const activeBuffs = gameState.activeBuffs || [];
+    let speedBuff = 0;
+    activeBuffs.forEach(buff => {
+        if (buff.type === 'SPEED') speedBuff += buff.buffValue;
+    });
 
     // CLOCK SPEED FACTOR: 3x Scaling (User Request)
     // 5% Stat -> 15% Boost (1.15x)
-    const cycleMultiplier = (100 + (clockSpeed * 3)) / 100;
+    const effectiveClockSpeed = clockSpeed + speedBuff;
+    const cycleMultiplier = (100 + (effectiveClockSpeed * 3)) / 100;
 
     // Movement: 3.0 Base * Multiplier
     const SPEED = 3.0 * cycleMultiplier;
@@ -205,13 +211,13 @@ const PlayerController = () => {
 
             // CHARGE SHOT (Hold > 1000ms)
             if (canBurst && duration > 1000) {
-                if (lockResource(25)) { // higher cost, efficiency
+                if (lockResource(10)) { // higher cost, efficiency
                     fireBurst(spawnPos, direction, 'PING');
                     playSFX('data_spike_attack');
                 }
             } else {
                 // STANDARD TAP
-                if (lockResource(10)) { // 10 M-RAM for single shot
+                if (lockResource(5)) { // 5 M-RAM for single shot
                     fireProjectile(spawnPos, direction, 'PING');
                     playSFX('shoot');
                 }
