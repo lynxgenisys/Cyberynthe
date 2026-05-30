@@ -45,15 +45,17 @@ export function calculateStabilityScore(currentFloor, totalDamage, mramUsed) {
 
 /**
  * Calculate Ghost Score (True Ghost Mode)
- * Formula: TotalFloors × 10000 / TotalTimeMs
+ * Formula: TotalFloors × 10000 × (GlobalAverageMs / TotalTimeMs)
  * 
  * @param {number} totalFloors - Total floors cleared
  * @param {number} totalTimeMs - Total time in milliseconds
+ * @param {number} globalAverageMs - Global average run time in ms
  * @returns {number} Ghost score
  */
-export function calculateGhostScore(totalFloors, totalTimeMs) {
+export function calculateGhostScore(totalFloors, totalTimeMs, globalAverageMs = 120000) {
     if (totalTimeMs === 0) return 0;
-    const score = (totalFloors * 10000) / totalTimeMs;
+    const speedRatio = globalAverageMs / totalTimeMs;
+    const score = (totalFloors * 10000) * speedRatio;
     return Math.round(score * 100) / 100;
 }
 

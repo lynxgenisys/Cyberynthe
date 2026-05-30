@@ -104,7 +104,7 @@ export default function CyberdeckUI({ onClose }) {
                 <div className="flex justify-between items-end border-b border-cyan/30 pb-4 mb-6">
                     <div className="flex items-center gap-6">
                         <div>
-                            <h2 className="text-3xl font-bold text-cyan glitch-text">CYBERDECK_OS v0.12</h2>
+                            <h2 className="text-3xl font-bold text-cyan glitch-text">CYBERDECK_OS v0.13</h2>
                             <div className="text-sm text-gray-400">ID: {gameState.playerName} // STATUS: ACTIVE</div>
                         </div>
                         <div className="flex gap-2 ml-4">
@@ -209,7 +209,7 @@ export default function CyberdeckUI({ onClose }) {
                             <StatRow
                                 label="INTEGRITY"
                                 value={playerState.stats.integrity}
-                                alloc={(playerState.allocations?.integrity || 0) + (playerState.bonuses?.integrity || 0)}
+                                alloc={(playerState.allocations?.integrity || 0) + (playerState.bonuses?.integrity || 0) + (playerState.hardwareBonuses?.integrity || 0)}
                                 canUpgrade={availablePoints > 0}
                                 onUpgrade={() => upgradeStat('integrity')}
                                 color="cyan"
@@ -218,7 +218,7 @@ export default function CyberdeckUI({ onClose }) {
                             <StatRow
                                 label="M-RAM_CAP"
                                 value={playerState.stats.mRamMax}
-                                alloc={(playerState.allocations?.mRam || 0) + (playerState.bonuses?.mRam || 0)}
+                                alloc={(playerState.allocations?.mRam || 0) + (playerState.bonuses?.mRam || 0) + (playerState.hardwareBonuses?.mRam || 0)}
                                 canUpgrade={availablePoints > 0}
                                 onUpgrade={() => upgradeStat('mRam')}
                                 color="magenta"
@@ -227,7 +227,7 @@ export default function CyberdeckUI({ onClose }) {
                             <StatRow
                                 label="[CLOCK_CYCLE]"
                                 value={displayClockSpeed + '%'}
-                                upgraded={speedBuff > 0}
+                                upgraded={speedBuff > 0 || (playerState.hardwareBonuses?.clock || 0) > 0}
                                 onUpgrade={() => handleUpgrade('clock')}
                                 canUpgrade={availablePoints > 0}
                                 color="#00FFFF"
@@ -236,7 +236,7 @@ export default function CyberdeckUI({ onClose }) {
                             <StatRow
                                 label="SCRUB_RATE"
                                 value={playerState.stats.mRamRegenBase.toFixed(1) + '/s'}
-                                alloc={(playerState.allocations?.regen || 0) + (playerState.bonuses?.regen || 0)}
+                                alloc={(playerState.allocations?.regen || 0) + (playerState.bonuses?.regen || 0) + (playerState.hardwareBonuses?.regen || 0)}
                                 canUpgrade={availablePoints > 0}
                                 onUpgrade={() => upgradeStat('regen')}
                                 color="blue-500"

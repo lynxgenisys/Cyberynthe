@@ -1,5 +1,16 @@
 export const patchNotes = [
     {
+        version: "v0.13.0",
+        date: "2026-05-30",
+        categories: {
+            "Added": [
+                "Mobile Integration: Seamless cross-play integration within a unified codebase via device detection logic.",
+                "Touch Controls: Added Virtual Joystick for movement and swipe-to-look camera panning.",
+                "Mobile HUD Overlay: Implemented dedicated thumb-friendly virtual buttons for Jumping, Firing, Shredding, Scanning, and Interaction."
+            ]
+        }
+    },
+    {
         version: "v0.12.2",
         date: "2026-05-29",
         categories: {

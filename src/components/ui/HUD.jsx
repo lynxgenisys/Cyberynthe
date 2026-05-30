@@ -113,6 +113,9 @@ const BossDialogue = memo(({ text }) => {
                 <div className="text-fuchsia-300 font-mono text-lg tracking-[0.1em] font-bold shadow-black drop-shadow-md min-h-[1.5em]">
                     {displayedText}<span className="animate-blink text-magenta">_</span>
                 </div>
+                <div className="mt-4 text-xs font-bold text-gray-500 font-mono tracking-widest animate-pulse">
+                    [F] to Dismiss
+                </div>
             </div>
         </div>
     );
@@ -300,7 +303,7 @@ const NotificationLog = memo(({ logs }) => {
 // ResonanceMap Removed (Superseded by MiniMap)
 
 export default function HUD() {
-    const { gameState, addNotification, unlockKernel, triggerInteract, getLevelFromXP } = useGame();
+    const { gameState, addNotification, unlockKernel, triggerInteract, getLevelFromXP, setBossSubtitle } = useGame();
     const { state: playerState } = usePlayer();
 
     // Derived Stats (Memoized to prevent unnecessary re-calc)
@@ -349,11 +352,19 @@ export default function HUD() {
 
     useEffect(() => {
         const handleInteractKey = (e) => {
-            if (e.code === 'KeyF' && !gameState.activeLoreLog && triggerInteract) triggerInteract();
+            if (e.code === 'KeyF') {
+                if (gameState.bossSubtitle) {
+                    // Level change message active, dismiss it
+                    e.preventDefault();
+                    setBossSubtitle(null); // Assuming setBossSubtitle is accessible via useGame
+                } else if (!gameState.activeLoreLog && triggerInteract) {
+                    triggerInteract();
+                }
+            }
         };
         window.addEventListener('keydown', handleInteractKey);
         return () => window.removeEventListener('keydown', handleInteractKey);
-    }, [gameState.activeLoreLog, triggerInteract]);
+    }, [gameState.activeLoreLog, gameState.bossSubtitle, triggerInteract]);
 
     const hudStyle = scramble > 0 ? {
         filter: `blur(${scramble * 4}px) contrast(${1 + scramble}) hue-rotate(${scramble * 90}deg)`,

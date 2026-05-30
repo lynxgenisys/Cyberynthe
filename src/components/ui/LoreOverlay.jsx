@@ -13,6 +13,7 @@ const LoreOverlay = () => {
     const [decryptProgress, setDecryptProgress] = useState(0);
     const [hexScroll, setHexScroll] = useState(0);
     const [canDismiss, setCanDismiss] = useState(false);
+    const [typingFinished, setTypingFinished] = useState(false);
 
     const isVisible = gameState.showLoreOverlay && gameState.currentFragment;
     const fragment = gameState.currentFragment;
@@ -22,11 +23,13 @@ const LoreOverlay = () => {
         if (!isVisible || !fragment) {
             setDisplayedText('');
             setDecryptProgress(0);
+            setTypingFinished(false);
             return;
         }
 
         const fullText = fragment.fragmentText || fragment.text || '';
         let currentIndex = 0;
+        setTypingFinished(false);
 
         // Decryption progress animation
         const progressInterval = setInterval(() => {
@@ -41,6 +44,7 @@ const LoreOverlay = () => {
                     currentIndex++;
                 } else {
                     clearInterval(typewriterInterval);
+                    setTypingFinished(true);
                 }
             }, 36); // 36ms per character (20% slower)
 
@@ -73,15 +77,26 @@ const LoreOverlay = () => {
         }));
     };
 
-    // 4-Second Mandatory Read
+    // Mandatory Read Delay Logic
     useEffect(() => {
-        if (!isVisible) return;
-        setCanDismiss(false);
-        const timer = setTimeout(() => {
+        if (!isVisible || !fragment) return;
+        
+        const isAlreadyCollected = gameState.collectedFragments && gameState.collectedFragments.includes(fragment.id);
+        
+        if (isAlreadyCollected) {
             setCanDismiss(true);
-        }, 4000);
-        return () => clearTimeout(timer);
-    }, [isVisible]);
+            return;
+        }
+
+        if (typingFinished) {
+            const timer = setTimeout(() => {
+                setCanDismiss(true);
+            }, 5000);
+            return () => clearTimeout(timer);
+        } else {
+            setCanDismiss(false);
+        }
+    }, [isVisible, fragment, typingFinished, gameState.collectedFragments]);
 
     // Global keyboard listener for F key
     useEffect(() => {

@@ -7,6 +7,8 @@ import { useCombat } from '../../context/CombatContext';
 import { usePlayer } from '../../context/PlayerContext';
 import { useSound } from '../../context/SoundContext';
 import * as THREE from 'three';
+import useDeviceDetect from '../../hooks/useDeviceDetect';
+import MobileCameraControls from '../mobile/MobileCameraControls';
 
 // CONSTANTS Moved to PlayerController for easier tuning
 
@@ -23,7 +25,7 @@ const PlayerController = () => {
     const sprintCostAccumulator = useRef(0);
     const [subscribeKeys, getKeys] = useKeyboardControls();
     const { camera } = useThree();
-    const { gameState, updatePlayerPos, triggerScan, getLevelFromXP, playerRotationRef, enterBestiaryMode, setChargingWeapon } = useGame();
+    const { gameState, updatePlayerPos, triggerScan, getLevelFromXP, playerRotationRef, enterBestiaryMode, setChargingWeapon, toggleRunLock, setRunLocked } = useGame();
     const { playSFX } = useSound();
 
     // Raycaster for ground check
@@ -115,7 +117,7 @@ const PlayerController = () => {
                 window.ghostRunToggle = !window.ghostRunToggle;
             }
             if (e.key && e.key.toLowerCase() === 'r' && !e.repeat) {
-                window.autoRunToggle = !window.autoRunToggle;
+                toggleRunLock();
             }
         };
 
@@ -126,12 +128,11 @@ const PlayerController = () => {
         return () => {
             window.ghostLeftClick = false;
             window.ghostRunToggle = false;
-            window.autoRunToggle = false;
             window.removeEventListener('mousedown', handleMouseDownGlobal);
             window.removeEventListener('mouseup', handleMouseUpGlobal);
             window.removeEventListener('keydown', handleKeyDownGlobal);
         };
-    }, [gameState.gameMode]);
+    }, [gameState.gameMode, toggleRunLock]);
 
     // STANDARD MODE / COMBAT INPUT
     React.useEffect(() => {
@@ -252,6 +253,20 @@ const PlayerController = () => {
     }, [gameState.isPaused, camera, fireProjectile, fireBurst, lockResource, triggerScan, gameState.gameMode]);
 
     useFrame((state, delta) => {
+        // WATCHDOG: Stuck Charge Audio
+        if (chargeSoundRef.current && !document.pointerLockElement) {
+            try {
+                const ctx = chargeSoundRef.current.osc.context;
+                const t = ctx.currentTime;
+                chargeSoundRef.current.gain.gain.linearRampToValueAtTime(0, t + 0.1);
+                chargeSoundRef.current.osc.stop(t + 0.1);
+            } catch (e) {
+                // Ignore
+            }
+            chargeSoundRef.current = null;
+            setIsCharging(false);
+            setChargingWeapon(false);
+        }
         if (!body.current) return;
 
         // PAUSE LOGIC
@@ -328,7 +343,7 @@ const PlayerController = () => {
 
             // SPEED CALCULATION
             let currentSpeed = SPEED;
-            const isRunToggled = window.autoRunToggle || false;
+            const isRunToggled = gameState.isRunLocked;
             
             if (gameState.gameMode === 'ghost') {
                 // GHOST MODE: Check Ref Flags
@@ -366,8 +381,12 @@ const PlayerController = () => {
                         // Actually, if we have 0 RAM, we can sprint for ~1 second until debt hits 1.
                         // Strictly speaking, if mRamCurrent < 1, maybe deny sprint immediately?
                         // Let's rely on the debt cycle. It gives a 1s 'grace' burst from 0, which is acceptable feel.
-                        // Or check state directly:
-                        if (playerState.stats.mRamCurrent < 1) canSprint = false;
+                        if (playerState.stats.mRamCurrent < 1) {
+                            canSprint = false;
+                            if (isRunToggled) {
+                                setRunLocked(false);
+                            }
+                        }
                     }
 
                     if (canSprint) {
@@ -463,18 +482,20 @@ const PlayerController = () => {
                 </mesh>
             </RigidBody>
 
-            {/* Only lock pointer if game is NOT paused */}
-            {!gameState.isPaused && <PointerLockControls />}
+            {/* LOGIC BREACH FIX: ONLY ATTACH IF NOT PAUSED */}
+            {!gameState.isPaused && (
+                isMobile ? <MobileCameraControls /> : <PointerLockControls />
+            )}
         </group>
     );
 };
 
 const Player = () => {
     const keyboardMap = [
-        { name: 'forward', keys: ['ArrowUp', 'KeyW'] },
-        { name: 'backward', keys: ['ArrowDown', 'KeyS'] },
-        { name: 'leftward', keys: ['ArrowLeft', 'KeyA'] },
-        { name: 'rightward', keys: ['ArrowRight', 'KeyD'] },
+        { name: 'forward', keys: ['ArrowUp', 'KeyW', 'w', 'W'] },
+        { name: 'backward', keys: ['ArrowDown', 'KeyS', 's', 'S'] },
+        { name: 'leftward', keys: ['ArrowLeft', 'KeyA', 'a', 'A'] },
+        { name: 'rightward', keys: ['ArrowRight', 'KeyD', 'd', 'D'] },
         { name: 'jump', keys: ['Space'] },
         { name: 'run', keys: ['Shift'] },
     ];

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getTopScores, getTopAccomplishments } from '../../utils/supabase';
+import { getTopScores, getTopAccomplishments, getGlobalAverageGhostRunTime } from '../../utils/supabase';
 import ProfileCard from './ProfileCard';
 import './LeaderboardPanel.css';
 
@@ -28,6 +28,7 @@ export default function LeaderboardPanel() {
     const [error, setError] = useState(null);
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [selectedUsername, setSelectedUsername] = useState(null);
+    const [globalGhostAvg, setGlobalGhostAvg] = useState(null);
 
     const handleUserClick = (userId, username) => {
         if (!userId) return; // Ghost users might not have IDs
@@ -98,6 +99,15 @@ export default function LeaderboardPanel() {
                 }
             }
             
+            if (activeMode === 'ghost') {
+                const avgResult = await getGlobalAverageGhostRunTime();
+                if (avgResult.success) {
+                    setGlobalGhostAvg(avgResult.averageMs);
+                }
+            } else {
+                setGlobalGhostAvg(null);
+            }
+
             setIsLoading(false);
         };
 
@@ -232,6 +242,12 @@ export default function LeaderboardPanel() {
             <div className="text-cyan text-xs font-mono mb-4 text-center px-4 animate-pulse">
                 {DESCRIPTIONS[activeMetric]}
             </div>
+
+            {globalGhostAvg !== null && activeMode === 'ghost' && (
+                <div className="text-yellow-500 text-xs font-mono mb-4 text-center px-4">
+                    GLOBAL_GHOST_AVERAGE: {(globalGhostAvg / 1000).toFixed(1)}s
+                </div>
+            )}
 
             {isLoading ? (
                 <div className="leaderboard-loading animate-pulse text-cyan">FETCHING_DATA_STREAM...</div>

@@ -234,9 +234,34 @@ export async function getTopScores(mode = null, limit = 100, sortBy = 'score') {
         const { data, error } = await query;
         if (error) throw error;
         return { success: true, data };
-    } catch (err) {
+} catch (err) {
         console.error("Error fetching scores:", err);
         return { success: false, error: err.message };
+    }
+}
+
+/**
+ * Fetch global average run time for Ghost mode
+ * Filters out runs longer than 10 minutes (600,000 ms) or shorter than 10s
+ */
+export async function getGlobalAverageGhostRunTime() {
+    if (!supabase) return { success: false, error: "Supabase not initialized." };
+    try {
+        const { data, error } = await supabase
+            .from('leaderboard')
+            .select('run_time')
+            .eq('game_mode', 'ghost')
+            .lt('run_time', 600000)
+            .gt('run_time', 10000);
+            
+        if (error) throw error;
+        if (!data || data.length === 0) return { success: true, averageMs: 120000 }; // Default 2 mins
+        
+        const total = data.reduce((acc, curr) => acc + (curr.run_time || 0), 0);
+        const avg = total / data.length;
+        return { success: true, averageMs: avg };
+    } catch (err) {
+        return { success: false, error: err.message, averageMs: 120000 };
     }
 }
 

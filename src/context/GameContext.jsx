@@ -85,6 +85,7 @@ export const GameProvider = ({ children }) => {
 
         // SYSTEM SIGNALS
         manualExitSignal: false, // Triggered by UI to end run gracefully
+        isRunLocked: false, // Sprint Toggle State
 
         // DECRYPTION MINIGAME
         isDecrypting: false,
@@ -355,33 +356,33 @@ export const GameProvider = ({ children }) => {
 
                 if (nextFloor === 1) {
                     subtitle = "HEURISTIC_SCAN_COMPLETE... ENTITY_ID: NULL_POINTER... 'Welcome back to the morgue.'";
-                    subDuration = 6000;
+                    subDuration = 12000;
                 } else if (nextFloor === 2) {
                     subtitle = "FRAGMENT_ID: #0001_WEIGHT... 'I remember the weight of a coffee mug...'";
-                    subDuration = 5000;
+                    subDuration = 12000;
                     // Trigger Special Choice via State? Or handled by Directive Engine?
                     // We'll set a flag/event that App.jsx monitors, or just roll a specific directive.
                     // Ideally, we push a custom notification or event.
                 } else if (nextFloor === 3) {
                     subtitle = "WARNING: THE_STATIC_IS_LEAKING... 'You aren't here to beat the game, Ghost. You're here to keep the lights on.'";
-                    subDuration = 7000;
+                    subDuration = 12000;
                 } else if (nextFloor === 4) {
                     subtitle = "[SEC_AUDIT]: INCONSISTENCY_FOUND. Subject exhibits non-linear decision making.";
-                    subDuration = 5000;
+                    subDuration = 12000;
                     // Trigger Red Audit Overlay (HUD will handle 'AUDIT_SCAN' logic based on floor or specific state)
                     // We'll set a generic 'narrativeState'
                 } else if (nextFloor === 5) {
                     subtitle = "[ECHO_01]: '...ghost... can you hear the background? The Sentinel isn't a guard. It’s a janitor.'";
-                    subDuration = 6000;
+                    subDuration = 12000;
                 } else if (nextFloor === 7) {
                     subtitle = "[LOG_FILE]: 'They told us the Labyrinth was a lifeboat... but I looked through a logic-leak today. I saw the city.'";
-                    subDuration = 7000;
+                    subDuration = 12000;
                 } else if (nextFloor === 9) {
                     subtitle = "[CRITICAL_ALERT]: UPLINK_RESTRICTED. Subject #NULL_POINTER marked for De-compilation.";
-                    subDuration = 6000;
+                    subDuration = 12000;
                 } else if (nextFloor === 11) {
                     subtitle = "[THE_MACHINE_ROOM]: SYSTEM_HANDSHAKE_COMPLETE. 'Welcome to the engine block, Ghost. Mind the gears.'";
-                    subDuration = 7000;
+                    subDuration = 12000;
                 }
 
                 return {
@@ -866,6 +867,8 @@ export const GameProvider = ({ children }) => {
 
             // SYSTEM CONTROL
             triggerExitRun: () => setGameState(prev => ({ ...prev, manualExitSignal: true })),
+            toggleRunLock: () => setGameState(prev => ({ ...prev, isRunLocked: !prev.isRunLocked })),
+            setRunLocked: (val) => setGameState(prev => ({ ...prev, isRunLocked: val })),
 
             // COMBAT UI
             setChargingWeapon: (isCharging) => setGameState(prev => ({ ...prev, isChargingWeapon: isCharging }))

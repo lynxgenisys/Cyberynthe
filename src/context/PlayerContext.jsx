@@ -231,7 +231,7 @@ export const PlayerProvider = ({ children }) => {
 
     return (
         <PlayerContext.Provider value={{
-            state: { ...state, stats: { ...state.stats, ...effectiveStats, currentIntegrity: state.stats.currentIntegrity, mRamCurrent: state.stats.mRamCurrent } },
+            state: { ...state, stats: { ...state.stats, ...effectiveStats, currentIntegrity: state.stats.currentIntegrity, mRamCurrent: state.stats.mRamCurrent }, hardwareBonuses },
             lockResource, damageKernel, healKernel, restoreRam, upgradeStat, applyBonus, initSystem, loadPlayerState
         }}>
             {children}

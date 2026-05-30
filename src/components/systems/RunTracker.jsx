@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useGame } from '../../context/GameContext';
 import { usePlayer } from '../../context/PlayerContext';
 import { calculateVelocityScore, calculateStabilityScore, calculateGhostScore } from '../../utils/scoring';
-import { submitScore, supabase } from '../../utils/supabase';
+import { submitScore, supabase, getGlobalAverageGhostRunTime } from '../../utils/supabase';
 
 /**
  * RUN TRACKER
@@ -14,13 +14,20 @@ export default function RunTracker() {
     const { state: playerState } = usePlayer();
     const currentFloorStartRef = useRef(null);
     const prevHpRef = useRef(null);
+    const globalGhostAvgRef = useRef(120000);
 
     // Initialize prevHp on first render
     useEffect(() => {
         if (prevHpRef.current === null) {
             prevHpRef.current = playerState.stats.currentIntegrity;
         }
-    }, []);
+        
+        if (gameState.gameMode === 'ghost') {
+            getGlobalAverageGhostRunTime().then(res => {
+                if (res.success) globalGhostAvgRef.current = res.averageMs;
+            });
+        }
+    }, [gameState.gameMode]);
 
     // Start floor time tracking when floor changes
     useEffect(() => {
@@ -126,7 +133,7 @@ export default function RunTracker() {
             ghostScore: gameState.gameMode === 'ghost'
                 ? calculateGhostScore(gameState.floorLevel, Date.now() - gameState.runStartTime
                     - (gameState.totalPausedTime || 0)
-                    - (gameState.isPaused && gameState.pauseStartTime ? (Date.now() - gameState.pauseStartTime) : 0))
+                    - (gameState.isPaused && gameState.pauseStartTime ? (Date.now() - gameState.pauseStartTime) : 0), globalGhostAvgRef.current)
                 : 0,
             undetectedStreak: gameState.undetectedFloorCount,
             resonanceFinal: gameState.ethicsScore,

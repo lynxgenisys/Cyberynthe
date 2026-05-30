@@ -1,0 +1,113 @@
+import React, { useState, useEffect, useRef } from 'react';
+
+// Dispatches a KeyboardEvent manually to fake physical keypresses
+const triggerKey = (key, code, type) => {
+    document.dispatchEvent(new KeyboardEvent(type, {
+        key: key,
+        code: code,
+        bubbles: true,
+        cancelable: true
+    }));
+};
+
+export default function VirtualJoystick() {
+    const containerRef = useRef(null);
+    const stickRef = useRef(null);
+
+    const [active, setActive] = useState(false);
+    const [keysState, setKeysState] = useState({ w: false, a: false, s: false, d: false });
+
+    // Handle touch/mouse move
+    const handleMove = (e) => {
+        if (!active || !containerRef.current) return;
+
+        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        const rect = containerRef.current.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        const maxRadius = rect.width / 2;
+        
+        let dx = clientX - centerX;
+        let dy = clientY - centerY;
+
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Clamp stick to boundary
+        if (distance > maxRadius) {
+            dx = (dx / distance) * maxRadius;
+            dy = (dy / distance) * maxRadius;
+        }
+
+        if (stickRef.current) {
+            stickRef.current.style.transform = `translate(${dx}px, ${dy}px)`;
+        }
+
+        // Determine digital outputs (WASD) based on angle/distance
+        const threshold = maxRadius * 0.25; // Deadzone
+        
+        const newKeys = {
+            w: dy < -threshold,
+            s: dy > threshold,
+            a: dx < -threshold,
+            d: dx > threshold
+        };
+
+        // Dispatch keydown/keyup if changed
+        if (newKeys.w !== keysState.w) triggerKey('w', 'KeyW', newKeys.w ? 'keydown' : 'keyup');
+        if (newKeys.s !== keysState.s) triggerKey('s', 'KeyS', newKeys.s ? 'keydown' : 'keyup');
+        if (newKeys.a !== keysState.a) triggerKey('a', 'KeyA', newKeys.a ? 'keydown' : 'keyup');
+        if (newKeys.d !== keysState.d) triggerKey('d', 'KeyD', newKeys.d ? 'keydown' : 'keyup');
+
+        setKeysState(newKeys);
+    };
+
+    const handleStart = (e) => {
+        setActive(true);
+        handleMove(e); // Calculate initial pos immediately
+    };
+
+    const handleEnd = () => {
+        setActive(false);
+        if (stickRef.current) {
+            stickRef.current.style.transform = `translate(0px, 0px)`;
+        }
+        // Release all
+        if (keysState.w) triggerKey('w', 'KeyW', 'keyup');
+        if (keysState.s) triggerKey('s', 'KeyS', 'keyup');
+        if (keysState.a) triggerKey('a', 'KeyA', 'keyup');
+        if (keysState.d) triggerKey('d', 'KeyD', 'keyup');
+        setKeysState({ w: false, a: false, s: false, d: false });
+    };
+
+    useEffect(() => {
+        if (!active) return;
+        window.addEventListener('touchmove', handleMove, { passive: false });
+        window.addEventListener('touchend', handleEnd);
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', handleEnd);
+
+        return () => {
+            window.removeEventListener('touchmove', handleMove);
+            window.removeEventListener('touchend', handleEnd);
+            window.removeEventListener('mousemove', handleMove);
+            window.removeEventListener('mouseup', handleEnd);
+        };
+    }, [active, keysState]);
+
+    return (
+        <div 
+            className="fixed bottom-12 left-12 w-32 h-32 rounded-full border-2 border-cyan/30 bg-cyan/10 backdrop-blur-md z-[100] touch-none select-none flex items-center justify-center"
+            ref={containerRef}
+            onPointerDown={handleStart}
+        >
+            <div 
+                className="w-12 h-12 rounded-full bg-cyan/50 border border-cyan shadow-[0_0_15px_#00FFFF] pointer-events-none"
+                ref={stickRef}
+                style={{ transition: active ? 'none' : 'transform 0.2s ease-out' }}
+            />
+        </div>
+    );
+}

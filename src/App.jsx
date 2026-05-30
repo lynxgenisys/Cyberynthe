@@ -15,7 +15,10 @@ import AudioManager from './components/systems/AudioManager';
 import MusicManager from './components/systems/MusicManager';
 import SplashScreen from './components/ui/SplashScreen';
 import RunTracker from './components/systems/RunTracker';
-import { saveGameToCloud, loadGameFromCloud } from './utils/supabase';
+import { saveGameToCloud, loadGameFromCloud, supabase } from './utils/supabase';
+import useDeviceDetect from './hooks/useDeviceDetect';
+import VirtualJoystick from './components/mobile/VirtualJoystick';
+import TouchControlsOverlay from './components/mobile/TouchControlsOverlay';
 
 // MEMOIZED COMPONENTS to prevent Context-Thrash Re-renders
 const MemoScene = React.memo(() => <Scene3D />);
@@ -34,6 +37,7 @@ function CoreInterface() {
   const { state: playerState, lockResource, healKernel, upgradeStat, applyBonus, initSystem, loadPlayerState } = usePlayer();
   const { gameState, advanceFloor, setGameState, loadSession, useQuickSlot, triggerScan } = useGame();
   const { state: invState, addItem, initInventory, loadInventoryState } = useInventory();
+  const { isMobile } = useDeviceDetect();
 
   // --- GAME STATE ---
   const [isDeckOpen, setIsDeckOpen] = useState(false);
@@ -62,6 +66,20 @@ function CoreInterface() {
       }
     };
     checkSaves();
+
+    if (!supabase) return;
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        checkSaves();
+      }
+    });
+
+    return () => {
+      if (authListener && authListener.subscription) {
+        authListener.subscription.unsubscribe();
+      }
+    };
   }, []);
 
   const handleNewGameClick = () => {
@@ -474,6 +492,14 @@ function CoreInterface() {
             <li><span className="font-bold text-white">Esc</span>: Free Mouse / Pause</li>
           </ul>
         </div>
+      )}
+
+      {/* MOBILE CONTROLS */}
+      {isMobile && !isDeckOpen && !gameState.isPaused && !showHelp && (
+        <>
+          <VirtualJoystick />
+          <TouchControlsOverlay />
+        </>
       )}
 
     </div >

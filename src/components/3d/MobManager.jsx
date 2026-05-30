@@ -189,7 +189,7 @@ export default function MobManager({ maze, floorLevel }) {
 
     const { gameState, setGameState, addNotification, setBossSubtitle, updateBossStatus, fastStateRef, getLevelFromXP, getNextLevelXP, setInteractionPrompt, updateScannedTargets, triggerCrit, consumeMobQueue } = useGame();
     const { triggerImpact, mobDamageBuffer, mobPositionBuffer, mobLifeBuffer, mobTypeBuffer, mobStatusBuffer } = useCombat();
-    const { damageKernel, lockResource } = usePlayer(); // Import damage handler
+    const { damageKernel, lockResource, restoreRam, healKernel } = usePlayer(); // Import damage handler
     const { playSFX } = useSound();
 
     // CONSUME SPAWN QUEUE (From GameContext)
@@ -1151,16 +1151,227 @@ export default function MobManager({ maze, floorLevel }) {
                         }
                     };
                 });
+                    }
+                } else if (mob.bossState === 'CHARGING') {
+                    if (mob.bossTimer <= 0) {
+                        mob.bossState = 'FIRING';
+                        mob.bossTimer = 4.0;
+                        setBossSubtitle("DATA_STREAM_PURGE [FIRING]", 4000);
+                    }
+                } else if (mob.bossState === 'FIRING') {
+                    // Trigger Dialogue ONCE per phase start
+                    if (!mob.hasspokenFiring) {
+                        setBossSubtitle("ALIGNING_LOGIC_RAILS... STAND_STILL. DE-COMPILATION_IS_PAINLESS.", 3000);
+                        mob.hasspokenFiring = true;
+                    }
+
+                    // BEAM DAMAGE LOGIC
+                    const rotY = mob.rotationY;
+                    const pDx = playerPos.x - mob.x;
+                    const pDz = playerPos.z - mob.z;
+                    // Project player pos onto beam vector
+                    // Beam vector: -sin(rotY), -cos(rotY)
+                    const bx = -Math.sin(rotY), bz = -Math.cos(rotY);
+                    // Dot product to find distance along beam
+                    const dot = pDx * bx + pDz * bz;
+                    // Perpendicular distance
+                    const cross = pDx * bz - pDz * bx; // 2D cross product magnitude
+                    const beamDist = Math.abs(cross);
+
+                    if (dot > 0 && beamDist < 1.5) { // 1.5 width tolerance
+                        // Raycast check for walls (Occlusion)
+                        let hasLineOfSight = true;
+                        if (dot < 40 && maze && maze.grid) {
+                            const checkDist = Math.ceil(dot); // Check up to player distance
+                            const dirX = -Math.sin(rotY);
+                            const dirZ = -Math.cos(rotY);
+                            for (let d = 2; d < checkDist; d += 1.0) {
+                                const checkX = Math.round((mob.x + dirX * d) / 2);
+                                const checkZ = Math.round((mob.z + dirZ * d) / 2);
+                                if (maze.grid[checkZ] && maze.grid[checkZ][checkX] === 0) {
+                                    hasLineOfSight = false; // Blocked by wall
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (hasLineOfSight && dot < 40) { // Max range
+                            // BESTIARY: No outgoing damage from mobs
+                            if (floorLevel !== 999) {
+                                if (beamDist < 1.0) { // Cylinder radius
+                                    damageKernel(40 * delta); // 40 DPS
+                                    playSFX('mob_attack');
+                                    if (Math.random() < 0.1) triggerImpact({ x: playerPos.x, y: 1.5, z: playerPos.z }, "#00FFFF"); // Blue sparks
+                                }
+                            }
+                        }
+                    }
+
+                    if (mob.bossTimer <= 0) {
+                        mob.bossState = 'COOLDOWN';
+                        mob.bossTimer = 3.0;
+                        setBossSubtitle("RECALIBRATING...", 2000);
+                    }
+                } else if (mob.bossState === 'COOLDOWN') {
+                    mob.hasspokenFiring = false; // Reset Dialogue flag
+                    if (mob.bossTimer <= 0) {
+                        mob.bossState = 'IDLE';
+                        mob.bossTimer = 1.0;
+                    }
+                }
+
+                // Minion summoning (Phase 2) - DISABLED IN BESTIARY
+                if (mob.phase === 2 && floorLevel !== 999) {
+                    mob.summonTimer = (mob.summonTimer || 0) - delta;
+                    if (mob.summonTimer <= 0) {
+                        mob.summonTimer = 25.0; // Every 25 seconds
+                        const count = 3 + Math.floor(Math.random() * 3); // 3 to 5 Minions
+
+                        setBossSubtitle(`FORK_PROCESS_ACTIVE. CLEAN_THE_ARENA. [SPAWNING_${count}_UNITS]`, 3000);
+
+                        for (let k = 0; k < count; k++) {
+                            const m = MobLogic.createMob('BIT_MITE', floorLevel);
+                            // Spawn randomly around boss (Widened to 12m spread)
+                            spawnQueue.current.push({
+                                ...m,
+                                instanceId: Math.random(),
+                                x: mob.x + (Math.random() - 0.5) * 12,
+                                z: mob.z + (Math.random() - 0.5) * 12
+                            });
+                        }
+                        mobsDirty = true;
+                    }
+                }
+
+                // Update Boss Instances (Core + Rings)
+                // APPLY ROTATION TO INSTANCES
+                const bossRot = mob.rotationY || 0;
+
+                if (bossCore.current) {
+                    tempObject.position.set(mob.x, 3.5, mob.z); // Core height
+                    tempObject.rotation.set(0, bossRot, 0); // Apply Y rotation
+                    tempObject.scale.setScalar(1);
+                    tempObject.updateMatrix();
+                    bossCore.current.setMatrixAt(bossC, tempObject.matrix); // Only 1 boss usually
+                    
+                    // Update Colors based on state
+                    const isCharging = mob.bossState === 'CHARGING';
+                    const isVulnerable = mob.isVulnerable;
+                    const color = isVulnerable ? "#FFFF00" : (isCharging ? "#00FFFF" : (mob.phase === 2 ? "#EA00FF" : "#00AAAA"));
+                    if (bossCoreMatRef.current) {
+                        bossCoreMatRef.current.color.set(color);
+                        bossCoreMatRef.current.emissive.set(isCharging ? color : "#000044");
+                    }
+                }
+                const t = state.clock.elapsedTime;
+                if (bossRing1Ref.current) {
+                    tempObject.position.set(mob.x, 3.5, mob.z);
+                    tempObject.rotation.set(t * 0.5, bossRot, 0); // X + Y
+                    tempObject.updateMatrix();
+                    bossRing1Ref.current.setMatrixAt(bossC, tempObject.matrix);
+                }
+                if (bossRing2Ref.current) {
+                    tempObject.position.set(mob.x, 3.5, mob.z);
+                    tempObject.rotation.set(0, bossRot + t * 0.4, 0); // Y + Y
+                    tempObject.updateMatrix();
+                    bossRing2Ref.current.setMatrixAt(bossC, tempObject.matrix);
+                }
+                if (bossRing3Ref.current) {
+                    tempObject.position.set(mob.x, 3.5, mob.z);
+                    tempObject.rotation.set(0, bossRot, t * 0.3); // Z + Y
+                    tempObject.updateMatrix();
+                    bossRing3Ref.current.setMatrixAt(bossC, tempObject.matrix);
+                }
+                if (mob.scanTimer > 0 && bossScanRef.current) {
+                    tempObject.position.set(mob.x, 3.5, mob.z);
+                    tempObject.rotation.set(0, bossRot, 0);
+                    tempObject.scale.setScalar(1);
+                    tempObject.updateMatrix();
+                    bossScanRef.current.setMatrixAt(bossScanC++, tempObject.matrix);
+                }
+                bossC++; // Increment boss count
+
+                // --- LIVE BOSS HP UPDATE ---
+                // Only update if HP changed significantly or every 0.5s to avoid React thrashing
+                if (!mob.lastReportedHp) mob.lastReportedHp = mob.currentHp;
+                if (!mob.lastReportTime) mob.lastReportTime = 0;
+
+                const now = state.clock.elapsedTime;
+                if (mob.currentHp !== mob.lastReportedHp && (now - mob.lastReportTime > 0.1)) {
+                    updateBossStatus({ active: true, name: mob.name, hp: mob.currentHp, maxHp: mob.maxHp });
+                    mob.lastReportedHp = mob.currentHp;
+                    mob.lastReportTime = now;
+                }
+            }
+
+
+            if (mob.currentHp <= 0 && !mob.isDead) {
+                mob.isDead = true;
+                playSFX('mob_death');
+                mobsDirty = true;
+
+                // BESTIARY (Floor 999): Track for respawn and override XP
+                let rewardXP, rewardEBits;
+                if (floorLevel === 999) {
+                    // Calculate XP needed to reach next level
+                    const currentLevel = getLevelFromXP(gameState.xp);
+                    const xpForNext = getNextLevelXP(currentLevel);
+                    rewardXP = Math.max(100, xpForNext - gameState.xp + 1); // +1 to ensure bump
+                    rewardEBits = Math.floor(rewardXP / 4);
+
+                    // Track mob for 5-second respawn
+                    bestiaryDeadMobs.current.push({
+                        id: mob.id,
+                        name: mob.name,
+                        x: mob.x,
+                        z: mob.z,
+                        originalMob: { ...mob, currentHp: mob.maxHp, isDead: false },
+                        respawnTimer: 5.0 // 5 seconds
+                    });
+                } else {
+                    // Normal XP rewards
+                    rewardXP = (mob.id === 'BIT_MITE' ? 25 : mob.id === 'NULL_WISP' ? 40 : mob.id === 'HUNTER' ? 65 : mob.id === 'STATELESS_SENTRY' ? 80 : 500);
+                    rewardEBits = Math.floor(rewardXP / 4);
+                }
+
+                setGameState(prev => {
+                    const currentMobKills = prev.sessionMobKills || {};
+                    return {
+                        ...prev,
+                        xp: prev.xp + rewardXP,
+                        sessionKills: (prev.sessionKills || 0) + 1,
+                        sessionMobKills: {
+                            ...currentMobKills,
+                            [mob.id]: (currentMobKills[mob.id] || 0) + 1
+                        },
+                        deadEntities: [...(prev.deadEntities || []), mob.instanceId]
+                    };
+                });
 
                 // Spark Drop Logic
                 const isSpecial = mob.id === 'BIT_MITE' && floorLevel > 1 && getLevelFromXP(gameState.xp) >= 3 && !gameState.hasUnlockedDoT && !shardDroppedRef.current;
                 if (isSpecial) shardDroppedRef.current = true;
 
+                // Ambient drop logic (20% chance)
+                let dropType = 'eBits'; // Default
+                let amount = rewardEBits;
+                const rnd = Math.random();
+                if (rnd < 0.20 && mob.id !== 'IO_SENTINEL' && !isSpecial) {
+                    if (Math.random() > 0.5) {
+                        dropType = 'mRAM';
+                        amount = Math.floor(Math.random() * 4) + 2; // 2-5
+                    } else {
+                        dropType = 'Integrity';
+                        amount = Math.floor(Math.random() * 2) + 1; // 1-2
+                    }
+                }
+
                 const newSpark = {
                     id: Math.random().toString(),
                     x: mob.x,
                     z: mob.z,
-                    eBits: rewardEBits,
+                    dropType: dropType,
+                    amount: amount,
                     isSpecial: isSpecial
                 };
                 sparksRef.current.push(newSpark);
@@ -1180,7 +1391,7 @@ export default function MobManager({ maze, floorLevel }) {
                     mob.scanTimer = 10;
                     mob.isVulnerable = true; // Always apply Vulnerability on Scan (Visual Feedback = Mechanic)
                     // Add to scanned targets for mini-map
-                    scannedTargets.push({ id: mob.id, x: mob.x, z: mob.z, type: 'MOB' });
+                    scannedTargets.push({ id: mob.instanceId, x: mob.x, z: mob.z, type: 'MOB' });
                 }
             }
             if (mob.scanTimer > 0) {
@@ -1398,9 +1609,17 @@ export default function MobManager({ maze, floorLevel }) {
                         setGameState(prev => ({ ...prev, hasUnlockedDoT: true }));
                         addNotification("LOGIC_SHARD_ACQUIRED: BIT_FLIP_DOT_UNLOCKED", "#EA00FF");
                         playSFX('powerup');
+                    } else if (spark.dropType === 'mRAM') {
+                        restoreRam(spark.amount);
+                        addNotification(`+${spark.amount} mRAM`, "#AA00FF");
+                        playSFX('coin');
+                    } else if (spark.dropType === 'Integrity') {
+                        healKernel(spark.amount);
+                        addNotification(`+${spark.amount} INTEGRITY`, "#0088FF");
+                        playSFX('coin');
                     } else {
-                        setGameState(prev => ({ ...prev, eBits: (prev.eBits || 0) + spark.eBits }));
-                        addNotification(`+${spark.eBits} eBITS`, "#00FFFF");
+                        setGameState(prev => ({ ...prev, eBits: (prev.eBits || 0) + spark.amount }));
+                        addNotification(`+${spark.amount} eBITS`, "#FFFF00");
                         playSFX('coin');
                     }
                     sparksDirty = true;
@@ -1550,7 +1769,12 @@ export default function MobManager({ maze, floorLevel }) {
                     key={s.id} 
                     position={[s.x, 1.0, s.z]} 
                     isSpecial={s.isSpecial} 
-                    color={s.isSpecial ? "#EA00FF" : "#00FFFF"} 
+                    color={
+                        s.isSpecial ? "#EA00FF" : 
+                        s.dropType === 'mRAM' ? "#AA00FF" : 
+                        s.dropType === 'Integrity' ? "#0088FF" : 
+                        "#FFFF00"
+                    } 
                 />
             ))}
         </group>

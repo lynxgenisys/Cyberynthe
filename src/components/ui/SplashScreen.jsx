@@ -62,7 +62,19 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
         setGameState(prev => ({ ...prev, playerName: 'GHOST_USER' }));
     };
 
-    const handleStart = () => {
+    const handleStart = async () => {
+        // Attempt Fullscreen & Landscape Lock for Mobile
+        try {
+            if (document.documentElement.requestFullscreen) {
+                await document.documentElement.requestFullscreen();
+            }
+            if (window.screen && window.screen.orientation && window.screen.orientation.lock) {
+                await window.screen.orientation.lock('landscape');
+            }
+        } catch (err) {
+            console.warn("Fullscreen/Orientation lock failed or unsupported:", err);
+        }
+
         setGameState(prev => ({
             ...prev,
             gameMode: selectedMode,
@@ -156,7 +168,19 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
 
             <div className="action-buttons">
                 {hasSave && (
-                    <button className="resume-btn" onClick={onResume}>
+                    <button className="resume-btn" onClick={async () => {
+                        try {
+                            if (document.documentElement.requestFullscreen) {
+                                await document.documentElement.requestFullscreen();
+                            }
+                            if (window.screen && window.screen.orientation && window.screen.orientation.lock) {
+                                await window.screen.orientation.lock('landscape');
+                            }
+                        } catch (err) {
+                            console.warn("Fullscreen/Orientation lock failed or unsupported:", err);
+                        }
+                        onResume();
+                    }}>
                         [ RESUME_SESSION ]
                     </button>
                 )}
@@ -166,7 +190,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                 </button>
             </div>
 
-            <div className="splash-version">v0.12.2 | PRODUCTION_READY</div>
+            <div className="splash-version">v0.13.0 | MOBILE_INTEGRATION</div>
         </div>
     );
 
@@ -197,6 +221,14 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                 >
                     ABOUT
                 </button>
+                <a
+                    href="https://buymeacoffee.com/LynxGen"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="nav-tab text-yellow-500 hover:text-yellow-400 border-yellow-900/30 flex items-center gap-2"
+                >
+                    ☕ SUPPORT_DEV
+                </a>
                 <div className="flex-1"></div> {/* Spacer */}
                 <button
                     className="nav-tab text-cyan-500 hover:text-cyan-400 border-cyan-900/30"

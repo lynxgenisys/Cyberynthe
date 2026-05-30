@@ -188,7 +188,7 @@ export const MiniMap = React.memo(() => {
                 const bGZ = marker.z / 2;
 
                 ctx.beginPath();
-                ctx.arc(bGX * scale, bGZ * scale, scale * 0.25, 0, Math.PI * 2);
+                ctx.arc(bGX * scale, bGZ * scale, scale * 0.125, 0, Math.PI * 2);
 
                 // Color by type with constant glow
                 if (marker.type === 'CACHE') {
@@ -211,7 +211,7 @@ export const MiniMap = React.memo(() => {
                 const age = now - (b.timestamp || 0);
 
                 // Remove if dead
-                if (gameState.sessionMobKills && gameState.sessionMobKills[key]) {
+                if (gameState.deadEntities && gameState.deadEntities.includes(Number(key))) {
                     delete temporaryBlipsRef.current[key];
                     return;
                 }
@@ -230,7 +230,7 @@ export const MiniMap = React.memo(() => {
 
                 // Draw blip circle - pulsing (half size)
                 ctx.beginPath();
-                const pulseSize = scale * (0.3 + Math.sin(age / 200) * 0.05); // Slight pulse
+                const pulseSize = scale * (0.15 + Math.sin(age / 200) * 0.025); // 50% smaller pulse
                 ctx.arc(bGX * scale, bGZ * scale, pulseSize, 0, Math.PI * 2);
 
                 // Red glow for mobs
@@ -270,6 +270,23 @@ export const MiniMap = React.memo(() => {
             ctx.fill();
             ctx.restore();
 
+            // 6.5 DRAW RUN LOCK INDICATOR
+            if (gameState.isRunLocked && !isTactical) {
+                ctx.save();
+                ctx.translate(width / 2, height / 2);
+                ctx.rotate((Date.now() / 200) % (Math.PI * 2));
+                ctx.beginPath();
+                ctx.setLineDash([15, 10]);
+                const ringRadius = Math.min(width, height) / 2 - 4;
+                ctx.arc(0, 0, ringRadius, 0, Math.PI * 2);
+                ctx.strokeStyle = '#EA00FF';
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#EA00FF';
+                ctx.stroke();
+                ctx.restore();
+            }
+
             // 7. EFFECTS
             if ((showScanLines || isTactical) && isTactical) {
                 // Scanlines
@@ -286,7 +303,7 @@ export const MiniMap = React.memo(() => {
 
         render();
         return () => cancelAnimationFrame(animationFrameId);
-    }, [mode, isTactical, showScanLines, gameState.scannedTargets, gameState.isTransitioning, gameState.floorLevel]);
+    }, [mode, isTactical, showScanLines, gameState.scannedTargets, gameState.isTransitioning, gameState.floorLevel, gameState.isRunLocked]);
 
     // Explicitly clear markers when floor changes
     useEffect(() => {
