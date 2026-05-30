@@ -1160,7 +1160,7 @@ export default function MobManager({ maze, floorLevel }) {
                     mob.scanTimer = 10;
                     mob.isVulnerable = true; // Always apply Vulnerability on Scan (Visual Feedback = Mechanic)
                     // Add to scanned targets for mini-map
-                    scannedTargets.push({ x: mob.x, z: mob.z, type: 'MOB' });
+                    scannedTargets.push({ id: mob.id, x: mob.x, z: mob.z, type: 'MOB' });
                 }
             }
             if (mob.scanTimer > 0) {

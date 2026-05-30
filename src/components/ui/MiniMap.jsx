@@ -158,7 +158,7 @@ export const MiniMap = React.memo(() => {
             // Update blips from scanned targets
             if (gameState.scannedTargets && gameState.scannedTargets.length > 0) {
                 gameState.scannedTargets.forEach(target => {
-                    const id = `${target.x},${target.z}`;
+                    const id = target.id || `${target.x},${target.z}`;
 
                     // Separate permanent markers from temporary blips
                     if (target.type === 'CACHE' || target.type === 'PORTAL') {
@@ -188,7 +188,7 @@ export const MiniMap = React.memo(() => {
                 const bGZ = marker.z / 2;
 
                 ctx.beginPath();
-                ctx.arc(bGX * scale, bGZ * scale, scale * 0.5, 0, Math.PI * 2);
+                ctx.arc(bGX * scale, bGZ * scale, scale * 0.25, 0, Math.PI * 2);
 
                 // Color by type with constant glow
                 if (marker.type === 'CACHE') {
@@ -210,6 +210,12 @@ export const MiniMap = React.memo(() => {
                 const b = temporaryBlipsRef.current[key];
                 const age = now - (b.timestamp || 0);
 
+                // Remove if dead
+                if (gameState.sessionMobKills && gameState.sessionMobKills[key]) {
+                    delete temporaryBlipsRef.current[key];
+                    return;
+                }
+
                 // Fade over 2.5 seconds (slower than before)
                 if (age > 2500) {
                     delete temporaryBlipsRef.current[key];
@@ -222,9 +228,9 @@ export const MiniMap = React.memo(() => {
                 const bGX = b.x / 2;
                 const bGZ = b.z / 2;
 
-                // Draw blip circle - pulsing
+                // Draw blip circle - pulsing (half size)
                 ctx.beginPath();
-                const pulseSize = scale * (0.6 + Math.sin(age / 200) * 0.1); // Slight pulse
+                const pulseSize = scale * (0.3 + Math.sin(age / 200) * 0.05); // Slight pulse
                 ctx.arc(bGX * scale, bGZ * scale, pulseSize, 0, Math.PI * 2);
 
                 // Red glow for mobs
@@ -309,9 +315,9 @@ export const MiniMap = React.memo(() => {
                 {/* Tactical Legend */}
                 {isTactical && (
                     <div className="absolute bottom-4 left-4 text-xs font-mono text-cyan space-y-1">
-                        <div className="flex items-center gap-2"><div className="w-2 h-2 bg-red-500 rounded-full"></div> HOSTILE_SIGNATURE</div>
-                        <div className="flex items-center gap-2"><div className="w-2 h-2 bg-orange-500 rounded-full"></div> DATA_FRAGMENT</div>
-                        <div className="flex items-center gap-2"><div className="w-2 h-2 bg-purple-500 rounded-full"></div> KERNEL_GATE</div>
+                        <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div> HOSTILE_SIGNATURE</div>
+                        <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div> DATA_FRAGMENT</div>
+                        <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div> KERNEL_GATE</div>
                     </div>
                 )}
 
