@@ -227,7 +227,17 @@ export const GameProvider = ({ children }) => {
     const checkPersistence = (currentIntegrity) => {
         if (currentIntegrity <= 0) {
             if (gameState.isElite) {
-                localStorage.removeItem('CyberSynthe_Save'); // Clear Save
+                // Wipe save properly via async check
+                const wipeSave = async () => {
+                    const { supabase } = await import('../utils/supabase');
+                    if (supabase) {
+                        const { data: { user } } = await supabase.auth.getUser();
+                        localStorage.removeItem(`CyberSynthe_Save_${user ? user.id : 'guest'}`);
+                    } else {
+                        localStorage.removeItem('CyberSynthe_Save_guest');
+                    }
+                };
+                wipeSave();
                 // Reset to Floor 1, Seed Reset
                 setGameState(prev => ({
                     ...prev,
@@ -275,7 +285,6 @@ export const GameProvider = ({ children }) => {
     // Initialize Session Seed
     useEffect(() => {
         // CHECK FOR SAVE ON START (For debug logs mostly, logic handled in App UI)
-        const saved = localStorage.getItem('CyberSynthe_Save');
         // ... save loaded ...
 
         const timestamp = Date.now().toString();
@@ -671,11 +680,9 @@ export const GameProvider = ({ children }) => {
             if (item.stackable) {
                 for (let i = 0; i < slots.length; i++) {
                     if (slots[i] && slots[i].type === item.type) {
-                        const newCount = slots[i].count + 1;
-                        if (newCount <= item.maxStack) {
-                            slots[i] = { ...slots[i], count: newCount };
-                            return { ...prev, inventorySlots: slots };
-                        }
+                        const newCount = Math.min(slots[i].count + (item.count || 1), 999);
+                        slots[i] = { ...slots[i], count: newCount };
+                        return { ...prev, inventorySlots: slots };
                     }
                 }
             }

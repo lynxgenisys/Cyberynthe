@@ -23,6 +23,7 @@ const _upDir = new THREE.Vector3(0, 1, 0);
 const PlayerController = () => {
     const body = useRef();
     const sprintCostAccumulator = useRef(0);
+    const { isMobile } = useDeviceDetect();
     const [subscribeKeys, getKeys] = useKeyboardControls();
     const { camera } = useThree();
     const { gameState, updatePlayerPos, triggerScan, getLevelFromXP, playerRotationRef, enterBestiaryMode, setChargingWeapon, toggleRunLock, setRunLocked } = useGame();

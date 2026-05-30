@@ -53,9 +53,16 @@ function CoreInterface() {
   const [nameInput, setNameInput] = useState('GHOST_USER');
 
   // --- MENU LOGIC ---
+  const getSaveKey = async () => {
+    if (!supabase) return 'CyberSynthe_Save_guest';
+    const { data: { user } } = await supabase.auth.getUser();
+    return `CyberSynthe_Save_${user ? user.id : 'guest'}`;
+  };
+
   useEffect(() => {
     const checkSaves = async () => {
-      let hasLocal = !!localStorage.getItem('CyberSynthe_Save');
+      const saveKey = await getSaveKey();
+      let hasLocal = !!localStorage.getItem(saveKey);
       let hasCloud = false;
       const { data: cloudSave } = await loadGameFromCloud();
       if (cloudSave) {
@@ -73,6 +80,11 @@ function CoreInterface() {
       if (event === 'SIGNED_IN') {
         checkSaves();
       }
+      if (event === 'SIGNED_OUT') {
+        // Option to clear guest save on logout, or let them start fresh
+        // For security/crosstalk prevention, wipe local save state in memory
+        setHasSave(false);
+      }
     });
 
     return () => {
@@ -86,8 +98,9 @@ function CoreInterface() {
     setIsEnteringName(true);
   };
 
-  const confirmNewGame = () => {
-    localStorage.removeItem('CyberSynthe_Save'); // Clear old save
+  const confirmNewGame = async () => {
+    const saveKey = await getSaveKey();
+    localStorage.removeItem(saveKey); // Clear old save
     setIsInMenu(false);
     setIsDeckOpen(false);
 
@@ -119,7 +132,8 @@ function CoreInterface() {
     setIsDeckOpen(false);
 
     let localSave = null;
-    const localStr = localStorage.getItem('CyberSynthe_Save');
+    const saveKey = await getSaveKey();
+    const localStr = localStorage.getItem(saveKey);
     if (localStr) localSave = JSON.parse(localStr);
 
     let cloudSave = null;
@@ -146,14 +160,18 @@ function CoreInterface() {
   // Global Save Effect
   useEffect(() => {
       if (gameState.saveSignal > 0) {
-          const bundle = {
-              gameState: { ...gameState, saveSignal: 0 }, // Don't persist the signal
-              playerState,
-              invState,
-              timestamp: Date.now()
+          const saveAsync = async () => {
+              const bundle = {
+                  gameState: { ...gameState, saveSignal: 0 }, // Don't persist the signal
+                  playerState,
+                  invState,
+                  timestamp: Date.now()
+              };
+              const saveKey = await getSaveKey();
+              localStorage.setItem(saveKey, JSON.stringify(bundle));
+              saveGameToCloud(bundle); // Async fire-and-forget
           };
-          localStorage.setItem('CyberSynthe_Save', JSON.stringify(bundle));
-          saveGameToCloud(bundle); // Async fire-and-forget
+          saveAsync();
       }
   }, [gameState.saveSignal]);
 
