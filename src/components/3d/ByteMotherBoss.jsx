@@ -53,9 +53,9 @@ export default function ByteMotherBoss({ mob }) {
         const angle = (Math.PI * 2 / 6) * i;
         legs.push(
             <group key={`leg-${i}`} rotation={[0, angle, 0]} position={[0, -0.5, 0]}>
-                <mesh ref={el => legsRef.current[i] = el} position={[1.5 * 4.5, 0, 0]} rotation={[0, 0, Math.PI / 4]}>
+                <mesh ref={el => legsRef.current[i] = el} position={[1.5 * 2.0, 0, 0]} rotation={[0, 0, Math.PI / 4]}>
                     <cylinderGeometry args={[0.45, 0.22, 9, 8]} />
-                    <meshStandardMaterial color="#222222" emissive="#111100" />
+                    <meshStandardMaterial color="#444422" emissive="#222200" emissiveIntensity={0.5} />
                 </mesh>
             </group>
         );
@@ -64,19 +64,20 @@ export default function ByteMotherBoss({ mob }) {
     return (
         <group ref={groupRef}>
             {/* BODY (Flattened D20) */}
-            <mesh ref={bodyRef} scale={[4.5, 3.15, 4.5]} position={[0, 0, 0]}>
+            <mesh ref={bodyRef} scale={[2.0, 1.4, 2.0]} position={[0, 0, 0]}>
                 <icosahedronGeometry args={[1.5, 0]} />
-                <meshStandardMaterial color={bodyColor} emissive={emissiveColor} wireframe={false} metalness={0.6} roughness={0.4} />
+                <meshStandardMaterial color={bodyColor} emissive={emissiveColor} emissiveIntensity={0.8} wireframe={false} metalness={0.2} roughness={0.8} />
+                <pointLight position={[0, 2, 0]} intensity={2.0} distance={10} color="#FFFF00" />
             </mesh>
-            <mesh scale={[4.72, 3.37, 4.72]}>
+            <mesh scale={[2.1, 1.5, 2.1]}>
                 <icosahedronGeometry args={[1.5, 0]} />
                 <meshBasicMaterial color="#FFFF00" wireframe transparent opacity={0.2} />
             </mesh>
 
             {/* HEAD (Inverted Pyramid = Tetrahedron) */}
-            <mesh ref={headRef} position={[0, 0, 1.2 * 4.5]} rotation={[Math.PI, 0, 0]}>
-                <tetrahedronGeometry args={[0.7 * 4.5, 0]} />
-                <meshStandardMaterial color="#88AA00" emissive="#445500" metalness={0.8} />
+            <mesh ref={headRef} position={[0, 0, 1.2 * 2.0]} rotation={[Math.PI, 0, 0]}>
+                <tetrahedronGeometry args={[0.7 * 2.0, 0]} />
+                <meshStandardMaterial color="#88AA00" emissive="#445500" emissiveIntensity={0.8} metalness={0.2} />
             </mesh>
 
             {/* LEGS */}
@@ -85,13 +86,13 @@ export default function ByteMotherBoss({ mob }) {
             {/* SCAN WIREFRAME & CRIT POINT (If scanned) */}
             {mob.scanTimer > 0 && (
                 <>
-                    <mesh scale={[1.8 * 4.5, 1.8 * 4.5, 1.8 * 4.5]}>
+                    <mesh scale={[1.8 * 2.0, 1.8 * 2.0, 1.8 * 2.0]}>
                         <icosahedronGeometry args={[1.5, 0]} />
                         <meshBasicMaterial color="#FFFF00" wireframe transparent opacity={0.3} depthTest={false} />
                     </mesh>
                     
                     {/* CRIT POINT (Byte Mite Pooper Spawner) */}
-                    <mesh position={[0, 0, -1.8 * 4.5]}>
+                    <mesh position={[0, 0, -1.8 * 2.0]}>
                         <octahedronGeometry args={[1.5, 0]} />
                         <meshBasicMaterial color={isVulnerable ? "#FF0000" : "#FF8800"} wireframe={!isVulnerable} transparent opacity={isVulnerable ? 1.0 : 0.8} depthTest={false} />
                     </mesh>
@@ -100,5 +101,6 @@ export default function ByteMotherBoss({ mob }) {
         </group>
     );
 }
+
 
 
