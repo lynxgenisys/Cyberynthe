@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useRef, useEffect, useState } from 'react';
-import menuTrack1 from '../assets/OST/Menus/Sleeping_Among_Moons.mp3';
+import menuTrack1 from '../assets/OST/Menus/Cold_Pavement_Patterns.mp3';
+import menuTrack2 from '../assets/OST/Menus/Sleeping_Among_Moons.mp3';
+import menuTrack3 from '../assets/OST/Menus/Tears_in_Glass.mp3';
 
 const SoundContext = createContext();
 
@@ -44,12 +46,38 @@ export const SoundProvider = ({ children }) => {
     };
 
     const menuMusicTimeoutRef = useRef(null);
+    const [isMuted, setIsMuted] = useState(false);
+    const [trackIndex, setTrackIndex] = useState(0);
+    const tracks = [menuTrack1, menuTrack2, menuTrack3];
+
+    // Handle track index changes while playing
+    useEffect(() => {
+        if (menuMusicTimeoutRef.current && !menuMusicTimeoutRef.current.paused) {
+            menuMusicTimeoutRef.current.pause();
+            menuMusicTimeoutRef.current.src = tracks[trackIndex];
+            menuMusicTimeoutRef.current.load();
+            if (!isMuted) {
+                menuMusicTimeoutRef.current.play().catch(e => console.log("Autoplay blocked", e));
+            }
+        } else if (menuMusicTimeoutRef.current) {
+            menuMusicTimeoutRef.current.src = tracks[trackIndex];
+            menuMusicTimeoutRef.current.load();
+        }
+    }, [trackIndex]);
+
+    // Handle mute state
+    useEffect(() => {
+        if (menuMusicTimeoutRef.current) {
+            menuMusicTimeoutRef.current.muted = isMuted;
+        }
+    }, [isMuted]);
 
     const playMenuMusic = () => {
         if (!menuMusicTimeoutRef.current) {
-            menuMusicTimeoutRef.current = new Audio(menuTrack1);
+            menuMusicTimeoutRef.current = new Audio(tracks[trackIndex]);
             menuMusicTimeoutRef.current.loop = true;
             menuMusicTimeoutRef.current.volume = 0.3;
+            menuMusicTimeoutRef.current.muted = isMuted;
         }
         
         // Browsers require interaction before playing
@@ -63,6 +91,14 @@ export const SoundProvider = ({ children }) => {
             menuMusicTimeoutRef.current.pause();
             menuMusicTimeoutRef.current.currentTime = 0;
         }
+    };
+
+    const cycleTrack = () => {
+        setTrackIndex(prev => (prev + 1) % tracks.length);
+    };
+
+    const toggleMute = () => {
+        setIsMuted(prev => !prev);
     };
 
     const playSFX = (type, volumeScale = 1.0) => {
@@ -207,11 +243,48 @@ export const SoundProvider = ({ children }) => {
             
             noise.start(t);
             noise.stop(t + 0.3);
+        } else if (type === 'data_spike_charge') {
+            // High pitched whining/charging sound that sustains
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            
+            osc.frequency.setValueAtTime(400, t);
+            osc.frequency.linearRampToValueAtTime(1200, t + 1.0); // 1s charge up
+            
+            gain.gain.setValueAtTime(0.01, t);
+            gain.gain.linearRampToValueAtTime(0.2, t + 1.0); // 1s fade in
+            
+            osc.connect(gain);
+            gain.connect(masterGain);
+            
+            osc.start(t);
+            // Don't stop it immediately, let it run until they release. 
+            // We'll need a way to stop it. 
+            // Actually, we can return the oscillator so the caller can stop it!
+            return { osc, gain };
+        } else if (type === 'data_spike_attack') {
+            // Loud sharp synth strike
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            
+            osc.frequency.setValueAtTime(1500, t);
+            osc.frequency.exponentialRampToValueAtTime(100, t + 0.2);
+            
+            gain.gain.setValueAtTime(0.8, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+            
+            osc.connect(gain);
+            gain.connect(masterGain);
+            
+            osc.start(t);
+            osc.stop(t + 0.2);
         }
     };
 
     return (
-        <SoundContext.Provider value={{ playSFX, playMenuMusic, stopMenuMusic, isInitialized }}>
+        <SoundContext.Provider value={{ playSFX, playMenuMusic, stopMenuMusic, isInitialized, isMuted, toggleMute, cycleTrack, trackIndex }}>
             {children}
         </SoundContext.Provider>
     );

@@ -13,7 +13,7 @@ import './SplashScreen.css';
  */
 export default function SplashScreen({ onStart, hasSave, onResume }) {
     const { setGameState } = useGame();
-    const { playMenuMusic, stopMenuMusic } = useSound();
+    const { playMenuMusic, stopMenuMusic, isMuted, toggleMute, cycleTrack } = useSound();
     const [activeTab, setActiveTab] = useState('play'); // 'play' | 'profile' | 'ledger' | 'about'
     const [selectedMode, setSelectedMode] = useState('normal'); // 'normal' | 'hardcore' | 'ghost'
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -197,6 +197,18 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                     ABOUT
                 </button>
                 <div className="flex-1"></div> {/* Spacer */}
+                <button
+                    className="nav-tab text-cyan-500 hover:text-cyan-400 border-cyan-900/30"
+                    onClick={cycleTrack}
+                >
+                    [ NEXT_TRACK ]
+                </button>
+                <button
+                    className={`nav-tab border-cyan-900/30 ${isMuted ? 'text-gray-500' : 'text-cyan-500'}`}
+                    onClick={toggleMute}
+                >
+                    [ {isMuted ? 'UNMUTE' : 'MUTE'} ]
+                </button>
                 <button
                     className="nav-tab text-red-500 hover:text-red-400 border-red-900/30"
                     onClick={handleLogout}

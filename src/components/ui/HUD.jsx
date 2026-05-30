@@ -326,7 +326,7 @@ export default function HUD() {
     useEffect(() => {
         if (gameState.activeLoreLog) {
             const handleCloseKey = (e) => {
-                if (e.code === 'KeyQ') {
+                if (e.code === 'KeyF') {
                     e.preventDefault();
                     unlockKernel();
                 }
@@ -406,7 +406,7 @@ export default function HUD() {
             </div>
 
             {gameState.interactionPrompt && !gameState.activeLoreLog && (
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50">
+                <div className="absolute left-1/2 top-[60%] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50">
                     <div className="flex flex-col items-center animate-pulse">
                         <div className="w-12 h-12 border-2 border-cyan rounded-full flex items-center justify-center mb-2 bg-black/50 backdrop-blur"><span className="text-xl font-bold text-cyan font-mono">F</span></div>
                         <div className="text-sm font-bold text-cyan font-mono tracking-widest bg-black/80 px-3 py-1 border border-cyan/50">{gameState.interactionPrompt.replace(/\[[A-Z]\]\s*/, "")}</div>
@@ -426,7 +426,7 @@ export default function HUD() {
                         </div>
                         <div className="text-lg text-gray-300 font-mono leading-relaxed whitespace-pre-wrap min-h-[200px]">{gameState.activeLoreLog.text}</div>
                         <div className="mt-8 text-center">
-                            <button className="text-sm text-cyan font-bold tracking-[0.2em] hover:text-white transition-colors animate-pulse" onClick={unlockKernel}>[PRESS [Q] TO CLOSE]</button>
+                            <button className="text-sm text-cyan font-bold tracking-[0.2em] hover:text-white transition-colors animate-pulse" onClick={unlockKernel}>[PRESS [F] TO CLOSE]</button>
                         </div>
                     </div>
                 </div>

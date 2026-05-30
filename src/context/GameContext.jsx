@@ -316,7 +316,7 @@ export const GameProvider = ({ children }) => {
         saveSession();
 
         // 1. SIGNAL TRANSITION START (Unmounts Maze)
-        setGameState(prev => ({ ...prev, isTransitioning: true }));
+        setGameState(prev => ({ ...prev, isTransitioning: true, interactionPrompt: null }));
 
         // 2. DELAY & UPDATE FLOOR
         setTimeout(() => {
@@ -516,8 +516,7 @@ export const GameProvider = ({ children }) => {
     }, [gameState.xp]);
 
     const triggerInteract = () => {
-        // VISUAL FEEDBACK FOR USER DEBUGGING
-        addNotification("DEBUG: R_KEY_RECEIVED");
+        // VISUAL FEEDBACK
         fastStateRef.current.lastInteractTime = Date.now();
         setGameState(prev => ({ ...prev, lastInteractTime: fastStateRef.current.lastInteractTime }));
     };

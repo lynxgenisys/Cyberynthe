@@ -79,6 +79,7 @@ const PlayerController = () => {
 
     // INPUT STATE
     const mouseDownTime = useRef(0);
+    const chargeSoundRef = useRef(null);
     const [isCharging, setIsCharging] = useState(false);
     const footstepTimer = useRef(0);
 
@@ -148,6 +149,7 @@ const PlayerController = () => {
                 mouseDownTime.current = Date.now();
                 setIsCharging(true); // Start charging visual
                 setChargingWeapon(true); // Update global state for HUD
+                chargeSoundRef.current = playSFX('data_spike_charge'); // Play charge sound and store ref
             }
 
             // RIGHT CLICK (2) -> BIT_FLIP (Magenta, 5 M-RAM)
@@ -175,6 +177,19 @@ const PlayerController = () => {
             setIsCharging(false); // Stop charging visual
             setChargingWeapon(false); // Update global state for HUD
 
+            if (chargeSoundRef.current) {
+                try {
+                    const ctx = chargeSoundRef.current.osc.context;
+                    const t = ctx.currentTime;
+                    // Fade out the charge sound quickly
+                    chargeSoundRef.current.gain.gain.linearRampToValueAtTime(0, t + 0.1);
+                    chargeSoundRef.current.osc.stop(t + 0.1);
+                } catch (e) {
+                    // Ignore if already stopped
+                }
+                chargeSoundRef.current = null;
+            }
+
             const rawDuration = Date.now() - mouseDownTime.current;
             // APPLY CYCLE SPEED: Faster charging with higher clock
             const duration = rawDuration * cycleMultiplier;
@@ -192,7 +207,7 @@ const PlayerController = () => {
             if (canBurst && duration > 1000) {
                 if (lockResource(25)) { // higher cost, efficiency
                     fireBurst(spawnPos, direction, 'PING');
-                    playSFX('shoot');
+                    playSFX('data_spike_attack');
                 }
             } else {
                 // STANDARD TAP
