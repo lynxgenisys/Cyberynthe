@@ -166,7 +166,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                 </button>
             </div>
 
-            <div className="splash-version">v0.12.0 | PRODUCTION_READY</div>
+            <div className="splash-version">v0.12.2 | PRODUCTION_READY</div>
         </div>
     );
 

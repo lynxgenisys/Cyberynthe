@@ -1,5 +1,25 @@
 export const patchNotes = [
     {
+        version: "v0.12.2",
+        date: "2026-05-29",
+        categories: {
+            "Added": [
+                "Compact HUD Logs: A new system setting to shrink the HUD notification log to 2 messages.",
+                "L2_CACHE Persistence: Explicit floor transition saves that guarantee progress updates on boss defeats."
+            ],
+            "Changed": [
+                "Combat Tuning: Bit Flip now unlocks dynamically on floor 2/level 3 via a special dancing Mite drop.",
+                "Audio Overhaul: Fully wired Data Spike Synth attacks and continuous Charge attacks with menu music cycling."
+            ],
+            "Fixed": [
+                "Interaction HUD: Raised synchronization prompts to clear the reticle.",
+                "Stuck Prompts: Walk-away fading for Ghost Shard prompts.",
+                "Inventory Bug: Fixed an issue where new items wouldn't auto-send to the backpack when quickslots were full.",
+                "Import Crash: Re-added AuthOverlay to fix the white screen crash on load."
+            ]
+        }
+    },
+    {
         version: "v0.12.1",
         date: "2026-05-29",
         categories: {
