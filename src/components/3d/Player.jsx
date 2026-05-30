@@ -114,7 +114,7 @@ const PlayerController = () => {
             if (gameState.gameMode === 'ghost' && e.key === 'Shift' && !e.repeat) {
                 window.ghostRunToggle = !window.ghostRunToggle;
             }
-            if (e.key.toLowerCase() === 'r' && !e.repeat) {
+            if (e.key && e.key.toLowerCase() === 'r' && !e.repeat) {
                 window.autoRunToggle = !window.autoRunToggle;
             }
         };

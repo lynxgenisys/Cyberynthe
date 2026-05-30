@@ -78,7 +78,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
         }
 
         const handleKey = (e) => {
-            if (e.key.toLowerCase() === 'f') {
+            if (e.key && e.key.toLowerCase() === 'f') {
                 setWelcomeDismissed(true);
             }
         };

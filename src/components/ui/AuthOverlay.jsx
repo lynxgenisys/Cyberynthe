@@ -56,7 +56,7 @@ export default function AuthOverlay({ onLoginSuccess }) {
             // Check if profile exists
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('hacker_id, invite_claimed')
+                .select('hacker_id')
                 .eq('id', session.user.id)
                 .single();
 

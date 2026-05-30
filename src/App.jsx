@@ -222,6 +222,7 @@ function CoreInterface() {
     if (gameState.isInMenu) return; // Use gameState instead of local state
 
     const handleKey = (e) => {
+      if (!e || !e.key) return;
       const k = e.key.toLowerCase();
       // UI TOGGLES
       if (k === 'i') setIsDeckOpen(prev => !prev);
@@ -247,6 +248,7 @@ function CoreInterface() {
     if (!activeOffer || isInMenu) return;
 
     const handleQuestInput = (e) => {
+      if (!e || !e.key) return;
       if (e.key.toLowerCase() === 'y') acceptOffer();
       if (e.key.toLowerCase() === 'n') declineOffer();
     };

@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useGame } from '../../context/GameContext';
 import { usePlayer } from '../../context/PlayerContext';
 import { calculateVelocityScore, calculateStabilityScore, calculateGhostScore } from '../../utils/scoring';
-import { submitScore } from '../../utils/supabase';
+import { submitScore, supabase } from '../../utils/supabase';
 
 /**
  * RUN TRACKER
@@ -172,9 +172,8 @@ export default function RunTracker() {
         console.log('[RUN_TRACKER] Run ended:', finalScores);
 
         // Update Lifetime Profile Stats in Supabase
-        if (result.success) {
-            import('../../utils/supabase').then(async ({ supabase }) => {
-                if (!supabase) return;
+        if (result.success && supabase) {
+            (async () => {
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) return;
                 
@@ -210,7 +209,7 @@ export default function RunTracker() {
                         unlocked_fragments: mergedFragments
                     }).eq('id', user.id);
                 }
-            });
+            })();
         }
 
         // Store in localStorage for now (will be Supabase later)
