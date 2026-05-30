@@ -83,7 +83,7 @@ export default function ProjectileSystem() {
                     // Type 4 (Boss) needs much larger radius (Core is high, body is wide)
                     // Standard: 1.0 (Radius 1.0)
                     // Boss: 16.0 (Radius 4.0 covers the 2.0 height diff)
-                    const hitRadiusSq = (mobTypeBuffer.current[m] === 4) ? 16.0 : 1.0;
+                    const hitRadiusSq = (mobTypeBuffer.current[m] === 4) ? 16.0 : (mobTypeBuffer.current[m] === 5) ? 4.0 : 1.0;
 
                     if (mdx * mdx + mdy * mdy + mdz * mdz < hitRadiusSq) {
                         lArr[i] = 0;
@@ -160,3 +160,4 @@ export default function ProjectileSystem() {
         </instancedMesh>
     );
 }
+

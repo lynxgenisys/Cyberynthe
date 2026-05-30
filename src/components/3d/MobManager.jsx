@@ -602,11 +602,11 @@ export default function MobManager({ maze, floorLevel }) {
                 const posArr = mobPositionBuffer.current;
                 posArr[i * 3] = mob.x;
                 // Accurate Y-pos for hit detection: Wisp higher (3.5), Sentry mid (2.5), Boss core (3.5)
-                const mobY = (mob.id === 'NULL_WISP' ? 3.5 : (mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER') ? 3.5 : mob.id === 'STATELESS_SENTRY' ? 2.5 : 1.0);
+                const mobY = (mob.id === 'NULL_WISP' ? 3.5 : (mob.id === 'IO_SENTINEL') ? 3.5 : (mob.id === 'BYTE_MOTHER') ? 2.0 : mob.id === 'STATELESS_SENTRY' ? 2.5 : 1.0);
                 posArr[i * 3 + 1] = mobY;
                 posArr[i * 3 + 2] = mob.z;
                 mobLifeBuffer.current[i] = mob.currentHp / mob.maxHp;
-                mobTypeBuffer.current[i] = (mob.id === 'BIT_MITE' ? 1 : mob.id === 'NULL_WISP' ? 2 : mob.id === 'HUNTER' ? 3 : 4);
+                mobTypeBuffer.current[i] = (mob.id === 'BIT_MITE' ? 1 : mob.id === 'NULL_WISP' ? 2 : mob.id === 'HUNTER' ? 3 : mob.id === 'BYTE_MOTHER' ? 5 : 4);
 
                 // Check Status Buffer (Infection)
                 if (mobStatusBuffer && mobStatusBuffer.current && mobStatusBuffer.current[i] === 1) {
@@ -1681,6 +1681,8 @@ export default function MobManager({ maze, floorLevel }) {
         </group>
     );
 }
+
+
 
 
 
