@@ -1,5 +1,26 @@
 export const patchNotes = [
     {
+        version: "v0.14.0",
+        date: "2026-05-30",
+        categories: {
+            "Added": [
+                "Floor 20 Boss Chamber: The Byte-Mother boss has been deployed! Navigating Floor 20 now features a dedicated 15x15 chamber.",
+                "BFS Spawn Generation: The player's spawn point on Floor 20 is mathematically calculated to be the furthest reachable maze point from the boss chamber to ensure a deep labyrinth dive.",
+                "Boss Vulnerability Windows: Implemented damage/hit-reaction state machines allowing the Byte-Mother to enter a glowing vulnerable state where attacks deal 2.5x critical damage."
+            ],
+            "Changed": [
+                "M-RAM Injectors: Refactored functionality to trigger a smooth 2.5-second regeneration curve rather than snapping to full.",
+                "M-RAM Injectors: Consumables now restore 40% of the player's max capacity per use.",
+                "Mobile Global Scaling: Scaled down the global mobile typography and HUD elements by an additional 25% for a much sleeker fit.",
+                "Byte-Mother Physical Scaling: Boss geometry scaled down to 65% of original size."
+            ],
+            "Fixed": [
+                "Mobile Gravity Glitch: Explicitly locked the Z-axis (roll) in the mobile drag-to-look camera controller to prevent the horizon from slowly twisting over time.",
+                "Boss HP Desync: Fixed the Byte-Mother's health pool not updating correctly on the HUD due to shared IO_SENTINEL legacy logic."
+            ]
+        }
+    },
+    {
         version: "v0.13.0",
         date: "2026-05-30",
         categories: {
@@ -150,3 +171,4 @@ export const patchNotes = [
         }
     }
 ];
+

@@ -62,7 +62,7 @@ export default function ByteMotherBoss({ mob }) {
     }
 
     return (
-        <group ref={groupRef}>
+        <group ref={groupRef} scale={0.65}>
             {/* BODY (Flattened D20) */}
             <mesh ref={bodyRef} scale={[2.0, 1.4, 2.0]} position={[0, 0, 0]}>
                 <icosahedronGeometry args={[1.5, 0]} />

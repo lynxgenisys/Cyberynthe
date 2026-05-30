@@ -501,15 +501,14 @@ export default function MobManager({ maze, floorLevel }) {
 
         if (floorLevel === 10) {
             const boss = MobLogic.createMob('IO_SENTINEL', floorLevel);
-            if (boss) { newMobs.push({ ...boss, instanceId: Math.random(), x: 30, z: 30, phase: 1 }); updateBossStatus({ active: true, name: boss.name, hp: boss.currentHp, maxHp: boss.maxHp }); }
+            if (boss) { newMobs.push({ ...boss, instanceId: Math.random(), x: 30, z: 30, phase: 1, aggroActive: false }); }
         } else if (floorLevel === 20) {
             const boss = MobLogic.createMob('BYTE_MOTHER', floorLevel);
             if (boss) {
                 // Boss is at center of 15x15 room at top of maze
                 const startX = Math.floor(maze.width / 2);
                 const startY = 13; // Room is at top center, place boss roughly there
-                newMobs.push({ ...boss, instanceId: Math.random(), x: startX * 2, z: startY * 2, phase: 1 });
-                updateBossStatus({ active: true, name: boss.name, hp: boss.currentHp, maxHp: boss.maxHp });
+                newMobs.push({ ...boss, instanceId: Math.random(), x: startX * 2, z: startY * 2, phase: 1, aggroActive: false });
             }
         } else if (floorLevel === 999) {
             const specs = [{ id: 'BIT_MITE', x: 4, z: 4 }, { id: 'NULL_WISP', x: 4, z: 10 }, { id: 'HUNTER', x: 10, z: 4 }, { id: 'STATELESS_SENTRY', x: 10, z: 10 }, { id: 'IO_SENTINEL', x: 7, z: 7 }];
@@ -608,6 +607,11 @@ export default function MobManager({ maze, floorLevel }) {
                 mobLifeBuffer.current[i] = mob.currentHp / mob.maxHp;
                 mobTypeBuffer.current[i] = (mob.id === 'BIT_MITE' ? 1 : mob.id === 'NULL_WISP' ? 2 : mob.id === 'HUNTER' ? 3 : mob.id === 'BYTE_MOTHER' ? 5 : 4);
 
+                // Boss Aggro Proximity Check
+                if ((mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER') && !mob.aggroActive && distSq < 625) { // 25m radius (25^2 = 625)
+                    mob.aggroActive = true;
+                }
+
                 // Check Status Buffer (Infection)
                 if (mobStatusBuffer && mobStatusBuffer.current && mobStatusBuffer.current[i] === 1) {
                     mob.isHacked = true;
@@ -618,9 +622,13 @@ export default function MobManager({ maze, floorLevel }) {
                 // Read Damage Buffer
                 if (mobDamageBuffer.current[i] > 0) {
                     let dmg = mobDamageBuffer.current[i];
+                    
+                    if (mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER') {
+                        mob.aggroActive = true;
+                    }
 
                     // BOSS ARMOR LOGIC (80% Resistance unless Vulnerable/Hacked)
-                    if (mob.id === 'IO_SENTINEL' && !mob.isVulnerable && !mob.isHacked) {
+                    if ((mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER') && !mob.isVulnerable && !mob.isHacked) {
                         dmg *= 0.2; // 80% Reduction
                     }
 
@@ -1181,7 +1189,9 @@ export default function MobManager({ maze, floorLevel }) {
                     bossScanRef.current.setMatrixAt(bossScanC++, tempObject.matrix);
                 }
                 bossC++; // Increment boss count
-
+            }
+            
+            if (mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER') {
                 // --- LIVE BOSS HP UPDATE ---
                 // Only update if HP changed significantly or every 0.5s to avoid React thrashing
                 if (!mob.lastReportedHp) mob.lastReportedHp = mob.currentHp;
@@ -1274,6 +1284,7 @@ export default function MobManager({ maze, floorLevel }) {
 
                 addNotification(`ENTITY_PURGED: ${mob.name} +${rewardXP} XP`);
                 if (mob.id === 'IO_SENTINEL') { setBossSubtitle("REBOOT_ABORTED.", 3000); setBossKey({ x: mob.x, z: mob.z }); updateBossStatus({ active: false }); }
+                if (mob.id === 'BYTE_MOTHER') { addNotification("BYTE_MOTHER_PURGED"); updateBossStatus({ active: false }); }
             }
 
             if (gameState.lastScanTime && (Date.now() - gameState.lastScanTime) / 1000 < 3.0) {
@@ -1681,6 +1692,7 @@ export default function MobManager({ maze, floorLevel }) {
         </group>
     );
 }
+
 
 
 

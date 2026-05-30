@@ -23,6 +23,7 @@ export default function MobileCameraControls() {
             
             // Clamp pitch (up/down) to avoid flipping
             euler.current.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, euler.current.x));
+            euler.current.z = 0; // Lock roll
             
             camera.quaternion.setFromEuler(euler.current);
         };

@@ -20,7 +20,7 @@ const QuickSlots = () => {
 
         // Bridge Logic: GameContext cannot access PlayerContext, so we trigger effects here
         if (item.type === 'MRAM_INJECTOR') {
-            restoreRam(40);
+            restoreRam('40%');
             healKernel(40);
         }
 

@@ -54,11 +54,14 @@ function playerReducer(state, action) {
 
 
         case ACTIONS.RESTORE_RAM: {
-            const { amount } = action.payload;
-            const newCurrent = Math.min(state.stats.mRamCurrent + amount, state.stats.mRamMax);
+            let { amount } = action.payload;
+            if (typeof amount === 'string' && amount.endsWith('%')) {
+                amount = state.stats.mRamMax * (parseFloat(amount) / 100);
+            }
+            const newQueue = (state.stats.mRamRegenQueue || 0) + amount;
             return {
                 ...state,
-                stats: { ...state.stats, mRamCurrent: newCurrent }
+                stats: { ...state.stats, mRamRegenQueue: newQueue }
             };
         }
 
@@ -127,11 +130,26 @@ function playerReducer(state, action) {
 
         case ACTIONS.TICK_SCRUB: {
             const { delta, scrubRate, mRamMax } = action.payload;
-            const recovered = scrubRate * delta;
+            
+            let recovered = scrubRate * delta;
+            let newQueue = state.stats.mRamRegenQueue || 0;
+            
+            if (newQueue > 0) {
+                // Inject roughly 20% of the remaining queue per tick (with a minimum floor) to give a smooth 2-3s curve
+                let injectedAmount = Math.min(newQueue, Math.max(20 * delta, newQueue * 0.1));
+                recovered += injectedAmount;
+                newQueue -= injectedAmount;
+                if (newQueue < 0.1) newQueue = 0;
+            }
+
             const newCurrent = Math.min(state.stats.mRamCurrent + recovered, mRamMax);
+            
+            // If we capped out, clear the queue
+            if (newCurrent === mRamMax) newQueue = 0;
+            
             return {
                 ...state,
-                stats: { ...state.stats, mRamCurrent: newCurrent }
+                stats: { ...state.stats, mRamCurrent: newCurrent, mRamRegenQueue: newQueue }
             };
         }
 

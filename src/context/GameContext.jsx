@@ -563,7 +563,7 @@ export const GameProvider = ({ children }) => {
                 case 'MRAM_INJECTOR':
                     if (playerAPI) {
                         playerAPI.heal(40);
-                        playerAPI.restoreRam(40);
+                        playerAPI.restoreRam('40%');
                     }
                     break;
                 case 'LOGIC_FRAGMENT':

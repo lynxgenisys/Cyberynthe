@@ -296,6 +296,33 @@ function generateMazeLogic(seed, floorLevel) {
         finalExit.x = recessX;
         finalExit.y = newExitY;
         finalGrid[finalExit.y][finalExit.x] = TILE.EXIT;
+        
+        // BFS to find furthest point from the center of the boss room
+        const queue = [[Math.floor(gridDim / 2), startY + Math.floor(roomSize / 2), 0]];
+        const visited = new Set([`${Math.floor(gridDim / 2)},${startY + Math.floor(roomSize / 2)}`]);
+        let maxD = -1;
+        let furthest = { x: 1, y: 1 };
+        while(queue.length > 0) {
+            const [cx, cy, d] = queue.shift();
+            if (d > maxD) {
+                maxD = d;
+                furthest = { x: cx, y: cy };
+            }
+            const dirs = [[0,1],[1,0],[0,-1],[-1,0]];
+            for(let [dx, dy] of dirs) {
+                let nx = cx + dx, ny = cy + dy;
+                if(nx >= 0 && nx < gridDim && ny >= 0 && ny < gridDim && finalGrid[ny][nx] === TILE.PATH) {
+                    if(!visited.has(`${nx},${ny}`)) {
+                        visited.add(`${nx},${ny}`);
+                        queue.push([nx, ny, d+1]);
+                    }
+                }
+            }
+        }
+        
+        // Ensure spawn is far away from the boss
+        finalStart.x = furthest.x;
+        finalStart.y = furthest.y;
     }
 
     // 7. L1_CACHE Logic (Place 1-2 Caches per floor)
