@@ -23,7 +23,7 @@ const PlayerController = () => {
     const sprintCostAccumulator = useRef(0);
     const [subscribeKeys, getKeys] = useKeyboardControls();
     const { camera } = useThree();
-    const { updatePlayerPos, triggerScan, getLevelFromXP, playerRotationRef, enterBestiaryMode, setChargingWeapon } = useGame();
+    const { gameState, updatePlayerPos, triggerScan, getLevelFromXP, playerRotationRef, enterBestiaryMode, setChargingWeapon } = useGame();
     const { playSFX } = useSound();
 
     // Raycaster for ground check
@@ -74,7 +74,7 @@ const PlayerController = () => {
     const CELL_SIZE = 2;   // Must match MazeRenderer
 
     // RESET POSITION ON FLOOR CHANGE (Dynamic Spawn)
-    const { gameState } = useGame();
+    // const { gameState } = useGame(); // Removed duplicate
     React.useEffect(() => {
         if (body.current && gameState.spawnPoint) {
             const { x, y, z } = gameState.spawnPoint;
