@@ -59,9 +59,9 @@ export const BESTIARY = {
         resistance: 0.8, // 80% Damage Reduction
         special: 'GATEKEEPER'
     },
-    BROODMOTHER: {
-        id: 'BROODMOTHER',
-        name: 'Broodmother v1',
+    BYTE_MOTHER: {
+        id: 'BYTE_MOTHER',
+        name: 'Byte-Mother v1',
         hp: 3500, // Very Tanky
         dmg: 60,
         telegraph: {

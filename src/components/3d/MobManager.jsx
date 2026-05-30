@@ -8,7 +8,7 @@ import { useSound } from '../../context/SoundContext';
 import * as THREE from 'three';
 import { useInventory } from '../../context/InventoryContext';
 import SparkDrop from './SparkDrop';
-import BroodmotherBoss from './BroodmotherBoss';
+import ByteMotherBoss from './ByteMotherBoss';
 
 import biteMiteSkinSrc from '../../assets/mobs/Bite_Mite_Skin.webp';
 import wispSkinSrc from '../../assets/mobs/null_wisp_skin.webp';
@@ -503,7 +503,7 @@ export default function MobManager({ maze, floorLevel }) {
             const boss = MobLogic.createMob('IO_SENTINEL', floorLevel);
             if (boss) { newMobs.push({ ...boss, instanceId: Math.random(), x: 30, z: 30, phase: 1 }); updateBossStatus({ active: true, name: boss.name, hp: boss.currentHp, maxHp: boss.maxHp }); }
         } else if (floorLevel === 20) {
-            const boss = MobLogic.createMob('BROODMOTHER', floorLevel);
+            const boss = MobLogic.createMob('BYTE_MOTHER', floorLevel);
             if (boss) {
                 // Boss is at center of 15x15 room at top of maze
                 const startX = Math.floor(maze.width / 2);
@@ -602,7 +602,7 @@ export default function MobManager({ maze, floorLevel }) {
                 const posArr = mobPositionBuffer.current;
                 posArr[i * 3] = mob.x;
                 // Accurate Y-pos for hit detection: Wisp higher (3.5), Sentry mid (2.5), Boss core (3.5)
-                const mobY = (mob.id === 'NULL_WISP' ? 3.5 : (mob.id === 'IO_SENTINEL' || mob.id === 'BROODMOTHER') ? 3.5 : mob.id === 'STATELESS_SENTRY' ? 2.5 : 1.0);
+                const mobY = (mob.id === 'NULL_WISP' ? 3.5 : (mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER') ? 3.5 : mob.id === 'STATELESS_SENTRY' ? 2.5 : 1.0);
                 posArr[i * 3 + 1] = mobY;
                 posArr[i * 3 + 2] = mob.z;
                 mobLifeBuffer.current[i] = mob.currentHp / mob.maxHp;
@@ -1648,7 +1648,7 @@ export default function MobManager({ maze, floorLevel }) {
             
             {/* Boss Beam */}
             {mobs.map(m => m.id === 'IO_SENTINEL' && <BossBeam key={`bossbeam-${m.instanceId}`} mob={m} maze={maze} />)}
-            {mobs.map(m => m.id === 'BROODMOTHER' && <BroodmotherBoss key={`broodmother-${m.instanceId}`} mob={m} />)}
+            {mobs.map(m => m.id === 'BYTE_MOTHER' && <ByteMotherBoss key={`BYTE_MOTHER-${m.instanceId}`} mob={m} />)}
 
             {/* RESTORED: Dynamic PointLights for Firing Sentries (Flare Effect) */}
             {mobs.map(m => m.id === 'STATELESS_SENTRY' && m.attackState === 'FIRING' && (
@@ -1681,3 +1681,8 @@ export default function MobManager({ maze, floorLevel }) {
         </group>
     );
 }
+
+
+
+
+

@@ -4,8 +4,8 @@
 ## [0.14.0] - 2026-05-30
 
 ### Added
-- **Floor 20 Boss**: Introduced the "Broodmother" boss on Level 20. A massive, segmented byte-mite variation that spawns smaller mites and guards the exit portal.
-- **Brood Shard**: Added a new lore shard drop for the Broodmother boss containing the "SWARM_LOGIC" fragment.
+- **Floor 20 Boss**: Introduced the "Byte-Mother" boss on Level 20. A massive, segmented byte-mite variation that spawns smaller mites and guards the exit portal.
+- **Brood Shard**: Added a new lore shard drop for the Byte-Mother boss containing the "SWARM_LOGIC" fragment.
 - **Mobile Handheld UI**: Refactored the mobile layout into a virtual "handheld console" with fixed side bezels and tabbed interfaces to optimize screen real-estate without cluttering the 3D view.
 
 ### Changed
@@ -158,4 +158,5 @@
 - Scanner system (vulnerability mechanics)
 - Shred V2 (Worm infection)
 - Mob AI (Mites, Wisps, Hunters, Sentries)
+
 
