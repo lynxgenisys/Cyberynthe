@@ -7,7 +7,7 @@ import { Sparkles } from '@react-three/drei';
  * IDENTITY: AESTHETICS_NODE
  * DIRECTIVE: Render physical loot drops as glowing, dancing sparks
  */
-const SparkDrop = ({ position, type, color = '#00FFFF', isSpecial = false }) => {
+const SparkDrop = ({ position, type, color = '#00FFFF', isSpecial = false, isFullRecovery = false }) => {
     const groupRef = useRef();
     const meshRef = useRef();
     const materialRef = useRef();
@@ -43,6 +43,14 @@ const SparkDrop = ({ position, type, color = '#00FFFF', isSpecial = false }) => 
             const r = 0 + (0.917 * cycle); // 0 to 0.917 (EA)
             const g = 1 - cycle;           // 1 to 0
             const b = 1;                   // Always 1
+            materialRef.current.color.setRGB(r, g, b);
+            materialRef.current.emissive.setRGB(r, g, b);
+        } else if (isFullRecovery && materialRef.current) {
+            // Cycle between Green (#00FFAA) and Magenta (#EA00FF)
+            const cycle = (Math.sin(time * 5) + 1) / 2; 
+            const r = 0 + (0.917 * cycle); 
+            const g = 1 - cycle;           
+            const b = 0.66 + (0.34 * cycle); 
             materialRef.current.color.setRGB(r, g, b);
             materialRef.current.emissive.setRGB(r, g, b);
         }

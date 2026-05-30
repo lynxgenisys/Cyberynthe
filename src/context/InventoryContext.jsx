@@ -45,25 +45,48 @@ function inventoryReducer(state, action) {
 
         case ACTIONS.ADD_ITEM: {
             const { itemId, itemObj } = action.payload; // Support direct object
-            const item = itemObj || ITEM_REGISTRY[itemId];
-            if (!item) return state;
+            const baseItem = itemObj || ITEM_REGISTRY[itemId];
+            if (!baseItem) return state;
 
-            // Simplification: Always add to backpack first
+            const existingIndex = state.backpack.findIndex(i => i.id === baseItem.id);
+            const newBackpack = [...state.backpack];
+            
+            if (existingIndex !== -1) {
+                // Item exists, increment quantity (cap at 999)
+                const existingItem = newBackpack[existingIndex];
+                newBackpack[existingIndex] = {
+                    ...existingItem,
+                    quantity: Math.min((existingItem.quantity || 1) + (baseItem.quantity || 1), 999)
+                };
+            } else {
+                // New item, add to backpack
+                newBackpack.push({
+                    ...baseItem,
+                    quantity: baseItem.quantity || 1
+                });
+            }
+
             return {
                 ...state,
-                backpack: [...state.backpack, item] // Store full item obj for ease
+                backpack: newBackpack
             };
         }
 
         case ACTIONS.REMOVE_ITEM: {
-            const { item } = action.payload;
-            // Remove first instance of item by ID (or specific reference if possible)
-            // Using ID is safer for now if instances aren't unique objects
+            const { item, quantity = 1 } = action.payload;
             const index = state.backpack.findIndex(i => i.id === item.id);
             if (index === -1) return state;
 
             const newBackpack = [...state.backpack];
-            newBackpack.splice(index, 1);
+            const existingItem = newBackpack[index];
+            const newQuantity = (existingItem.quantity || 1) - quantity;
+
+            if (newQuantity <= 0) {
+                newBackpack.splice(index, 1);
+            } else {
+                newBackpack[index] = { ...existingItem, quantity: newQuantity };
+            }
+
             return { ...state, backpack: newBackpack };
         }
 
@@ -95,7 +118,9 @@ function inventoryReducer(state, action) {
         case ACTIONS.CALC_OVERHEAD: {
             // Calculate total weight of non-equipped items
             // For now, only Trinkets cause overhead
-            const trinketCount = state.backpack.filter(i => i.type === ITEM_TYPES.TRINKET).length;
+            const trinketCount = state.backpack.reduce((sum, item) => {
+                return item.type === ITEM_TYPES.TRINKET ? sum + (item.quantity || 1) : sum;
+            }, 0);
             return {
                 ...state,
                 overhead: trinketCount * 1.0 // 1% per item

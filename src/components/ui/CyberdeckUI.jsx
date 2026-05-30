@@ -112,13 +112,13 @@ export default function CyberdeckUI({ onClose }) {
                                 onClick={() => setActiveTab('inventory')}
                                 className={`px-4 py-2 border transition-all ${activeTab === 'inventory' ? 'border-cyan text-cyan bg-cyan/10' : 'border-gray-700 text-gray-500 hover:text-cyan'}`}
                             >
-                                [ INVENTORY ]
+                                INVENTORY
                             </button>
                             <button 
                                 onClick={() => setActiveTab('settings')}
                                 className={`px-4 py-2 border transition-all ${activeTab === 'settings' ? 'border-magenta text-magenta bg-magenta/10' : 'border-gray-700 text-gray-500 hover:text-magenta'}`}
                             >
-                                [ SETTINGS ]
+                                SETTINGS
                             </button>
                         </div>
                     </div>
@@ -321,6 +321,11 @@ export default function CyberdeckUI({ onClose }) {
                                 >
                                     <div className="w-6 h-6 bg-gray-600 mb-2 rounded-sm group-hover:bg-cyan-500 transition-colors"></div>
                                     <span className="text-[10px] break-words leading-tight text-gray-300 group-hover:text-white">{item.name}</span>
+                                    {item.quantity > 1 && (
+                                        <div className="absolute top-1 right-1 bg-magenta text-white text-[9px] px-1 font-bold rounded-sm">
+                                            x{item.quantity}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                             {/* Empty Slots Filler */}

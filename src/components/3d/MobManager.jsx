@@ -187,7 +187,7 @@ export default function MobManager({ maze, floorLevel }) {
     const sparksRef = useRef([]);
     const shardDroppedRef = useRef(false);
 
-    const { gameState, setGameState, addNotification, setBossSubtitle, updateBossStatus, fastStateRef, getLevelFromXP, getNextLevelXP, setInteractionPrompt, updateScannedTargets, triggerCrit, consumeMobQueue } = useGame();
+    const { gameState, setGameState, addNotification, setBossSubtitle, updateBossStatus, fastStateRef, getLevelFromXP, getNextLevelXP, setInteractionPrompt, updateScannedTargets, triggerCrit, consumeMobQueue, playerRotationRef } = useGame();
     const { triggerImpact, mobDamageBuffer, mobPositionBuffer, mobLifeBuffer, mobTypeBuffer, mobStatusBuffer } = useCombat();
     const { damageKernel, lockResource, restoreRam, healKernel } = usePlayer(); // Import damage handler
     const { playSFX } = useSound();
@@ -512,12 +512,22 @@ export default function MobManager({ maze, floorLevel }) {
                 }
             });
         } else {
+            if (floorLevel === 9 && maze && maze.end) {
+                const endX = maze.end.x * 2;
+                const endZ = maze.end.z * 2;
+                const sentry = MobLogic.createMob('STATELESS_SENTRY', floorLevel);
+                if (sentry) newMobs.push({ ...sentry, instanceId: Math.random(), x: endX, z: endZ, isStationary: true, dropsFullRecovery: true });
+                for (let i = 0; i < 5; i++) {
+                    const mite = MobLogic.createMob('BIT_MITE', floorLevel);
+                    if (mite) newMobs.push({ ...mite, instanceId: Math.random(), x: endX + (Math.random()-0.5)*4, z: endZ + (Math.random()-0.5)*4 });
+                }
+            }
             deadEnds.forEach(pos => {
                 const rand = Math.random();
                 let type = 'BIT_MITE';
                 if (floorLevel >= 11 && rand < 0.2) type = 'NULL_WISP';
                 else if (floorLevel >= 13 && rand < 0.05) type = 'HUNTER';
-                else if (floorLevel >= 9 && rand > 0.8) type = 'STATELESS_SENTRY';
+                else if (floorLevel >= 7 && rand > 0.72) type = 'STATELESS_SENTRY';
                 const mob = MobLogic.createMob(type, floorLevel || 1);
                 if (mob) {
                     const newMob = { ...mob, instanceId: Math.random(), x: pos.x * 2, z: pos.z * 2 };
@@ -718,7 +728,7 @@ export default function MobManager({ maze, floorLevel }) {
 
             // MOVEMENT LOGIC (Disabled in Bestiary / Stasis)
             if (!mob.isStasis && !mob.isStationary && floorLevel !== 999) { // Stationary sentries don't move
-                if (distSq < 3600 || mob.id === "HUNTER") {
+                if (distSq < 10000 || mob.id === "HUNTER") {
                     const speed = (mob.id === 'HUNTER' ? 3.5 : 2.5);
                     const dist = Math.sqrt(distSq);
 
@@ -726,6 +736,67 @@ export default function MobManager({ maze, floorLevel }) {
                     let vx = 0, vz = 0;
                     if (mob.id === 'NULL_WISP') {
                         if (dist > 15) return; // Sleep if > 15m away
+
+                        const camRotY = playerRotationRef.current || 0;
+                        const camLookX = -Math.sin(camRotY);
+                        const camLookZ = -Math.cos(camRotY);
+                        
+                        const toWispX = -dx / dist; // player to wisp
+                        const toWispZ = -dz / dist;
+                        const dotProduct = (camLookX * toWispX) + (camLookZ * toWispZ);
+                        const isTargeted = dotProduct > 0.8;
+
+                        // Timer logic for mite spawning
+                        if (!mob.miteTimer) mob.miteTimer = 0;
+                        mob.miteTimer += delta;
+                        if (mob.miteTimer >= 40) {
+                            mob.miteTimer = 0;
+                            
+                            // Find valid spawn point via BFS from player
+                            let spawnX = playerPos.x;
+                            let spawnZ = playerPos.z;
+                            if (maze && maze.grid) {
+                                const px = Math.round(playerPos.x / 2);
+                                const pz = Math.round(playerPos.z / 2);
+                                const queue = [{ x: px, z: pz, dist: 0 }];
+                                const visited = new Set([`${px},${pz}`]);
+                                let bestNode = { x: px, z: pz };
+                                let bestDist = 0;
+
+                                while (queue.length > 0) {
+                                    const curr = queue.shift();
+                                    if (curr.dist >= 7) { // ~14m away along path
+                                        bestNode = curr;
+                                        break;
+                                    }
+                                    if (curr.dist > bestDist) {
+                                        bestDist = curr.dist;
+                                        bestNode = curr;
+                                    }
+                                    // Randomize direction to avoid always spawning in the same direction
+                                    const dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]].sort(() => Math.random() - 0.5);
+                                    for (const [dx, dz] of dirs) {
+                                        const nx = curr.x + dx;
+                                        const nz = curr.z + dz;
+                                        if (nx >= 0 && nx < maze.width && nz >= 0 && nz < maze.height && maze.grid[nz][nx] !== 0) {
+                                            const key = `${nx},${nz}`;
+                                            if (!visited.has(key)) {
+                                                visited.add(key);
+                                                queue.push({ x: nx, z: nz, dist: curr.dist + 1 });
+                                            }
+                                        }
+                                    }
+                                }
+                                spawnX = bestNode.x * 2;
+                                spawnZ = bestNode.z * 2;
+                            }
+
+                            const mite = MobLogic.createMob('BIT_MITE', floorLevel || 1);
+                            if (mite) {
+                                spawnQueue.current.push({ ...mite, instanceId: Math.random(), x: spawnX, z: spawnZ });
+                                addNotification("ALERT: BIT_MITE ANOMALY DETECTED IN SECTOR", "#EA00FF");
+                            }
+                        }
 
                         // Orbit Logic
                         const orbitRadius = 1.5;
@@ -735,8 +806,13 @@ export default function MobManager({ maze, floorLevel }) {
 
                         // Tangent (Orbit Direction based on Index to handle multiple)
                         const orbitDir = (i % 2 === 0 ? 1 : -1);
-                        const tx = -nz * orbitDir;
-                        const tz = nx * orbitDir;
+                        let tx = -nz * orbitDir;
+                        let tz = nx * orbitDir;
+
+                        if (isTargeted) {
+                            tx *= -2;
+                            tz *= -2;
+                        }
 
                         // Combine: Push to Radius + Spin
                         // If far, mostly Push. If close, mostly Spin.
@@ -1148,221 +1224,30 @@ export default function MobManager({ maze, floorLevel }) {
                         sessionMobKills: {
                             ...currentMobKills,
                             [mob.id]: (currentMobKills[mob.id] || 0) + 1
-                        }
-                    };
-                });
-                    }
-                } else if (mob.bossState === 'CHARGING') {
-                    if (mob.bossTimer <= 0) {
-                        mob.bossState = 'FIRING';
-                        mob.bossTimer = 4.0;
-                        setBossSubtitle("DATA_STREAM_PURGE [FIRING]", 4000);
-                    }
-                } else if (mob.bossState === 'FIRING') {
-                    // Trigger Dialogue ONCE per phase start
-                    if (!mob.hasspokenFiring) {
-                        setBossSubtitle("ALIGNING_LOGIC_RAILS... STAND_STILL. DE-COMPILATION_IS_PAINLESS.", 3000);
-                        mob.hasspokenFiring = true;
-                    }
-
-                    // BEAM DAMAGE LOGIC
-                    const rotY = mob.rotationY;
-                    const pDx = playerPos.x - mob.x;
-                    const pDz = playerPos.z - mob.z;
-                    // Project player pos onto beam vector
-                    // Beam vector: -sin(rotY), -cos(rotY)
-                    const bx = -Math.sin(rotY), bz = -Math.cos(rotY);
-                    // Dot product to find distance along beam
-                    const dot = pDx * bx + pDz * bz;
-                    // Perpendicular distance
-                    const cross = pDx * bz - pDz * bx; // 2D cross product magnitude
-                    const beamDist = Math.abs(cross);
-
-                    if (dot > 0 && beamDist < 1.5) { // 1.5 width tolerance
-                        // Raycast check for walls (Occlusion)
-                        let hasLineOfSight = true;
-                        if (dot < 40 && maze && maze.grid) {
-                            const checkDist = Math.ceil(dot); // Check up to player distance
-                            const dirX = -Math.sin(rotY);
-                            const dirZ = -Math.cos(rotY);
-                            for (let d = 2; d < checkDist; d += 1.0) {
-                                const checkX = Math.round((mob.x + dirX * d) / 2);
-                                const checkZ = Math.round((mob.z + dirZ * d) / 2);
-                                if (maze.grid[checkZ] && maze.grid[checkZ][checkX] === 0) {
-                                    hasLineOfSight = false; // Blocked by wall
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (hasLineOfSight && dot < 40) { // Max range
-                            // BESTIARY: No outgoing damage from mobs
-                            if (floorLevel !== 999) {
-                                if (beamDist < 1.0) { // Cylinder radius
-                                    damageKernel(40 * delta); // 40 DPS
-                                    playSFX('mob_attack');
-                                    if (Math.random() < 0.1) triggerImpact({ x: playerPos.x, y: 1.5, z: playerPos.z }, "#00FFFF"); // Blue sparks
-                                }
-                            }
-                        }
-                    }
-
-                    if (mob.bossTimer <= 0) {
-                        mob.bossState = 'COOLDOWN';
-                        mob.bossTimer = 3.0;
-                        setBossSubtitle("RECALIBRATING...", 2000);
-                    }
-                } else if (mob.bossState === 'COOLDOWN') {
-                    mob.hasspokenFiring = false; // Reset Dialogue flag
-                    if (mob.bossTimer <= 0) {
-                        mob.bossState = 'IDLE';
-                        mob.bossTimer = 1.0;
-                    }
-                }
-
-                // Minion summoning (Phase 2) - DISABLED IN BESTIARY
-                if (mob.phase === 2 && floorLevel !== 999) {
-                    mob.summonTimer = (mob.summonTimer || 0) - delta;
-                    if (mob.summonTimer <= 0) {
-                        mob.summonTimer = 25.0; // Every 25 seconds
-                        const count = 3 + Math.floor(Math.random() * 3); // 3 to 5 Minions
-
-                        setBossSubtitle(`FORK_PROCESS_ACTIVE. CLEAN_THE_ARENA. [SPAWNING_${count}_UNITS]`, 3000);
-
-                        for (let k = 0; k < count; k++) {
-                            const m = MobLogic.createMob('BIT_MITE', floorLevel);
-                            // Spawn randomly around boss (Widened to 12m spread)
-                            spawnQueue.current.push({
-                                ...m,
-                                instanceId: Math.random(),
-                                x: mob.x + (Math.random() - 0.5) * 12,
-                                z: mob.z + (Math.random() - 0.5) * 12
-                            });
-                        }
-                        mobsDirty = true;
-                    }
-                }
-
-                // Update Boss Instances (Core + Rings)
-                // APPLY ROTATION TO INSTANCES
-                const bossRot = mob.rotationY || 0;
-
-                if (bossCore.current) {
-                    tempObject.position.set(mob.x, 3.5, mob.z); // Core height
-                    tempObject.rotation.set(0, bossRot, 0); // Apply Y rotation
-                    tempObject.scale.setScalar(1);
-                    tempObject.updateMatrix();
-                    bossCore.current.setMatrixAt(bossC, tempObject.matrix); // Only 1 boss usually
-                    
-                    // Update Colors based on state
-                    const isCharging = mob.bossState === 'CHARGING';
-                    const isVulnerable = mob.isVulnerable;
-                    const color = isVulnerable ? "#FFFF00" : (isCharging ? "#00FFFF" : (mob.phase === 2 ? "#EA00FF" : "#00AAAA"));
-                    if (bossCoreMatRef.current) {
-                        bossCoreMatRef.current.color.set(color);
-                        bossCoreMatRef.current.emissive.set(isCharging ? color : "#000044");
-                    }
-                }
-                const t = state.clock.elapsedTime;
-                if (bossRing1Ref.current) {
-                    tempObject.position.set(mob.x, 3.5, mob.z);
-                    tempObject.rotation.set(t * 0.5, bossRot, 0); // X + Y
-                    tempObject.updateMatrix();
-                    bossRing1Ref.current.setMatrixAt(bossC, tempObject.matrix);
-                }
-                if (bossRing2Ref.current) {
-                    tempObject.position.set(mob.x, 3.5, mob.z);
-                    tempObject.rotation.set(0, bossRot + t * 0.4, 0); // Y + Y
-                    tempObject.updateMatrix();
-                    bossRing2Ref.current.setMatrixAt(bossC, tempObject.matrix);
-                }
-                if (bossRing3Ref.current) {
-                    tempObject.position.set(mob.x, 3.5, mob.z);
-                    tempObject.rotation.set(0, bossRot, t * 0.3); // Z + Y
-                    tempObject.updateMatrix();
-                    bossRing3Ref.current.setMatrixAt(bossC, tempObject.matrix);
-                }
-                if (mob.scanTimer > 0 && bossScanRef.current) {
-                    tempObject.position.set(mob.x, 3.5, mob.z);
-                    tempObject.rotation.set(0, bossRot, 0);
-                    tempObject.scale.setScalar(1);
-                    tempObject.updateMatrix();
-                    bossScanRef.current.setMatrixAt(bossScanC++, tempObject.matrix);
-                }
-                bossC++; // Increment boss count
-
-                // --- LIVE BOSS HP UPDATE ---
-                // Only update if HP changed significantly or every 0.5s to avoid React thrashing
-                if (!mob.lastReportedHp) mob.lastReportedHp = mob.currentHp;
-                if (!mob.lastReportTime) mob.lastReportTime = 0;
-
-                const now = state.clock.elapsedTime;
-                if (mob.currentHp !== mob.lastReportedHp && (now - mob.lastReportTime > 0.1)) {
-                    updateBossStatus({ active: true, name: mob.name, hp: mob.currentHp, maxHp: mob.maxHp });
-                    mob.lastReportedHp = mob.currentHp;
-                    mob.lastReportTime = now;
-                }
-            }
-
-
-            if (mob.currentHp <= 0 && !mob.isDead) {
-                mob.isDead = true;
-                playSFX('mob_death');
-                mobsDirty = true;
-
-                // BESTIARY (Floor 999): Track for respawn and override XP
-                let rewardXP, rewardEBits;
-                if (floorLevel === 999) {
-                    // Calculate XP needed to reach next level
-                    const currentLevel = getLevelFromXP(gameState.xp);
-                    const xpForNext = getNextLevelXP(currentLevel);
-                    rewardXP = Math.max(100, xpForNext - gameState.xp + 1); // +1 to ensure bump
-                    rewardEBits = Math.floor(rewardXP / 4);
-
-                    // Track mob for 5-second respawn
-                    bestiaryDeadMobs.current.push({
-                        id: mob.id,
-                        name: mob.name,
-                        x: mob.x,
-                        z: mob.z,
-                        originalMob: { ...mob, currentHp: mob.maxHp, isDead: false },
-                        respawnTimer: 5.0 // 5 seconds
-                    });
-                } else {
-                    // Normal XP rewards
-                    rewardXP = (mob.id === 'BIT_MITE' ? 25 : mob.id === 'NULL_WISP' ? 40 : mob.id === 'HUNTER' ? 65 : mob.id === 'STATELESS_SENTRY' ? 80 : 500);
-                    rewardEBits = Math.floor(rewardXP / 4);
-                }
-
-                setGameState(prev => {
-                    const currentMobKills = prev.sessionMobKills || {};
-                    return {
-                        ...prev,
-                        xp: prev.xp + rewardXP,
-                        sessionKills: (prev.sessionKills || 0) + 1,
-                        sessionMobKills: {
-                            ...currentMobKills,
-                            [mob.id]: (currentMobKills[mob.id] || 0) + 1
                         },
                         deadEntities: [...(prev.deadEntities || []), mob.instanceId]
                     };
                 });
 
                 // Spark Drop Logic
-                const isSpecial = mob.id === 'BIT_MITE' && floorLevel > 1 && getLevelFromXP(gameState.xp) >= 3 && !gameState.hasUnlockedDoT && !shardDroppedRef.current;
+                const isSpecial = mob.id === 'STATELESS_SENTRY' && getLevelFromXP(gameState.xp) >= 4 && !gameState.hasUnlockedDoT && !shardDroppedRef.current;
                 if (isSpecial) shardDroppedRef.current = true;
 
                 // Ambient drop logic (20% chance)
                 let dropType = 'eBits'; // Default
                 let amount = rewardEBits;
                 const rnd = Math.random();
-                if (rnd < 0.20 && mob.id !== 'IO_SENTINEL' && !isSpecial) {
+
+                if (mob.dropsFullRecovery) {
+                    dropType = 'FullRecovery';
+                    amount = 1;
+                } else if (rnd < 0.20 && mob.id !== 'IO_SENTINEL' && !isSpecial) {
                     if (Math.random() > 0.5) {
                         dropType = 'mRAM';
-                        amount = Math.floor(Math.random() * 4) + 2; // 2-5
+                        amount = 10;
                     } else {
                         dropType = 'Integrity';
-                        amount = Math.floor(Math.random() * 2) + 1; // 1-2
+                        amount = 10;
                     }
                 }
 
@@ -1609,18 +1494,23 @@ export default function MobManager({ maze, floorLevel }) {
                         setGameState(prev => ({ ...prev, hasUnlockedDoT: true }));
                         addNotification("LOGIC_SHARD_ACQUIRED: BIT_FLIP_DOT_UNLOCKED", "#EA00FF");
                         playSFX('powerup');
+                    } else if (spark.dropType === 'FullRecovery') {
+                        healKernel(100);
+                        restoreRam(100);
+                        addNotification("SYSTEM RESTORED: FULL RECOVERY", "#00FFAA");
+                        playSFX('powerup');
                     } else if (spark.dropType === 'mRAM') {
                         restoreRam(spark.amount);
                         addNotification(`+${spark.amount} mRAM`, "#AA00FF");
-                        playSFX('coin');
+                        playSFX('loot');
                     } else if (spark.dropType === 'Integrity') {
                         healKernel(spark.amount);
                         addNotification(`+${spark.amount} INTEGRITY`, "#0088FF");
-                        playSFX('coin');
+                        playSFX('loot');
                     } else {
                         setGameState(prev => ({ ...prev, eBits: (prev.eBits || 0) + spark.amount }));
                         addNotification(`+${spark.amount} eBITS`, "#FFFF00");
-                        playSFX('coin');
+                        playSFX('loot');
                     }
                     sparksDirty = true;
                     return false; // Remove collected spark
@@ -1635,23 +1525,21 @@ export default function MobManager({ maze, floorLevel }) {
         }
 
         // Update mini-map with scanned targets
-        // Update mini-map with scanned targets (SAFE APPEND)
+        // Update mini-map with scanned targets (SAFE UPDATE)
         if (scannedTargets.length > 0) {
             setGameState(prev => {
-                // Filter out duplicates
-                const newTargets = scannedTargets.filter(t =>
-                    !prev.scannedTargets.some(pt => pt.x === t.x && pt.z === t.z && pt.type === 'MOB')
-                );
-
-                if (newTargets.length === 0) return prev;
-
-                return {
-                    ...prev,
-                    scannedTargets: [...prev.scannedTargets, ...newTargets]
-                };
+                const newArr = [...prev.scannedTargets];
+                scannedTargets.forEach(t => {
+                    const existingIdx = newArr.findIndex(pt => pt.id === t.id && pt.type === 'MOB');
+                    if (existingIdx >= 0) {
+                        newArr[existingIdx] = { ...newArr[existingIdx], x: t.x, z: t.z, timestamp: Date.now() };
+                    } else {
+                        newArr.push({ ...t, timestamp: Date.now() });
+                    }
+                });
+                return { ...prev, scannedTargets: newArr };
             });
         }
-        // Note: Don't clear targets - other components (LootManager, MazeRenderer) may add theirs
     });
 
     return (
@@ -1769,8 +1657,10 @@ export default function MobManager({ maze, floorLevel }) {
                     key={s.id} 
                     position={[s.x, 1.0, s.z]} 
                     isSpecial={s.isSpecial} 
+                    isFullRecovery={s.dropType === 'FullRecovery'}
                     color={
                         s.isSpecial ? "#EA00FF" : 
+                        s.dropType === 'FullRecovery' ? "#00FFAA" : 
                         s.dropType === 'mRAM' ? "#AA00FF" : 
                         s.dropType === 'Integrity' ? "#0088FF" : 
                         "#FFFF00"

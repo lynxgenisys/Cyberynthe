@@ -166,7 +166,12 @@ export const MiniMap = React.memo(() => {
                         permanentMarkersRef.current[id] = { ...target, opacity: 1.0 };
                     } else if (target.type === 'MOB') {
                         // Temporary blips - fade over time
-                        temporaryBlipsRef.current[id] = { ...target, opacity: 1.0, timestamp: now };
+                        if (!temporaryBlipsRef.current[id] || target.timestamp > temporaryBlipsRef.current[id].timestamp) {
+                            temporaryBlipsRef.current[id] = { ...target, opacity: 1.0, timestamp: target.timestamp || now };
+                        } else {
+                            temporaryBlipsRef.current[id].x = target.x;
+                            temporaryBlipsRef.current[id].z = target.z;
+                        }
                     }
                 });
             }

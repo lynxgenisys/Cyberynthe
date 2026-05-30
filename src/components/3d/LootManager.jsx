@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { useGame } from '../../context/GameContext';
 import { useInventory } from '../../context/InventoryContext';
 import { usePlayer } from '../../context/PlayerContext';
+import { useSound } from '../../context/SoundContext';
 import DataNode from './DataNode';
 import { rollLoot } from '../../engine/LootTable';
 
@@ -17,6 +18,7 @@ const LootManager = React.memo(({ maze, floorLevel }) => {
     const { addItem } = useInventory();
     const { gameState, setGameState, addNotification, markCacheLooted, updateScannedTargets, fastStateRef, processLootDrop, startDecryption, triggerMobSpawn, showFloatingMessage } = useGame();
     const { damageKernel, heal, restoreRam } = usePlayer();
+    const { playSFX } = useSound();
 
     useMemo(() => {
         const newCaches = [];
@@ -58,6 +60,7 @@ const LootManager = React.memo(({ maze, floorLevel }) => {
                     const collectedFragments = gameState.collectedFragments || [];
                     const lootItem = rollLoot(floorLevel, collectedFragments);
                     if (processLootDrop) processLootDrop(lootItem);
+                    playSFX('loot');
                     // NOTIFY USER
                     addNotification(`DATA_EXTRACTED: ${lootItem.name} [${lootItem.type}]`);
                     showFloatingMessage(`+ ${lootItem.name}`, "text-green-400", 3000);
