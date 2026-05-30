@@ -364,3 +364,4 @@ self.onmessage = (e) => {
         self.postMessage({ success: false, error: err.message });
     }
 };
+

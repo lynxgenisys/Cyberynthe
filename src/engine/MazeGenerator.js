@@ -353,3 +353,4 @@ export function generateMaze(seed, floorLevel) {
         }
     };
 }
+
