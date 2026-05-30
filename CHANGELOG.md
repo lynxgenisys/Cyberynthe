@@ -1,6 +1,17 @@
 # CHANGELOG - CYBERYNTHE
 
 
+## [0.14.0] - 2026-05-30
+
+### Added
+- **Floor 20 Boss**: Introduced the "Broodmother" boss on Level 20. A massive, segmented byte-mite variation that spawns smaller mites and guards the exit portal.
+- **Brood Shard**: Added a new lore shard drop for the Broodmother boss containing the "SWARM_LOGIC" fragment.
+- **Mobile Handheld UI**: Refactored the mobile layout into a virtual "handheld console" with fixed side bezels and tabbed interfaces to optimize screen real-estate without cluttering the 3D view.
+
+### Changed
+- **Splash Screen**: Updated the initial welcome splash screen with a new background asset (Cyberynthe_SPLASH_Cover.png) and stylized pulsing prompts.
+- **Maze Generation**: Floor 20 now generates at 1.5x scale (45x45 grid) to accommodate the new boss chamber and arena.
+
 ## [0.13.0] - 2026-05-30
 
 ### Added - MOBILE PWA & AI UPGRADES
@@ -147,3 +158,4 @@
 - Scanner system (vulnerability mechanics)
 - Shred V2 (Worm infection)
 - Mob AI (Mites, Wisps, Hunters, Sentries)
+

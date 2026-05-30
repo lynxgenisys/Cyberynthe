@@ -348,11 +348,13 @@ function CoreInterface() {
 
   // GAME RENDER
   return (
-    <div className="relative w-full h-screen flex flex-col justify-between z-10 overflow-hidden">
-
-      {/* 3D SCENE BACKGROUND */}
-      <MemoScene />
-      <MemoAudio />
+    <div className="relative w-full h-screen flex flex-col justify-between z-10 overflow-hidden bg-black">
+        {/* 3D SCENE BACKGROUND (HANDHELD BEZEL WRAPPER) */}
+        <div className={`absolute inset-0 z-0 transition-all duration-300 ${isMobile && !isDeckOpen && !showHelp && !gameState.isPaused ? 'portrait:py-[15vh] landscape:px-[15vw]' : ''}`}>
+          <MemoScene />
+        </div>
+        
+        <MemoAudio />
       <MemoMusic />
       <RunTracker /> {/* RUN TRACKING & SCORING */}
 

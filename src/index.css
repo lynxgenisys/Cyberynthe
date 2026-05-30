@@ -61,3 +61,5 @@ body {
 .border-magenta {
   border-color: var(--color-magenta);
 }
+@keyframes color-cycle { 0%, 100% { color: var(--color-cyan); text-shadow: 0 0 8px var(--color-cyan); } 50% { color: var(--color-magenta); text-shadow: 0 0 8px var(--color-magenta); } }
+.animate-pulse-color-cycle { animation: color-cycle 2s infinite ease-in-out; }

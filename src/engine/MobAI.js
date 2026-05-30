@@ -59,6 +59,19 @@ export const BESTIARY = {
         resistance: 0.8, // 80% Damage Reduction
         special: 'GATEKEEPER'
     },
+    BROODMOTHER: {
+        id: 'BROODMOTHER',
+        name: 'Broodmother v1',
+        hp: 3500, // Very Tanky
+        dmg: 60,
+        telegraph: {
+            color: '#FFFF00', // Yellow
+            duration: 2500,
+            msg: 'SWARM_PROTOCOL_INITIATED'
+        },
+        resistance: 0.5, // 50% Reduction
+        special: 'SPAWNER'
+    },
     HUNTER: {
         id: 'HUNTER',
         name: 'Logic Hunter',

@@ -162,7 +162,7 @@ export default function AuthOverlay({ onLoginSuccess }) {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md">
-            <div className="w-[400px] border-2 border-cyan/20 p-8 shadow-[0_0_50px_rgba(0,255,255,0.1)] relative overflow-hidden bg-black">
+            <div className="w-[90%] max-w-[400px] border-2 border-cyan/20 p-8 shadow-[0_0_50px_rgba(0,255,255,0.1)] relative overflow-hidden bg-black">
                 {/* SCANLINE */}
                 <div className="absolute inset-0 bg-[url('/scanlines.png')] opacity-10 pointer-events-none"></div>
 

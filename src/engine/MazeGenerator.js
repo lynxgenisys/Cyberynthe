@@ -64,7 +64,10 @@ export function generateMaze(seed, floorLevel) {
     // 1. Calculate Grid Size
     // INFINITE GROWTH PROTOCOL RESTORED
     // Formula: (Floor + 9) - UNBOUNDED as per user request
-    const size = floorLevel + 9;
+    let size = floorLevel + 9;
+    if (floorLevel === 20) {
+        size = Math.floor(size * 1.5);
+    }
 
     // Unique seed for this specific floor instance
     // Combines Daily Seed + Floor Level
@@ -253,7 +256,47 @@ export function generateMaze(seed, floorLevel) {
         };
     }
 
+    // 6.6 BROODMOTHER BOSS PROTOCOL (Floor 20)
+    if (floorLevel === 20) {
+        const roomSize = 15;
+        const startX = Math.floor(gridDim / 2) - Math.floor(roomSize / 2);
+        const startY = 6; // Near the top
+        
+        for (let y = startY; y < startY + roomSize; y++) {
+            for (let x = startX; x < startX + roomSize; x++) {
+                if (y >= 0 && y < gridDim && x >= 0 && x < gridDim) {
+                    finalGrid[y][x] = TILE.PATH;
+                }
+            }
+        }
+        
+        // Add 4 pillars for cover
+        const pillarPositions = [
+            { x: startX + 3, y: startY + 3 }, { x: startX + 11, y: startY + 3 },
+            { x: startX + 3, y: startY + 11 }, { x: startX + 11, y: startY + 11 }
+        ];
+        pillarPositions.forEach(p => {
+            if (p.y >= 0 && p.y < gridDim && p.x >= 0 && p.x < gridDim) {
+                finalGrid[p.y][p.x] = TILE.WALL;
+            }
+        });
 
+        // Carve 4-deep recess on the North wall
+        const recessX = Math.floor(gridDim / 2);
+        for(let i = 0; i < 4; i++) {
+            if (startY - 1 - i >= 0) {
+                finalGrid[startY - 1 - i][recessX] = TILE.PATH;
+            }
+        }
+
+        // Set the exit to the back of the recess
+        const newExitY = startY - 4 >= 1 ? startY - 4 : 1;
+        // clear old exit
+        finalGrid[finalExit.y][finalExit.x] = TILE.PATH;
+        finalExit.x = recessX;
+        finalExit.y = newExitY;
+        finalGrid[finalExit.y][finalExit.x] = TILE.EXIT;
+    }
 
     // 7. L1_CACHE Logic (Place 1-2 Caches per floor)
     let cacheCount = 1 + Math.floor(rng.next() * 2); // 1 to 2 (Rare but guaranteed)

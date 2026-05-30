@@ -32,7 +32,7 @@ const CompassStrip = memo(() => {
 
     return (
         <div
-            className="relative w-[750px] h-10 overflow-hidden border-x-2 border-cyan-500/50 bg-black/25 backdrop-blur mx-auto mt-2 rounded-lg flex items-center shadow-lg shadow-cyan-500/10"
+            className="relative w-[95%] max-w-[750px] h-10 overflow-hidden border-x-2 border-cyan-500/50 bg-black/25 backdrop-blur mx-auto mt-2 rounded-lg flex items-center shadow-lg shadow-cyan-500/10"
             style={{ maskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)' }}
         >
             <div className="absolute left-1/2 top-0 bottom-0 w-[2px] bg-magenta z-10 shadow-[0_0_10px_#EA00FF]"></div>
@@ -185,7 +185,7 @@ const TopBar = memo(({ sectorId, seed, floorLevel, runStartTime, totalPausedTime
 const BossHealthBar = memo(({ active, name, hp, maxHp }) => {
     if (!active) return null;
     return (
-        <div className="absolute top-16 z-20 w-[500px] animate-fade-in-down flex flex-col items-center">
+        <div className="absolute top-16 z-20 w-[90%] max-w-[500px] animate-fade-in-down flex flex-col items-center">
             <div className="flex justify-between w-full text-cyan font-bold text-xs mb-1 tracking-widest drop-shadow-[0_0_5px_#00FFFF]">
                 <span>{name}</span>
                 <span>{(hp / maxHp * 100).toFixed(0)}%</span>

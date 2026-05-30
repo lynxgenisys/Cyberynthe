@@ -109,16 +109,19 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
     
     if (!welcomeDismissed) {
         return (
-            <div className="absolute inset-0 bg-black z-[100] flex flex-col items-center justify-center text-center p-8 cursor-pointer"
+            <div className="absolute inset-0 z-[100] flex flex-col items-center justify-start text-center p-8 cursor-pointer bg-cover bg-center"
+                 style={{ backgroundImage: "url('/Cyberynthe_SPLASH_Cover.png')" }}
                  onClick={() => setWelcomeDismissed(true)}>
-                <h1 className="text-4xl font-bold text-cyan mb-4 glitch-text">Welcome to Cyberynthe!</h1>
-                <p className="text-gray-400 font-mono text-sm animate-pulse">(Click, Or press F key to continue)</p>
-                <button 
-                    className="mt-12 border border-magenta text-magenta px-8 py-3 hover:bg-magenta hover:text-black transition-all font-mono"
-                    onClick={(e) => { e.stopPropagation(); setWelcomeDismissed(true); }}
-                >
-                    [ ACKNOWLEDGE ]
-                </button>
+                
+                <div className="mt-[60vh] flex flex-col items-center">
+                    <button 
+                        className="border-2 border-magenta text-magenta px-8 py-3 hover:bg-magenta hover:text-black transition-all font-mono text-xl font-bold bg-black/50 backdrop-blur-sm shadow-[0_0_20px_rgba(234,0,255,0.4)]"
+                        onClick={(e) => { e.stopPropagation(); setWelcomeDismissed(true); }}
+                    >
+                        [ ENTER THE LABYRINTH! ]
+                    </button>
+                    <p className="font-mono text-sm mt-4 animate-pulse-color-cycle">(Click, Or press F key to continue)</p>
+                </div>
             </div>
         );
     }
@@ -190,7 +193,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                 </button>
             </div>
 
-            <div className="splash-version">v0.13.0 | MOBILE_INTEGRATION</div>
+            <div className="splash-version">v0.14.0 | SWARM_PROTOCOL</div>
         </div>
     );
 

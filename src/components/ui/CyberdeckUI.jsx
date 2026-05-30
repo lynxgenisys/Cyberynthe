@@ -20,6 +20,7 @@ export default function CyberdeckUI({ onClose }) {
     // UI Local State
     const [selectedItem, setSelectedItem] = useState(null);
     const [activeTab, setActiveTab] = useState('inventory'); // 'inventory' | 'settings'
+    const [mobileTab, setMobileTab] = useState('equipped'); // 'stats' | 'equipped' | 'storage'
 
     // FORCE UNLOCK POINTER ON OPEN
     React.useEffect(() => {
@@ -168,10 +169,16 @@ export default function CyberdeckUI({ onClose }) {
 
                 {/* MAIN CONTENT AREA */}
                 {activeTab === 'inventory' ? (
-                <div className="flex flex-1 gap-8 overflow-hidden mb-6">
+                <div className="flex flex-col md:flex-row flex-1 gap-4 md:gap-8 overflow-hidden mb-6">
+                    {/* MOBILE TAB BAR */}
+                    <div className="flex md:hidden w-full border-b border-gray-800 shrink-0">
+                        <button onClick={() => setMobileTab('stats')} className={`flex-1 text-xs py-3 font-mono ${mobileTab === 'stats' ? 'text-cyan border-b-2 border-cyan bg-cyan/10' : 'text-gray-500'}`}>STATS</button>
+                        <button onClick={() => setMobileTab('equipped')} className={`flex-1 text-xs py-3 font-mono ${mobileTab === 'equipped' ? 'text-cyan border-b-2 border-cyan bg-cyan/10' : 'text-gray-500'}`}>EQUIPPED</button>
+                        <button onClick={() => setMobileTab('storage')} className={`flex-1 text-xs py-3 font-mono ${mobileTab === 'storage' ? 'text-cyan border-b-2 border-cyan bg-cyan/10' : 'text-gray-500'}`}>STORAGE</button>
+                    </div>
 
                     {/* LEFT: KERNEL ARCHITECTURE (Stats) */}
-                    <div className="w-1/4 flex flex-col gap-6 border-r border-gray-800 pr-8">
+                    <div className={`${mobileTab === 'stats' ? 'flex' : 'hidden'} md:flex w-full md:w-1/4 flex-col gap-6 md:border-r border-gray-800 md:pr-8 overflow-y-auto`}>
                         <div>
                             <h3 className="text-sm text-cyan font-bold tracking-widest mb-1">KERNEL_ARCH</h3>
                             <div className="text-xs text-gray-500 font-mono mb-2">LEVEL {level} // {gameState.xp} XP</div>
@@ -245,11 +252,11 @@ export default function CyberdeckUI({ onClose }) {
                     </div>
 
                     {/* CENTER: ACTIVE MEMORY */}
-                    <div className="flex-1 flex flex-col items-center justify-center gap-12">
+                    <div className={`${mobileTab === 'equipped' ? 'flex' : 'hidden'} md:flex flex-1 flex-col items-center justify-center gap-8 md:gap-12 overflow-y-auto py-4`}>
                         {/* ACTIVE THREADS (HOTKEYS) */}
                         <div>
                             <h3 className="text-sm text-center text-magenta font-mono mb-4 tracking-[0.2em]">[ACTIVE_THREADS // HOTKEYS]</h3>
-                            <div className="flex gap-8">
+                            <div className="flex flex-wrap justify-center gap-4 md:gap-8">
                                 {gameState.inventorySlots.map((slot, i) => (
                                     <div
                                         key={`active-${i}`}
@@ -261,7 +268,7 @@ export default function CyberdeckUI({ onClose }) {
                                             }
                                         }}
                                         onMouseLeave={() => setHoveredItem(null)}
-                                        className={`w-32 h-32 border-2 flex flex-col items-center justify-center p-4 text-center cursor-pointer transition-all duration-200 relative
+                                        className={`w-20 h-20 md:w-32 md:h-32 border-2 flex flex-col items-center justify-center p-2 md:p-4 text-center cursor-pointer transition-all duration-200 relative
                                             ${selectedItem ? 'border-yellow-500 animate-pulse bg-yellow-900/10' : 'border-magenta/50 hover:bg-magenta/10 hover:shadow-[0_0_15px_rgba(255,0,255,0.3)]'}
                                             ${slot ? 'bg-magenta/5' : ''}
                                         `}
@@ -269,7 +276,7 @@ export default function CyberdeckUI({ onClose }) {
                                         <span className="absolute top-2 left-2 text-[10px] text-magenta font-bold">KEY_{i + 1}</span>
                                         {slot ? (
                                             <>
-                                                <div className="w-12 h-12 bg-magenta mb-2 rounded-sm shadow-[0_0_15px_#EA00FF]"></div>
+                                                <div className="w-8 h-8 md:w-12 md:h-12 bg-magenta mb-1 md:mb-2 rounded-sm shadow-[0_0_15px_#EA00FF]"></div>
                                                 <span className="text-sm font-mono font-bold text-white">{slot.name}</span>
                                             </>
                                         ) : (
@@ -284,9 +291,9 @@ export default function CyberdeckUI({ onClose }) {
                         </div>
 
                         {/* PASSIVE DAEMONS */}
-                        <div className="flex gap-6 opacity-60 pointer-events-none grayscale">
+                        <div className="flex flex-wrap justify-center gap-4 md:gap-6 opacity-60 pointer-events-none grayscale">
                             {state.slots.passive.map((slot, i) => (
-                                <div key={`passive-${i}`} className="w-24 h-24 border border-blue-500/30 flex flex-col items-center justify-center p-2 text-center bg-black/50">
+                                <div key={`passive-${i}`} className="w-16 h-16 md:w-24 md:h-24 border border-blue-500/30 flex flex-col items-center justify-center p-1 md:p-2 text-center bg-black/50">
                                     <span className="text-[10px] text-blue-400 mb-1">DAEMON_{i}</span>
                                     {slot ? <span className="text-xs">{slot.name}</span> : <span className="text-[10px] text-gray-700">NULL</span>}
                                 </div>
@@ -295,7 +302,7 @@ export default function CyberdeckUI({ onClose }) {
                     </div>
 
                     {/* RIGHT: BACKPACK (GRID) */}
-                    <div className="w-1/3 flex flex-col gap-4 pl-8 border-l border-gray-800">
+                    <div className={`${mobileTab === 'storage' ? 'flex' : 'hidden'} md:flex w-full md:w-1/3 flex-col gap-4 md:pl-8 md:border-l border-gray-800`}>
                         <div className="flex justify-between items-end">
                             <h3 className="text-sm text-gray-400 font-bold tracking-widest">STORAGE_PARTITION</h3>
                             <span className={`text-xs font-mono ${state.overhead > 10 ? 'text-magenta animate-pulse' : 'text-gray-500'}`}>
@@ -303,7 +310,7 @@ export default function CyberdeckUI({ onClose }) {
                             </span>
                         </div>
 
-                        <div className="grid grid-cols-4 gap-3 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 md:gap-3 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
                             {state.backpack.map((item, i) => (
                                 <div
                                     key={i}
@@ -444,13 +451,13 @@ export default function CyberdeckUI({ onClose }) {
                 )}
 
                 {/* BOTTOM: COMBAT ANALYTICS PANEL */}
-                <div className="h-32 border-t border-gray-800 pt-3 flex gap-3">
-                    <div className="text-cyan font-bold tracking-widest text-[10px] text-center opacity-50 flex items-center w-4 writing-mode-vertical rotate-180">
+                <div className="min-h-32 border-t border-gray-800 pt-3 flex flex-col md:flex-row gap-3 overflow-y-auto">
+                    <div className="text-cyan font-bold tracking-widest text-[10px] md:text-center opacity-50 flex items-center md:w-4 md:writing-mode-vertical md:rotate-180">
                         {/* Vertical text takes less horizontal space */}
                         ANALYTICS
                     </div>
 
-                    <div className="flex-1 grid grid-cols-5 gap-2">
+                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 pb-4 md:pb-0">
                         {/* ATTACK 1: DATA SPIKE */}
                         <div className="border border-green-500/30 bg-green-900/10 p-3 flex flex-col justify-between">
                             <div>
