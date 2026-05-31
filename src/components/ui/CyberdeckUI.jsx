@@ -106,7 +106,7 @@ export default function CyberdeckUI({ onClose }) {
                 <div className="flex justify-between items-end border-b border-cyan/30 pb-4 mb-6">
                     <div className="flex items-center gap-6">
                         <div>
-                            <h2 className="text-3xl font-bold text-cyan glitch-text">CYBERDECK_OS v0.14.7</h2>
+                            <h2 className="text-3xl font-bold text-cyan glitch-text">CYBERDECK_OS v0.14.8</h2>
                             <div className="text-sm text-gray-400">ID: {gameState.playerName} // STATUS: ACTIVE</div>
                         </div>
                         <div className="flex gap-2 ml-4">

@@ -1,5 +1,15 @@
 export const patchNotes = [
     {
+        version: "v0.14.8",
+        date: "2026-05-31",
+        categories: {
+            "Changed": [
+                "Byte Mother: Fixed and re-applied the 'Cyber-Chitin' texture based on the reference design. The material base color has been reset to bright white to properly showcase the dark metallic hex plates and glowing cyan circuitry without artificially darkening the texture into a 'black fuzz'.",
+                "Byte Mother: Adjusted texture scaling so the hexagonal plates are larger and more legible on the boss's geometry."
+            ]
+        }
+    },
+    {
         version: "v0.14.7",
         date: "2026-05-31",
         categories: {
