@@ -87,7 +87,7 @@ export default function TouchControlsOverlay({ onLookMove }) {
                 
                 {/* FIRE (Left Click) */}
                 <button 
-                    className="absolute bottom-[11rem] right-[18rem] w-20 h-20 rounded-full bg-cyan/20 border-2 border-cyan text-cyan font-bold tracking-widest shadow-[0_0_15px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto text-sm"
+                    className="absolute bottom-[16rem] right-[18rem] w-20 h-20 rounded-full bg-cyan/20 border-2 border-cyan text-cyan font-bold tracking-widest shadow-[0_0_15px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto text-sm"
                     onPointerDown={(e) => { e.stopPropagation(); triggerMouse(0, 'mousedown'); }}
                     onPointerUp={(e) => { e.stopPropagation(); triggerMouse(0, 'mouseup'); }}
                 >
@@ -115,7 +115,7 @@ export default function TouchControlsOverlay({ onLookMove }) {
             </div>
 
             {/* Run Lock & Interact (Above Joystick) */}
-            <div className="absolute bottom-96 left-64 flex gap-4 pointer-events-auto">
+            <div className="absolute bottom-16 left-48 flex gap-4 pointer-events-auto">
                 {/* INTERACT (F) */}
                 <button 
                     className="w-14 h-14 rounded-full border-2 border-green-500 text-green-500 bg-green-500/20 active:bg-green-500 active:text-black font-mono text-xs font-bold flex items-center justify-center shadow-[0_0_10px_#22C55E]"

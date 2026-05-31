@@ -15,7 +15,7 @@ export default function VirtualJoystick() {
     const stickRef = useRef(null);
 
     const [active, setActive] = useState(false);
-    const [keysState, setKeysState] = useState({ w: false, a: false, s: false, d: false });
+    const keysStateRef = useRef({ w: false, a: false, s: false, d: false });
 
     const touchIdRef = useRef(null);
 
@@ -71,13 +71,15 @@ export default function VirtualJoystick() {
             d: dx > threshold
         };
 
+        const keysState = keysStateRef.current;
+
         // Dispatch keydown/keyup if changed
         if (newKeys.w !== keysState.w) triggerKey('w', 'KeyW', newKeys.w ? 'keydown' : 'keyup');
         if (newKeys.s !== keysState.s) triggerKey('s', 'KeyS', newKeys.s ? 'keydown' : 'keyup');
         if (newKeys.a !== keysState.a) triggerKey('a', 'KeyA', newKeys.a ? 'keydown' : 'keyup');
         if (newKeys.d !== keysState.d) triggerKey('d', 'KeyD', newKeys.d ? 'keydown' : 'keyup');
 
-        setKeysState(newKeys);
+        keysStateRef.current = newKeys;
     };
 
     const handleStart = (e) => {
@@ -106,11 +108,12 @@ export default function VirtualJoystick() {
             stickRef.current.style.transform = `translate(0px, 0px)`;
         }
         // Release all
+        const keysState = keysStateRef.current;
         if (keysState.w) triggerKey('w', 'KeyW', 'keyup');
         if (keysState.s) triggerKey('s', 'KeyS', 'keyup');
         if (keysState.a) triggerKey('a', 'KeyA', 'keyup');
         if (keysState.d) triggerKey('d', 'KeyD', 'keyup');
-        setKeysState({ w: false, a: false, s: false, d: false });
+        keysStateRef.current = { w: false, a: false, s: false, d: false };
     };
 
     useEffect(() => {

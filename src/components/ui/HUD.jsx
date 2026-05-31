@@ -317,7 +317,7 @@ export default function HUD() {
 
     const logs = useMemo(() => {
         const rev = [...gameState.notifications].reverse();
-        return gameState.compactHUDLogs ? rev.slice(0, 2) : rev;
+        return gameState.compactHUDLogs ? rev.slice(0, 2) : rev.slice(0, 5);
     }, [gameState.notifications, gameState.compactHUDLogs]);
 
     // SCRAMBLE ANIMATION
@@ -377,7 +377,7 @@ export default function HUD() {
     return (
         <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-6 max-md:p-0 z-50 select-none overflow-hidden" style={hudStyle}>
             {/* TOP AREA (HUD + Clock + MiniMap) */}
-            <div className="flex flex-col relative pointer-events-auto h-[120px] max-md:h-[100px] mt-4 max-md:mt-0 w-full items-center">
+            <div className="flex flex-col relative pointer-events-auto h-[120px] max-md:h-[100px] mt-4 max-md:mt-0 w-full max-md:w-[133.33%] max-md:scale-75 max-md:origin-top-left items-center">
                 <TopBar
                     sectorId={gameState.sectorId}
                     seed={gameState.seed}
@@ -414,7 +414,7 @@ export default function HUD() {
             </div>
 
             <div className="flex justify-between max-md:justify-end items-end w-full">
-                <div className="max-md:absolute max-md:top-28 max-md:left-4 max-md:z-20">
+                <div className="max-md:absolute max-md:top-48 max-md:left-4 max-md:z-20">
                     <NotificationLog logs={logs} />
                 </div>
                 <MiniMap />

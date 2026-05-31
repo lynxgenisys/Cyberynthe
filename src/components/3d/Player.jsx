@@ -178,7 +178,7 @@ const PlayerController = () => {
         };
 
         const handleMouseUp = (e) => {
-            if (!document.pointerLockElement) return;
+            if (!document.pointerLockElement && !isMobile) return;
 
             if (gameState.gameMode === 'ghost') return;
 
