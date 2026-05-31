@@ -1,5 +1,15 @@
 export const patchNotes = [
     {
+        version: "v0.14.9",
+        date: "2026-05-31",
+        categories: {
+            "Changed": [
+                "Byte Mother: Shrunk the texture repeating pattern down (increased tiling scale) so the hexagonal plates look smaller, tighter, and more intricate.",
+                "Byte Mother: Implemented emissive map lighting using the cyber-chitin texture! The light cyan circuitry lines running through the seams of her armor will now actually glow in the dark room, significantly increasing her overall luminosity and visual pop without needing a transparent layer."
+            ]
+        }
+    },
+    {
         version: "v0.14.8",
         date: "2026-05-31",
         categories: {
