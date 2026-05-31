@@ -69,7 +69,7 @@ export default function ByteMotherBoss({ mob }) {
             <group key={`leg-${i}`} rotation={[0, angle, 0]} position={[0, 0, 0]}>
                 <mesh ref={el => legsRef.current[i] = el} position={[2.5, -0.5, 0]} rotation={[0, 0, Math.PI / 4]}>
                     <cylinderGeometry args={[0.6, 0.3, 3.5, 8]} />
-                    <meshStandardMaterial map={chitinTex} color="#3A4A5A" emissive="#0A1828" emissiveIntensity={0.3} metalness={0.6} roughness={0.4} />
+                    <meshStandardMaterial color="#2A3A4A" emissive="#0A1828" emissiveIntensity={0.3} metalness={0.6} roughness={0.4} />
                 </mesh>
             </group>
         );
@@ -77,17 +77,17 @@ export default function ByteMotherBoss({ mob }) {
 
     return (
         <group ref={groupRef} scale={1.2}>
-            {/* BODY (Flattened D20) */}
-            <mesh ref={bodyRef} scale={[2.0, 1.4, 2.0]} position={[0, 0, 0]}>
+            {/* BODY (Flattened D20, Elongated) */}
+            <mesh ref={bodyRef} scale={[2.0, 1.4, 3.0]} position={[0, 0, 0]}>
                 <icosahedronGeometry args={[1.5, 1]} />
-                <meshStandardMaterial map={chitinTex} color={isVulnerable ? "#FFFF00" : "#8899AA"} emissive={isVulnerable ? "#444400" : "#0A2040"} emissiveIntensity={isVulnerable ? 1.0 : 0.4} wireframe={false} metalness={0.7} roughness={0.3} />
+                <meshStandardMaterial color={isVulnerable ? "#FFFF00" : "#2A3A4A"} emissive={isVulnerable ? "#444400" : "#0A1828"} emissiveIntensity={isVulnerable ? 1.0 : 0.4} wireframe={false} metalness={0.7} roughness={0.3} />
                 <pointLight position={[0, 2, 0]} intensity={1.5} distance={8} color={isVulnerable ? "#FFFF00" : "#2244AA"} />
             </mesh>
 
             {/* HEAD (Inverted Pyramid = Tetrahedron) */}
-            <mesh ref={headRef} position={[0, 0, 1.2 * 2.0]} rotation={[Math.PI, 0, 0]}>
-                <tetrahedronGeometry args={[0.7 * 2.0, 0]} />
-                <meshStandardMaterial map={chitinTex} color="#6688AA" emissive={isVulnerable ? "#444400" : "#0A1828"} emissiveIntensity={0.6} metalness={0.7} roughness={0.3} />
+            <mesh ref={headRef} position={[0, 0, 3.5]} rotation={[Math.PI, 0, 0]}>
+                <tetrahedronGeometry args={[2.0, 0]} />
+                <meshStandardMaterial color="#3A4A5A" emissive={isVulnerable ? "#444400" : "#0A1828"} emissiveIntensity={0.6} metalness={0.7} roughness={0.3} />
             </mesh>
 
             {/* LEGS */}

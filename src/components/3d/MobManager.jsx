@@ -600,17 +600,14 @@ export default function MobManager({ maze, floorLevel }) {
                 pos.x < bossRoomStartX || pos.x >= bossRoomEndX || pos.z < bossRoomStartZ || pos.z >= bossRoomEndZ
             );
             mazeCorners.forEach(pos => {
-                const numMites = Math.floor(Math.random() * 2) + 1; // 1 to 2
-                for (let i = 0; i < numMites; i++) {
-                    const mite = MobLogic.createMob('BIT_MITE', floorLevel);
-                    if (mite) {
-                        newMobs.push({
-                            ...mite,
-                            instanceId: Math.random(),
-                            x: (pos.x * 2) + (Math.random() - 0.5) * 1.5,
-                            z: (pos.z * 2) + (Math.random() - 0.5) * 1.5
-                        });
-                    }
+                const mite = MobLogic.createMob('BIT_MITE', floorLevel);
+                if (mite) {
+                    newMobs.push({
+                        ...mite,
+                        instanceId: Math.random(),
+                        x: pos.x * 2,
+                        z: pos.z * 2
+                    });
                 }
             });
             
@@ -960,9 +957,14 @@ export default function MobManager({ maze, floorLevel }) {
                         vx = (nx * distError * approachFactor) + (tx * orbitFactor);
                         vz = (nz * distError * approachFactor) + (tz * orbitFactor);
                     } else if (mob.id === 'BYTE_MOTHER') {
-                        // Byte Mother sits in the middle of the room
-                        vx = 0;
-                        vz = 0;
+                        // Byte Mother chases slowly
+                        if (!mob.aggroActive) {
+                            vx = 0;
+                            vz = 0;
+                        } else {
+                            vx = (dx / dist) * 1.2;
+                            vz = (dz / dist) * 1.2;
+                        }
                     } else {
                         // Standard Chase
                         if (!mob.aggroActive && mob.id === 'IO_SENTINEL') {

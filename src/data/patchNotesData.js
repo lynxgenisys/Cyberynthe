@@ -1,5 +1,17 @@
 export const patchNotes = [
     {
+        version: "v0.14.7",
+        date: "2026-05-31",
+        categories: {
+            "Changed": [
+                "Byte Mother: Reverted the cyber-chitin texture back to the original solid metallic colors, as the texture looked too dark and noisy at scale.",
+                "Byte Mother: Elongated her body forward and increased the size and forward position of her head.",
+                "Byte Mother: She will now slowly lumber towards the player instead of just sitting in the middle of the room.",
+                "Floor 20 Spawns: Bit Mites now spawn exactly one per corner/intersection across all paths outside the boss room."
+            ]
+        }
+    },
+    {
         version: "v0.14.6",
         date: "2026-05-31",
         categories: {
