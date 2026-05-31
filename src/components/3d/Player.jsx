@@ -97,7 +97,9 @@ const PlayerController = () => {
         if (!gameState.isDecrypting && !gameState.activeLoreLog && !gameState.isPaused && !gameState.isInMenu) {
             // Slight delay to allow DOM to settle
             setTimeout(() => {
-                document.body.requestPointerLock();
+                if (!isMobile) {
+                    document.body.requestPointerLock();
+                }
             }, 100);
         }
     }, [gameState.isDecrypting, gameState.activeLoreLog, gameState.isPaused, gameState.isInMenu]);

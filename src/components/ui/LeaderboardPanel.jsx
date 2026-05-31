@@ -178,10 +178,10 @@ export default function LeaderboardPanel() {
         return (
             <div className="leaderboard-panel relative h-full flex flex-col items-center justify-center">
                 <button 
-                    className="absolute top-4 left-4 z-50 border border-cyan text-cyan px-4 py-1 hover:bg-cyan hover:text-black font-mono text-xs shadow-[0_0_10px_#00FFFF] transition-colors"
+                    className="absolute top-4 left-4 z-50 border border-magenta text-magenta px-8 py-3 hover:bg-magenta hover:text-black font-mono text-base md:text-lg shadow-[0_0_15px_#EA00FF] transition-colors font-bold"
                     onClick={() => setSelectedUserId(null)}
                 >
-                    [ BACK_TO_LEDGER ]
+                    BACK_TO_LEDGER
                 </button>
                 <div className="w-full flex-1 overflow-y-auto mt-12 flex justify-center">
                     <ProfileCard targetUserId={selectedUserId} targetUsername={selectedUsername} />
@@ -250,7 +250,7 @@ export default function LeaderboardPanel() {
             </div>
 
             {/* DESCRIPTION LINE */}
-            <div className="text-cyan text-xs font-mono mb-4 text-center px-4 animate-pulse">
+            <div className="text-cyan text-sm md:text-base font-mono mb-6 text-center px-4 max-w-[250px] mx-auto min-h-[3rem] flex items-center justify-center animate-pulse leading-snug">
                 {DESCRIPTIONS[activeMetric]}
             </div>
 

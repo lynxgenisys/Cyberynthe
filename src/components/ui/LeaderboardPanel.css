@@ -9,6 +9,7 @@
     gap: 10px;
     margin-bottom: 20px;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 .board-tab {
@@ -35,8 +36,11 @@
 
 .mode-filter {
     display: flex;
-    gap: 10px;
-    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+    padding-bottom: 15px;
     justify-content: center;
 }
 

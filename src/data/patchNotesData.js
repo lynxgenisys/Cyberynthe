@@ -1,5 +1,17 @@
 export const patchNotes = [
     {
+        version: "v0.14.17",
+        date: "2026-05-31",
+        categories: {
+            "Fixed": [
+                "Engine: Removed Mouse Pointer Lock on mobile devices. This was the root cause of the screen going black and freezing the browser on startup.",
+                "UI (Profile): The BACK_TO_LEDGER button inside the Profile View has been doubled in size and colored magenta for better visibility.",
+                "UI (Ledger): Centered the mode and metric selection buttons.",
+                "UI (Ledger): Increased the size of the metric description text and forced it to wrap onto two lines to prevent horizontal stretching."
+            ]
+        }
+    },
+    {
         version: "v0.14.16",
         date: "2026-05-31",
         categories: {
