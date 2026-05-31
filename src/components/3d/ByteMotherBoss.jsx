@@ -75,9 +75,9 @@ export default function ByteMotherBoss({ mob }) {
     for (let i = 0; i < 6; i++) {
         const angle = (Math.PI * 2 / 6) * i;
         legs.push(
-            <group key={`leg-${i}`} rotation={[0, angle, 0]} position={[0, 0, 0]}>
+            <group key={`leg-${i}`} rotation={[0, angle, 0]} position={[0, 0, -1.0]}>
                 <mesh ref={el => legsRef.current[i] = el} position={[2.5, -0.5, 0]} rotation={[0, 0, Math.PI / 4]}>
-                    <cylinderGeometry args={[0.6, 0.3, 3.5, 8]} />
+                    <cylinderGeometry args={[0.42, 0.21, 2.45, 8]} />
                     <meshStandardMaterial map={biteMiteTex} color="#55AAFF" emissive="#003366" emissiveIntensity={0.5} metalness={0.4} roughness={0.6} />
                 </mesh>
             </group>
@@ -94,8 +94,8 @@ export default function ByteMotherBoss({ mob }) {
             </mesh>
 
             {/* HEAD (Inverted Pyramid = Tetrahedron) */}
-            <mesh ref={headRef} position={[0, 0, 3.5]} rotation={[Math.PI, 0, 0]}>
-                <tetrahedronGeometry args={[2.0, 0]} />
+            <mesh ref={headRef} position={[0, 0.4, 2.4]} rotation={[Math.PI, 0, 0]}>
+                <tetrahedronGeometry args={[1.4, 0]} />
                 <meshStandardMaterial map={chitinTex} emissiveMap={chitinTex} color="#FFFFFF" emissive={isVulnerable ? "#444400" : "#00FFFF"} emissiveIntensity={1.0} metalness={0.7} roughness={0.3} />
             </mesh>
 

@@ -1,5 +1,16 @@
 export const patchNotes = [
     {
+        version: "v0.14.11",
+        date: "2026-05-31",
+        categories: {
+            "Changed": [
+                "Byte Mother Geometry: Reduced head size by 30%, moved it closer to the body so it's visibly attached, and raised it slightly off the floor.",
+                "Byte Mother Geometry: Reduced leg thickness and length by 30% relative to the body.",
+                "Byte Mother Geometry: Shifted the legs backward along the body so they don't protrude out past the head."
+            ]
+        }
+    },
+    {
         version: "v0.14.10",
         date: "2026-05-31",
         categories: {
