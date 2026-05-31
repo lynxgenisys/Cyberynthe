@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGame } from '../../context/GameContext';
 import cyberChitinSkinSrc from '../../assets/mobs/cyber_chitin_skin.png';
+import biteMiteSkinSrc from '../../assets/mobs/Bite_Mite_Skin.webp';
 
 export default function ByteMotherBoss({ mob }) {
     const groupRef = useRef();
@@ -10,6 +11,7 @@ export default function ByteMotherBoss({ mob }) {
     const headRef = useRef();
     const legsRef = useRef([]);
     const [chitinTex, setChitinTex] = useState(null);
+    const [biteMiteTex, setBiteMiteTex] = useState(null);
 
     useEffect(() => {
         const loader = new THREE.TextureLoader();
@@ -20,6 +22,13 @@ export default function ByteMotherBoss({ mob }) {
             tex.minFilter = THREE.LinearFilter;
             tex.magFilter = THREE.LinearFilter;
             setChitinTex(tex);
+        });
+        loader.load(biteMiteSkinSrc, (tex) => {
+            tex.colorSpace = THREE.SRGBColorSpace;
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            tex.minFilter = THREE.LinearFilter;
+            tex.magFilter = THREE.LinearFilter;
+            setBiteMiteTex(tex);
         });
     }, []);
 
@@ -69,14 +78,14 @@ export default function ByteMotherBoss({ mob }) {
             <group key={`leg-${i}`} rotation={[0, angle, 0]} position={[0, 0, 0]}>
                 <mesh ref={el => legsRef.current[i] = el} position={[2.5, -0.5, 0]} rotation={[0, 0, Math.PI / 4]}>
                     <cylinderGeometry args={[0.6, 0.3, 3.5, 8]} />
-                    <meshStandardMaterial map={chitinTex} emissiveMap={chitinTex} color="#FFFFFF" emissive="#00FFFF" emissiveIntensity={0.8} metalness={0.6} roughness={0.4} />
+                    <meshStandardMaterial map={biteMiteTex} color="#55AAFF" emissive="#003366" emissiveIntensity={0.5} metalness={0.4} roughness={0.6} />
                 </mesh>
             </group>
         );
     }
 
     return (
-        <group ref={groupRef} scale={1.2}>
+        <group ref={groupRef} scale={1.02}>
             {/* BODY (Flattened D20, Elongated) */}
             <mesh ref={bodyRef} scale={[2.0, 1.4, 3.0]} position={[0, 0, 0]}>
                 <icosahedronGeometry args={[1.5, 1]} />

@@ -1,5 +1,15 @@
 export const patchNotes = [
     {
+        version: "v0.14.10",
+        date: "2026-05-31",
+        categories: {
+            "Changed": [
+                "Byte Mother: Changed her legs to use the original Bit Mite skin texture and color palette for a more organic/hybrid look.",
+                "Byte Mother: Reduced her overall size to 85% of her previous size."
+            ]
+        }
+    },
+    {
         version: "v0.14.9",
         date: "2026-05-31",
         categories: {
