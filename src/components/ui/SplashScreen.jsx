@@ -99,16 +99,16 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
     
     if (!welcomeDismissed) {
         return (
-            <div className="absolute inset-0 z-[100] flex flex-col items-center justify-start text-center p-8 cursor-pointer bg-black"
-                 style={{ 
-                     backgroundImage: "url('/Cyberynthe_SPLASH_Cover.png')",
-                     backgroundSize: window.innerWidth > 800 ? "50%" : "contain",
-                     backgroundPosition: "center 50%",
-                     backgroundRepeat: "no-repeat"
-                 }}
+            <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center text-center p-8 cursor-pointer bg-black"
                  onClick={() => setWelcomeDismissed(true)}>
                 
-                <div className="mt-[65vh] flex flex-col items-center">
+                <img 
+                    src="/Cyberynthe_SPLASH_Cover.png" 
+                    alt="Cyberynthe Splash" 
+                    className="w-full md:w-[50%] max-h-[65vh] object-contain mb-8 max-md:mb-[15vh]"
+                />
+
+                <div className="flex flex-col items-center">
                     <button 
                         className="flex flex-col items-center justify-center border-2 border-magenta text-magenta px-10 py-5 hover:bg-magenta hover:text-black transition-all font-mono bg-black/50 backdrop-blur-sm shadow-[0_0_20px_rgba(234,0,255,0.4)]"
                         onClick={(e) => { e.stopPropagation(); setWelcomeDismissed(true); }}
