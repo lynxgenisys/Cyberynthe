@@ -109,14 +109,16 @@ export default function ProjectileSystem() {
             const gx = Math.round(px / 2), gz = Math.round(pz / 2);
             if (gameState.mazeGrid && gx >= 0 && gx < gameState.mazeWidth && gz >= 0 && gz < gameState.mazeHeight) {
                 if (gameState.mazeGrid[gz][gx] === 0) {
-                    lArr[i] = 0; // Silently kill projectile - no impact VFX on miss
+                    lArr[i] = 0; // No impact VFX on wall miss
+                    playSFX('wall_hit');
                     continue;
                 }
             }
 
             // COLLISION: FLOOR
             if (py <= 0.2) {
-                lArr[i] = 0; // Silently kill projectile - no impact VFX on miss
+                lArr[i] = 0; // No impact VFX on floor miss
+                playSFX('wall_hit');
                 continue;
             }
 

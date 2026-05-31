@@ -149,23 +149,39 @@ export const SoundProvider = ({ children }) => {
             noise.start(t);
             noise.stop(t + 0.1);
 
-        } else if (type === 'miss') {
-            // High pitched short ping
+        } else if (type === 'wall_hit') {
+            // Dull metallic thud - short low impact for hitting solid surfaces
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.type = 'sine';
             
-            osc.frequency.setValueAtTime(1200, t);
-            osc.frequency.linearRampToValueAtTime(800, t + 0.05);
+            osc.frequency.setValueAtTime(180, t);
+            osc.frequency.exponentialRampToValueAtTime(60, t + 0.06);
             
-            gain.gain.setValueAtTime(0.5, t);
-            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
+            gain.gain.setValueAtTime(0.35, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.08);
+            
+            // Add a tiny noise layer for texture
+            const noise = ctx.createBufferSource();
+            noise.buffer = getNoiseBuffer(ctx);
+            const noiseFilter = ctx.createBiquadFilter();
+            noiseFilter.type = 'lowpass';
+            noiseFilter.frequency.value = 400;
+            const noiseGain = ctx.createGain();
+            noiseGain.gain.setValueAtTime(0.15, t);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
+            
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(masterGain);
             
             osc.connect(gain);
             gain.connect(masterGain);
             
             osc.start(t);
-            osc.stop(t + 0.05);
+            osc.stop(t + 0.08);
+            noise.start(t);
+            noise.stop(t + 0.05);
 
         } else if (type === 'mob_attack') {
             // Aggressive low buzz

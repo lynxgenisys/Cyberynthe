@@ -1,10 +1,10 @@
 export const patchNotes = [
     {
-        version: "v0.14.5",
+        version: "v0.14.6",
         date: "2026-05-31",
         categories: {
             "Changed": [
-                "Projectile Feedback: Shots that miss or hit a wall/floor no longer produce an impact splatter or burst VFX. Only confirmed hits on valid targets show impact particles and play the hit sound, making it immediately obvious when you're landing shots vs. missing."
+                "Projectile Feedback: Shots that hit walls or the floor now play a distinct dull metallic thud sound (no visual splatter). Confirmed mob hits still show the full impact VFX with the crunchy hit SFX. Shots that expire in open space produce no sound at all — giving three distinct layers of audio feedback for hits, surface impacts, and total misses."
             ]
         }
     },
