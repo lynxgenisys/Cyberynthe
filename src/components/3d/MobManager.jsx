@@ -609,8 +609,10 @@ export default function MobManager({ maze, floorLevel }) {
             
             // Sort by distance to player start
             emptyTiles.sort((a, b) => {
-                const distA = Math.pow(a.x - maze.start.x, 2) + Math.pow(a.z - maze.start.z, 2);
-                const distB = Math.pow(b.x - maze.start.x, 2) + Math.pow(b.z - maze.start.z, 2);
+                const pX = gameState.spawnPoint ? Math.round(gameState.spawnPoint.x / 2) : 2;
+                const pZ = gameState.spawnPoint ? Math.round(gameState.spawnPoint.z / 2) : 2;
+                const distA = Math.pow(a.x - pX, 2) + Math.pow(a.z - pZ, 2);
+                const distB = Math.pow(b.x - pX, 2) + Math.pow(b.z - pZ, 2);
                 return distA - distB;
             });
             

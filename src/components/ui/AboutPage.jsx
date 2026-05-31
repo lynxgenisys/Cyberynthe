@@ -108,7 +108,7 @@ const AboutPage = () => {
     return (
         <div className="w-full h-full flex flex-col p-8 text-cyan bg-black/80 font-mono overflow-y-auto">
             <div className="flex justify-between items-end mb-6 border-b border-cyan/30 pb-4">
-                <h1 className="text-4xl font-bold text-magenta glitch-text">CYBERYNTHE v0.14.20</h1>
+                <h1 className="text-4xl font-bold text-magenta glitch-text">CYBERYNTHE v0.14.21</h1>
                 
                 <div className="flex gap-4">
                     <button 

@@ -188,7 +188,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                 </button>
             </div>
 
-            <div className="splash-version">v0.14.20 | SWARM_PROTOCOL</div>
+            <div className="splash-version">v0.14.21 | SWARM_PROTOCOL</div>
         </div>
     );
 

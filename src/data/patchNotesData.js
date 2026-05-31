@@ -1,5 +1,15 @@
 export const patchNotes = [
     {
+        version: "v0.14.21",
+        date: "2026-05-31",
+        categories: {
+            "Fixed": [
+                "Engine: Fixed a critical crash on Floor 20 (Byte Mother Boss) caused by the mob spawner looking for a non-existent player coordinate flag, which resulted in a black screen shortly after loading into the level.",
+                "Engine: Added a global Error Boundary to the renderer. If the 3D Engine ever crashes in the future, it will now display a diagnostic 'SYSTEM_FAILURE' screen with the exact error log instead of turning completely black."
+            ]
+        }
+    },
+    {
         version: "v0.14.20",
         date: "2026-05-31",
         categories: {

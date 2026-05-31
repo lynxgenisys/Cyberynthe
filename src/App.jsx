@@ -16,6 +16,7 @@ import MusicManager from './components/systems/MusicManager';
 import SplashScreen from './components/ui/SplashScreen';
 import RunTracker from './components/systems/RunTracker';
 import { saveGameToCloud, loadGameFromCloud, supabase } from './utils/supabase';
+import ErrorBoundary from './components/Debug/ErrorBoundary';
 import useDeviceDetect from './hooks/useDeviceDetect';
 import VirtualJoystick from './components/mobile/VirtualJoystick';
 import TouchControlsOverlay from './components/mobile/TouchControlsOverlay';
@@ -53,7 +54,7 @@ function CoreInterface() {
   const [nameInput, setNameInput] = useState('GHOST_USER');
 
   // --- MENU LOGIC ---
-  const getSaveKey = async () => {
+  const getSaveKeyLocal = async () => {
     if (!supabase) return 'CyberSynthe_Save_guest';
     const { data: { user } } = await supabase.auth.getUser();
     return `CyberSynthe_Save_${user ? user.id : 'guest'}`;
@@ -61,7 +62,7 @@ function CoreInterface() {
 
   useEffect(() => {
     const checkSaves = async () => {
-      const saveKey = await getSaveKey();
+      const saveKey = await getSaveKeyLocal();
       let localSave = null;
       try {
         const localStr = localStorage.getItem(saveKey);
@@ -112,7 +113,7 @@ function CoreInterface() {
   };
 
   const confirmNewGame = async () => {
-    const saveKey = await getSaveKey();
+    const saveKey = await getSaveKeyLocal();
     localStorage.removeItem(saveKey); // Clear old save
     setIsInMenu(false);
     setIsDeckOpen(false);
@@ -145,7 +146,7 @@ function CoreInterface() {
     setIsDeckOpen(false);
 
     let localSave = null;
-    const saveKey = await getSaveKey();
+    const saveKey = await getSaveKeyLocal();
     const localStr = localStorage.getItem(saveKey);
     if (localStr) localSave = JSON.parse(localStr);
 
@@ -180,7 +181,7 @@ function CoreInterface() {
                   invState,
                   timestamp: Date.now()
               };
-              const saveKey = await getSaveKey();
+              const saveKey = await getSaveKeyLocal();
               localStorage.setItem(saveKey, JSON.stringify(bundle));
               saveGameToCloud(bundle); // Async fire-and-forget
           };
@@ -360,11 +361,12 @@ function CoreInterface() {
 
   // GAME RENDER
   return (
-    <div className="relative w-full h-screen flex flex-col justify-between z-10 overflow-hidden bg-black">
-        {/* 3D SCENE BACKGROUND (HANDHELD BEZEL WRAPPER) */}
-        <div className={`absolute inset-0 z-0 transition-all duration-300 ${isMobile && !isDeckOpen && !showHelp && !gameState.isPaused ? 'portrait:py-[15vh] landscape:px-[15vw]' : ''}`}>
-          <MemoScene />
-        </div>
+    <ErrorBoundary>
+      <div className="relative w-full h-screen flex flex-col justify-between z-10 overflow-hidden bg-black">
+          {/* 3D SCENE BACKGROUND (HANDHELD BEZEL WRAPPER) */}
+          <div className={`absolute inset-0 z-0 transition-all duration-300 ${isMobile && !isDeckOpen && !showHelp && !gameState.isPaused ? 'portrait:py-[15vh] landscape:px-[15vw]' : ''}`}>
+            <MemoScene />
+          </div>
         
         <MemoAudio />
       <MemoMusic />
@@ -533,8 +535,8 @@ function CoreInterface() {
           <TouchControlsOverlay />
         </>
       )}
-
     </div >
+    </ErrorBoundary>
   );
 }
 
