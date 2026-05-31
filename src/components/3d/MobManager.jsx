@@ -554,14 +554,26 @@ export default function MobManager({ maze, floorLevel }) {
         if (!maze || !maze.grid) return;
         sparksRef.current = [];
         setSparks([]);
-        const newMobs = []; const deadEnds = [];
+        const newMobs = []; 
+        const deadEnds = [];
+        const cornersAndIntersections = [];
+
         maze.grid.forEach((row, z) => {
             row.forEach((cell, x) => {
                 if (cell !== 1) return;
-                let walls = 0;
-                if (x === 0 || maze.grid[z][x - 1] === 0) walls++; if (x === maze.width - 1 || maze.grid[z][x + 1] === 0) walls++;
-                if (z === 0 || maze.grid[z - 1][x] === 0) walls++; if (z === maze.height - 1 || maze.grid[z + 1][x] === 0) walls++;
+                let wallN = z === 0 || maze.grid[z - 1][x] === 0;
+                let wallS = z === maze.height - 1 || maze.grid[z + 1][x] === 0;
+                let wallW = x === 0 || maze.grid[z][x - 1] === 0;
+                let wallE = x === maze.width - 1 || maze.grid[z][x + 1] === 0;
+                let walls = (wallN?1:0) + (wallS?1:0) + (wallW?1:0) + (wallE?1:0);
+
                 if (walls >= 3) deadEnds.push({ x, z });
+
+                let isCorner = walls === 2 && !((wallN && wallS) || (wallW && wallE));
+                let isIntersection = walls <= 1;
+                if (isCorner || isIntersection) {
+                    cornersAndIntersections.push({ x, z });
+                }
             });
         });
 
@@ -576,6 +588,22 @@ export default function MobManager({ maze, floorLevel }) {
                 const startY = 13; // Room is at top center, place boss roughly there
                 newMobs.push({ ...boss, instanceId: Math.random(), x: startX * 2, z: startY * 2, phase: 1, aggroActive: false });
             }
+            
+            // Spawn 1-2 Bit Mites at every corner and intersection
+            cornersAndIntersections.forEach(pos => {
+                const numMites = Math.floor(Math.random() * 2) + 1; // 1 to 2
+                for (let i = 0; i < numMites; i++) {
+                    const mite = MobLogic.createMob('BIT_MITE', floorLevel);
+                    if (mite) {
+                        newMobs.push({
+                            ...mite,
+                            instanceId: Math.random(),
+                            x: (pos.x * 2) + (Math.random() - 0.5) * 1.5,
+                            z: (pos.z * 2) + (Math.random() - 0.5) * 1.5
+                        });
+                    }
+                }
+            });
         } else if (floorLevel === 999) {
             const specs = [{ id: 'BIT_MITE', x: 4, z: 4 }, { id: 'NULL_WISP', x: 4, z: 10 }, { id: 'HUNTER', x: 10, z: 4 }, { id: 'STATELESS_SENTRY', x: 10, z: 10 }, { id: 'IO_SENTINEL', x: 7, z: 7 }];
             specs.forEach(s => {
