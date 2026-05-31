@@ -102,7 +102,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
             <div className="absolute inset-0 z-[100] flex flex-col items-center justify-start text-center p-8 cursor-pointer bg-black"
                  style={{ 
                      backgroundImage: "url('/Cyberynthe_SPLASH_Cover.png')",
-                     backgroundSize: window.innerWidth > 800 ? "25%" : "contain",
+                     backgroundSize: window.innerWidth > 800 ? "50%" : "contain",
                      backgroundPosition: "center 50%",
                      backgroundRepeat: "no-repeat"
                  }}
