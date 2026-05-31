@@ -18,17 +18,33 @@ export default function TouchControlsOverlay({ onLookMove }) {
         let lastX = 0;
         let lastY = 0;
         let isDragging = false;
+        let touchId = null;
 
         const handleStart = (e) => {
+            e.stopPropagation(); // Prevent global mousedown (accidental shoot)
+            if (isDragging) return;
+            const touch = e.changedTouches[0];
+            touchId = touch.identifier;
             isDragging = true;
-            lastX = e.touches[0].clientX;
-            lastY = e.touches[0].clientY;
+            lastX = touch.clientX;
+            lastY = touch.clientY;
         };
 
         const handleMove = (e) => {
             if (!isDragging) return;
-            const currentX = e.touches[0].clientX;
-            const currentY = e.touches[0].clientY;
+            e.stopPropagation(); // Prevent global mousemove
+            
+            let touch = null;
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                if (e.changedTouches[i].identifier === touchId) {
+                    touch = e.changedTouches[i];
+                    break;
+                }
+            }
+            if (!touch) return;
+
+            const currentX = touch.clientX;
+            const currentY = touch.clientY;
             
             const deltaX = currentX - lastX;
             const deltaY = currentY - lastY;
@@ -39,8 +55,15 @@ export default function TouchControlsOverlay({ onLookMove }) {
             lastY = currentY;
         };
 
-        const handleEnd = () => {
-            isDragging = false;
+        const handleEnd = (e) => {
+            if (!isDragging) return;
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                if (e.changedTouches[i].identifier === touchId) {
+                    isDragging = false;
+                    touchId = null;
+                    break;
+                }
+            }
         };
 
         area.addEventListener('touchstart', handleStart, { passive: false });
@@ -64,7 +87,7 @@ export default function TouchControlsOverlay({ onLookMove }) {
                 
                 {/* FIRE (Left Click) */}
                 <button 
-                    className="absolute bottom-28 right-8 w-20 h-20 rounded-full bg-cyan/20 border-2 border-cyan text-cyan font-bold tracking-widest shadow-[0_0_15px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto text-sm"
+                    className="absolute bottom-[350px] right-8 w-20 h-20 rounded-full bg-cyan/20 border-2 border-cyan text-cyan font-bold tracking-widest shadow-[0_0_15px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto text-sm"
                     onPointerDown={(e) => { e.stopPropagation(); triggerMouse(0, 'mousedown'); }}
                     onPointerUp={(e) => { e.stopPropagation(); triggerMouse(0, 'mouseup'); }}
                 >
@@ -73,7 +96,7 @@ export default function TouchControlsOverlay({ onLookMove }) {
 
                 {/* SHRED (Right Click) */}
                 <button 
-                    className="absolute bottom-48 right-24 w-16 h-16 rounded-full bg-magenta/20 border-2 border-magenta text-magenta font-bold shadow-[0_0_15px_#FF00FF] active:bg-magenta active:text-black pointer-events-auto text-xs"
+                    className="absolute bottom-[440px] right-24 w-16 h-16 rounded-full bg-magenta/20 border-2 border-magenta text-magenta font-bold shadow-[0_0_15px_#FF00FF] active:bg-magenta active:text-black pointer-events-auto text-xs"
                     onPointerDown={(e) => { e.stopPropagation(); triggerMouse(2, 'mousedown'); }}
                     onPointerUp={(e) => { e.stopPropagation(); triggerMouse(2, 'mouseup'); }}
                 >
@@ -82,7 +105,7 @@ export default function TouchControlsOverlay({ onLookMove }) {
 
                 {/* JUMP (Space) */}
                 <button 
-                    className="absolute bottom-16 right-32 w-16 h-16 rounded-full bg-white/10 border-2 border-white/50 text-white font-bold active:bg-white active:text-black pointer-events-auto text-xs"
+                    className="absolute bottom-[260px] right-32 w-16 h-16 rounded-full bg-white/10 border-2 border-white/50 text-white font-bold active:bg-white active:text-black pointer-events-auto text-xs"
                     onPointerDown={(e) => { e.stopPropagation(); triggerKey(' ', 'Space', 'keydown'); }}
                     onPointerUp={(e) => { e.stopPropagation(); triggerKey(' ', 'Space', 'keyup'); }}
                 >
@@ -91,20 +114,20 @@ export default function TouchControlsOverlay({ onLookMove }) {
 
             </div>
 
-            {/* Run Lock & Interact (Above Joystick left-32 bottom-32) */}
-            <div className="absolute bottom-64 left-20 flex gap-4 pointer-events-auto">
+            {/* Run Lock & Interact (Above Joystick) */}
+            <div className="absolute bottom-[350px] left-8 flex gap-4 pointer-events-auto">
                 {/* INTERACT (F) */}
                 <button 
                     className="w-14 h-14 rounded-full border-2 border-green-500 text-green-500 bg-green-500/20 active:bg-green-500 active:text-black font-mono text-xs font-bold flex items-center justify-center shadow-[0_0_10px_#22C55E]"
-                    onPointerDown={(e) => triggerKey('f', 'KeyF', 'keydown')}
-                    onPointerUp={(e) => triggerKey('f', 'KeyF', 'keyup')}
+                    onPointerDown={(e) => { e.stopPropagation(); triggerKey('f', 'KeyF', 'keydown'); }}
+                    onPointerUp={(e) => { e.stopPropagation(); triggerKey('f', 'KeyF', 'keyup'); }}
                 >
                     INT
                 </button>
                 {/* RUN */}
                 <button 
-                    className={`w-14 h-14 rounded-full border-2 border-purple-500 font-bold text-xs flex items-center justify-center ${isRunning ? 'bg-purple-500 text-black shadow-[0_0_15px_#A855F7]' : 'text-purple-500 bg-purple-500/20 shadow-[0_0_10px_#A855F7]'}`}
-                    onClick={(e) => {
+                    className={`w-14 h-14 rounded-full border-2 font-mono text-xs font-bold flex items-center justify-center shadow-[0_0_10px_currentColor] transition-colors ${isRunning ? 'border-yellow-400 text-black bg-yellow-400' : 'border-yellow-600 text-yellow-600 bg-yellow-600/20'}`}
+                    onPointerDown={(e) => { 
                         e.stopPropagation();
                         if (isRunning) {
                             triggerKey('r', 'KeyR', 'keyup');

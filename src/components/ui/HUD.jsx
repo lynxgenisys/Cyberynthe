@@ -275,7 +275,7 @@ const NotificationLog = memo(({ logs }) => {
     };
 
     return (
-        <div className="absolute top-28 left-4 w-96 flex flex-col gap-1 items-start pointer-events-none z-20">
+        <div className="w-96 flex flex-col-reverse gap-1 items-start justify-end pointer-events-none mask-image-linear-gradient mb-28">
             {logs.map((log, i) => {
                 let baseColor = log.color ? `text-[${log.color}] border-[${log.color}]` : "text-cyan-glow border-cyan";
                 if (!log.color) {
@@ -376,7 +376,7 @@ export default function HUD() {
     // --- RENDER ---
     return (
         <div className="absolute inset-0 pointer-events-none p-6 flex flex-col justify-between" style={hudStyle}>
-            <div className="relative w-full h-24 flex justify-center pointer-events-auto max-md:scale-[0.65] max-md:origin-top-left">
+            <div className="relative w-full h-24 flex justify-center pointer-events-auto">
                 <TopBar
                     sectorId={gameState.sectorId}
                     seed={gameState.seed}
@@ -412,9 +412,8 @@ export default function HUD() {
                 <XPAndEbits currentLevel={stats.currentLevel} xp={gameState.xp} eBits={gameState.eBits} lastScanTriggered={gameState.lastScanTime && (Date.now() - gameState.lastScanTime < 1000)} />
             </div>
 
-            <NotificationLog logs={logs} />
-
-            <div className="flex justify-end items-end w-full">
+            <div className="flex justify-between items-end w-full">
+                <NotificationLog logs={logs} />
                 <MiniMap />
 
                 {gameState.scanningState?.active && (

@@ -17,12 +17,28 @@ export default function VirtualJoystick() {
     const [active, setActive] = useState(false);
     const [keysState, setKeysState] = useState({ w: false, a: false, s: false, d: false });
 
+    const touchIdRef = useRef(null);
+
     // Handle touch/mouse move
     const handleMove = (e) => {
         if (!active || !containerRef.current) return;
 
-        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        let clientX, clientY;
+        if (e.changedTouches) {
+            let touch = null;
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                if (e.changedTouches[i].identifier === touchIdRef.current) {
+                    touch = e.changedTouches[i];
+                    break;
+                }
+            }
+            if (!touch) return; // Not our touch
+            clientX = touch.clientX;
+            clientY = touch.clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
 
         const rect = containerRef.current.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
@@ -66,11 +82,26 @@ export default function VirtualJoystick() {
 
     const handleStart = (e) => {
         setActive(true);
+        if (e.changedTouches && e.changedTouches.length > 0) {
+            touchIdRef.current = e.changedTouches[0].identifier;
+        }
         handleMove(e); // Calculate initial pos immediately
     };
 
-    const handleEnd = () => {
+    const handleEnd = (e) => {
+        if (e.changedTouches && touchIdRef.current !== null) {
+            let found = false;
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                if (e.changedTouches[i].identifier === touchIdRef.current) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) return; // Not our touch ending
+        }
+
         setActive(false);
+        touchIdRef.current = null;
         if (stickRef.current) {
             stickRef.current.style.transform = `translate(0px, 0px)`;
         }

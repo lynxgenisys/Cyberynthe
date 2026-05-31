@@ -198,12 +198,12 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                 </button>
             </div>
 
-            <div className="splash-version">v0.14.0 | SWARM_PROTOCOL</div>
+            <div className="splash-version">v0.14.2 | SWARM_PROTOCOL</div>
         </div>
     );
 
     return (
-        <div className="splash-screen">
+        <div className="splash-screen max-md:scale-[0.15] max-md:origin-top-left max-md:transform-gpu max-md:h-[666%] max-md:w-[666%]">
             <div className="splash-nav-tabs">
                 <button
                     className={`nav-tab ${activeTab === 'play' ? 'active' : ''}`}
