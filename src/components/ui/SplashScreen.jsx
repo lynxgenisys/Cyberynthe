@@ -166,11 +166,21 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
 
             <div className="action-buttons">
                 {hasSave && (
-                    <button className="resume-btn" onClick={() => {
-                        onResume();
-                    }}>
-                        RESUME_SESSION
-                    </button>
+                    <div className="flex flex-col items-center">
+                        <button className="resume-btn" onClick={() => {
+                            onResume();
+                        }}>
+                            RESUME_PREVIOUS_RUN
+                        </button>
+                        <div className="bg-black/50 border border-cyan/30 p-2 text-xs font-mono mb-4 w-full max-w-[400px]">
+                            <div className="text-cyan mb-1 font-bold text-center">» ACTIVE_LCACHE_DATA</div>
+                            <div className="flex justify-center gap-x-4 text-gray-300">
+                                <span>MODE: <span className="text-white">{(hasSave.gameState?.gameMode || 'NORMAL').toUpperCase()}</span></span>
+                                <span>LVL: <span className="text-white">{hasSave.gameState?.floorLevel || 1}</span></span>
+                                <span>XP: <span className="text-white">{hasSave.gameState?.xp || 0}</span></span>
+                            </div>
+                        </div>
+                    </div>
                 )}
 
                 <button className="initialize-btn" onClick={handleStart}>
@@ -178,7 +188,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                 </button>
             </div>
 
-            <div className="splash-version">v0.14.17 | SWARM_PROTOCOL</div>
+            <div className="splash-version">v0.14.18 | SWARM_PROTOCOL</div>
         </div>
     );
 
@@ -218,12 +228,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                     ☕ SUPPORT_DEV
                 </a>
                 <div className="hidden md:block flex-1"></div> {/* Spacer */}
-                <button
-                    className="nav-tab text-cyan-500 hover:text-cyan-400 border-cyan-900/30"
-                    onClick={cycleTrack}
-                >
-                    NEXT_TRACK
-                </button>
+
                 <button
                     className={`nav-tab border-cyan-900/30 ${isMuted ? 'text-gray-500' : 'text-cyan-500'}`}
                     onClick={toggleMute}

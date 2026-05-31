@@ -62,14 +62,27 @@ function CoreInterface() {
   useEffect(() => {
     const checkSaves = async () => {
       const saveKey = await getSaveKey();
-      let hasLocal = !!localStorage.getItem(saveKey);
-      let hasCloud = false;
-      const { data: cloudSave } = await loadGameFromCloud();
-      if (cloudSave) {
-        hasCloud = true;
+      let localSave = null;
+      try {
+        const localStr = localStorage.getItem(saveKey);
+        if (localStr) localSave = JSON.parse(localStr);
+      } catch (e) {}
+
+      let cloudSave = null;
+      const { data: cloudData } = await loadGameFromCloud();
+      if (cloudData) {
+        cloudSave = cloudData;
       }
-      if (hasLocal || hasCloud) {
-        setHasSave(true);
+
+      let saveToUse = localSave;
+      if (cloudSave && (!localSave || cloudSave.timestamp > localSave.timestamp)) {
+          saveToUse = cloudSave;
+      }
+
+      if (saveToUse) {
+        setHasSave(saveToUse);
+      } else {
+        setHasSave(null);
       }
     };
     checkSaves();

@@ -99,8 +99,19 @@ export default function MusicManager() {
             setTrackIndex(nextIndex);
         };
 
+        const handleTimeUpdate = () => {
+            if (audio.duration && audio.currentTime > audio.duration - 2.0) {
+                const fadeProgress = (audio.currentTime - (audio.duration - 2.0)) / 2.0;
+                audio.volume = Math.max(0, gameState.musicVolume * (1.0 - fadeProgress));
+            } else {
+                audio.volume = gameState.musicVolume;
+            }
+        };
+
+        audio.addEventListener('timeupdate', handleTimeUpdate);
         audio.addEventListener('ended', handleEnded);
         return () => {
+            audio.removeEventListener('timeupdate', handleTimeUpdate);
             audio.removeEventListener('ended', handleEnded);
             audio.pause(); // Cleanup pause
         };

@@ -198,40 +198,23 @@
 }
 
 .resume-btn {
-    width: 100%;
-    padding: 15px;
-    background: rgba(0, 255, 255, 0.1);
-    border: 1px solid #00FFFF;
-    color: #00FFFF;
+    margin-bottom: 20px;
+    padding: 20px 60px;
+    font-size: 24px;
     font-family: 'Courier New', monospace;
-    /* Match font */
+    background: linear-gradient(90deg, #EA00FF 0%, #00FFFF 100%);
+    border: none;
+    color: #000;
     font-weight: bold;
-    font-size: 20px;
-    letter-spacing: 2px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    text-shadow: 0 0 5px #00FFFF;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
-    position: relative;
-    overflow: hidden;
+    letter-spacing: 3px;
+    transition: all 0.3s;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
 }
 
 .resume-btn:hover {
-    background: rgba(0, 255, 255, 0.2);
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
-    transform: scale(1.02);
-}
-
-.resume-btn::before {
-    content: '>>';
-    position: absolute;
-    left: 20px;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.resume-btn:hover::before {
-    opacity: 1;
+    transform: scale(1.05);
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.8);
 }
 
 /* MOBILE RESPONSIVE SCALING */

@@ -1,5 +1,21 @@
 export const patchNotes = [
     {
+        version: "v0.14.18",
+        date: "2026-05-31",
+        categories: {
+            "Audio": [
+                "The game menu now loops sequentially through all available menu tracks by default.",
+                "Added a smooth 2-second volume fade-out at the end of all music tracks to prevent jarring transitions."
+            ],
+            "UI (Main Menu)": [
+                "Removed the NEXT_TRACK button to keep the UI clean as tracks cycle automatically.",
+                "Renamed 'RESUME_SESSION' to 'RESUME_PREVIOUS_RUN'.",
+                "Upgraded the styling of the Resume button to match the Initialize button, featuring an inverted magenta-to-cyan glitch gradient.",
+                "Added a summary of your Active L2 Cache (Save Data) under the Resume button to easily see your current Mode, Level, and XP before jumping in."
+            ]
+        }
+    },
+    {
         version: "v0.14.17",
         date: "2026-05-31",
         categories: {
