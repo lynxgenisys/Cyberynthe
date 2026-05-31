@@ -142,7 +142,7 @@ const PlayerController = () => {
         if (gameState.isPaused) return;
 
         const handleMouseDown = (e) => {
-            if (!document.pointerLockElement) return;
+            if (!document.pointerLockElement && !isMobile) return;
 
             // GHOST MODE: Controls Override (Only Click Actions here, State handled above)
             if (gameState.gameMode === 'ghost') {

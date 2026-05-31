@@ -86,8 +86,8 @@ const QuickSlots = () => {
                 <div
                     key={index}
                     style={{
-                        width: '80px',
-                        height: '80px',
+                        width: '40px',
+                        height: '40px',
                         border: `2px solid ${getSlotBorderColor(item)}`,
                         borderRadius: '4px',
                         backgroundColor: 'rgba(0, 0, 0, 0.7)',
@@ -123,20 +123,20 @@ const QuickSlots = () => {
                         }}>
                             {/* Item icon (colored square for now) */}
                             <div style={{
-                                width: '32px',
-                                height: '32px',
+                                width: '16px',
+                                height: '16px',
                                 backgroundColor: getSlotColor(item),
                                 borderRadius: '2px',
                                 boxShadow: `0 0 10px ${getSlotColor(item)}80`,
-                                marginBottom: '4px'
+                                marginBottom: '2px'
                             }} />
 
                             {/* Item name */}
                             <div style={{
-                                fontSize: '9px',
+                                fontSize: '6px',
                                 color: '#FFFFFF',
                                 textAlign: 'center',
-                                lineHeight: '10px',
+                                lineHeight: '6px',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap',
@@ -149,9 +149,9 @@ const QuickSlots = () => {
                             {getRealQuantity(item) > 1 && (
                                 <div style={{
                                     position: 'absolute',
-                                    bottom: '4px',
-                                    right: '4px',
-                                    fontSize: '12px',
+                                    bottom: '2px',
+                                    right: '2px',
+                                    fontSize: '8px',
                                     color: '#00FFFF',
                                     fontWeight: 'bold',
                                     textShadow: '0 0 4px #00FFFF'

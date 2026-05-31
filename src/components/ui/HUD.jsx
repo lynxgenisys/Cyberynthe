@@ -159,7 +159,7 @@ const SessionTimer = memo(({ startTime, totalPausedTime, isPaused, pauseStartTim
 });
 
 const TopBar = memo(({ sectorId, seed, floorLevel, runStartTime, totalPausedTime, isPaused, pauseStartTime }) => (
-    <div className="absolute top-1 z-30 flex items-center gap-4 animate-fade-in-down">
+    <div className="absolute top-1 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4 animate-fade-in-down max-md:scale-75 max-md:top-[-4px]">
         <div className="text-[10px] text-gray-400 font-mono tracking-widest bg-black/80 px-2 py-0.5 rounded border border-gray-800/50 backdrop-blur-sm">
             <span>SECTOR {sectorId}</span>
             <span className="text-magenta">//</span>
@@ -375,8 +375,9 @@ export default function HUD() {
 
     // --- RENDER ---
     return (
-        <div className="absolute inset-0 pointer-events-none p-6 flex flex-col justify-between" style={hudStyle}>
-            <div className="relative w-full h-24 flex justify-center pointer-events-auto max-md:scale-[0.65] max-md:origin-top-left">
+        <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-6 max-md:p-0 z-50 select-none overflow-hidden" style={hudStyle}>
+            {/* TOP AREA (HUD + Clock + MiniMap) */}
+            <div className="flex flex-col relative pointer-events-auto h-[120px] max-md:h-[100px] mt-4 max-md:mt-0 w-full items-center">
                 <TopBar
                     sectorId={gameState.sectorId}
                     seed={gameState.seed}

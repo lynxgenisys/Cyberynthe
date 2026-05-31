@@ -115,18 +115,23 @@ export default function VirtualJoystick() {
 
     useEffect(() => {
         if (!active) return;
+        
+        // Use a ref so handleEnd doesn't require re-binding listeners
+        // but we still clear properly.
         window.addEventListener('touchmove', handleMove, { passive: false });
         window.addEventListener('touchend', handleEnd);
+        window.addEventListener('touchcancel', handleEnd);
         window.addEventListener('mousemove', handleMove);
         window.addEventListener('mouseup', handleEnd);
 
         return () => {
             window.removeEventListener('touchmove', handleMove);
             window.removeEventListener('touchend', handleEnd);
+            window.removeEventListener('touchcancel', handleEnd);
             window.removeEventListener('mousemove', handleMove);
             window.removeEventListener('mouseup', handleEnd);
         };
-    }, [active, keysState]);
+    }, [active]); // Removed keysState to prevent dropping touches during re-render
 
     return (
         <div 
