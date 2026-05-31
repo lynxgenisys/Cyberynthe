@@ -321,8 +321,15 @@ export function generateMaze(seed, floorLevel) {
         }
         
         // Ensure spawn is far away from the boss
+        // Clear old start
+        for(let r=0; r<gridDim; r++) {
+            for(let c=0; c<gridDim; c++) {
+                if (finalGrid[r][c] === TILE.START) finalGrid[r][c] = TILE.PATH;
+            }
+        }
         finalStart.x = furthest.x;
         finalStart.y = furthest.y;
+        finalGrid[finalStart.y][finalStart.x] = TILE.START;
     }
 
     // 7. L1_CACHE Logic (Place 1-2 Caches per floor)

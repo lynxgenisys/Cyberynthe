@@ -532,7 +532,7 @@ export default function MobManager({ maze, floorLevel }) {
                 }
             }
         }
-        if (floorLevel !== 999) {
+        if (floorLevel !== 999 && floorLevel !== 10 && floorLevel !== 20) {
             deadEnds.forEach(pos => {
                 const rand = Math.random();
                 let type = 'BIT_MITE';
