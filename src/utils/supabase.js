@@ -275,7 +275,7 @@ export async function getTopAccomplishments(sortBy = 'total_kills', limit = 100)
     try {
         const { data, error } = await supabase
             .from('profiles')
-            .select('id, hacker_id, total_kills, total_runs, total_deaths, max_xp')
+            .select('id, hacker_id, total_kills, total_runs, total_deaths')
             .order(sortBy, { ascending: false, nullsFirst: false })
             .limit(limit);
 
