@@ -1283,33 +1283,37 @@ export default function MobManager({ maze, floorLevel }) {
                 const isSpecial = mob.id === 'STATELESS_SENTRY' && getLevelFromXP(gameState.xp) >= 4 && !gameState.hasUnlockedDoT && !shardDroppedRef.current;
                 if (isSpecial) shardDroppedRef.current = true;
 
-                // Ambient drop logic (20% chance)
-                let dropType = 'eBits'; // Default
-                let amount = rewardEBits;
-                const rnd = Math.random();
-
-                if (mob.dropsFullRecovery) {
-                    dropType = 'FullRecovery';
-                    amount = 1;
-                } else if (rnd < 0.20 && mob.id !== 'IO_SENTINEL' && !isSpecial) {
-                    if (Math.random() > 0.5) {
-                        dropType = 'mRAM';
-                        amount = 10;
-                    } else {
-                        dropType = 'Integrity';
-                        amount = 10;
-                    }
-                }
-
-                const newSpark = {
+                // 1. Primary Drop (Always drop eBits)
+                sparksRef.current.push({
                     id: Math.random().toString(),
                     x: mob.x,
                     z: mob.z,
-                    dropType: dropType,
-                    amount: amount,
+                    dropType: 'eBits',
+                    amount: rewardEBits,
                     isSpecial: isSpecial
-                };
-                sparksRef.current.push(newSpark);
+                });
+
+                // 2. Secondary Drop Logic (Very sparse mRAM/Integrity)
+                const rnd = Math.random();
+                if (mob.dropsFullRecovery) {
+                    sparksRef.current.push({
+                        id: Math.random().toString(),
+                        x: mob.x + 0.5,
+                        z: mob.z + 0.5,
+                        dropType: 'FullRecovery',
+                        amount: 1,
+                        isSpecial: false
+                    });
+                } else if (rnd < 0.10 && mob.id !== 'IO_SENTINEL' && !isSpecial) { // 10% sparse chance
+                    sparksRef.current.push({
+                        id: Math.random().toString(),
+                        x: mob.x + (Math.random() - 0.5),
+                        z: mob.z + (Math.random() - 0.5),
+                        dropType: Math.random() > 0.5 ? 'mRAM' : 'Integrity',
+                        amount: 5, // Very small amount
+                        isSpecial: false
+                    });
+                }
                 setSparks([...sparksRef.current]);
 
                 addNotification(`ENTITY_PURGED: ${mob.name} +${rewardXP} XP`);
