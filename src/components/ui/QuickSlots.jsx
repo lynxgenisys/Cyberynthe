@@ -96,7 +96,7 @@ const QuickSlots = () => {
                         boxShadow: item ? `0 0 15px ${getSlotBorderColor(item)}40` : 'none',
                         transition: 'all 0.2s ease'
                     }}
-                    onClick={() => handleSlotClick(index)}
+                    onPointerDown={(e) => { e.preventDefault(); handleSlotClick(index); }}
                 >
                     {/* Key binding label */}
                     <div style={{

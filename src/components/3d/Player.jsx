@@ -143,6 +143,7 @@ const PlayerController = () => {
 
         const handleMouseDown = (e) => {
             if (!document.pointerLockElement && !isMobile) return;
+            if (isMobile && e.isTrusted) return; // Ignore synthetic touches, rely on TouchControlsOverlay
 
             // GHOST MODE: Controls Override (Only Click Actions here, State handled above)
             if (gameState.gameMode === 'ghost') {
@@ -179,6 +180,7 @@ const PlayerController = () => {
 
         const handleMouseUp = (e) => {
             if (!document.pointerLockElement && !isMobile) return;
+            if (isMobile && e.isTrusted) return; // Ignore synthetic touches
 
             if (gameState.gameMode === 'ghost') return;
 

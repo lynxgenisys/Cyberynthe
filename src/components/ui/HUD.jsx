@@ -185,7 +185,7 @@ const TopBar = memo(({ sectorId, seed, floorLevel, runStartTime, totalPausedTime
 const BossHealthBar = memo(({ active, name, hp, maxHp }) => {
     if (!active) return null;
     return (
-        <div className="absolute top-16 z-20 w-[90%] max-w-[500px] animate-fade-in-down flex flex-col items-center">
+        <div className="absolute top-36 z-20 w-[90%] max-w-[500px] animate-fade-in-down flex flex-col items-center">
             <div className="flex justify-between w-full text-cyan font-bold text-xs mb-1 tracking-widest drop-shadow-[0_0_5px_#00FFFF]">
                 <span>{name}</span>
                 <span>{(hp / maxHp * 100).toFixed(0)}%</span>
@@ -201,13 +201,13 @@ const BossHealthBar = memo(({ active, name, hp, maxHp }) => {
 });
 
 const StatMeters = memo(({ hp, maxHp, ram, maxRam, ethicsScore }) => (
-    <div className="flex flex-col justify-center gap-3 p-4 min-w-[300px]">
+    <div className="flex flex-col justify-center gap-3 p-4 min-w-[200px] max-w-[200px]">
         <div className="w-full">
             <div className="flex justify-between items-end text-cyan font-mono text-[10px] tracking-widest mb-1">
                 <span>INTEGRITY</span>
                 <span className="font-bold">{Math.floor(hp)} / {maxHp}</span>
             </div>
-            <div className="h-3 w-full bg-black/60 border border-cyan/30 skew-x-[-15deg] p-[2px]">
+            <div className="h-6 w-full bg-black/60 border border-cyan/30 skew-x-[-15deg] p-[2px]">
                 <div
                     className={`h-full bg-cyan shadow-[0_0_10px_#00FFFF] transition-all duration-300 ease-out ${hp < 30 ? 'animate-pulse' : ''}`}
                     style={{ width: `${Math.max(0, (hp / maxHp) * 100)}%` }}
@@ -219,7 +219,7 @@ const StatMeters = memo(({ hp, maxHp, ram, maxRam, ethicsScore }) => (
                 <span>M-RAM</span>
                 <span className="font-bold">{Math.floor(ram)} / {maxRam}</span>
             </div>
-            <div className="h-3 w-full bg-black/60 border border-magenta/30 skew-x-[-15deg] p-[2px]">
+            <div className="h-6 w-full bg-black/60 border border-magenta/30 skew-x-[-15deg] p-[2px]">
                 <div
                     className="h-full bg-magenta shadow-[0_0_10px_#EA00FF] transition-all duration-300 ease-out"
                     style={{ width: `${Math.max(0, (ram / maxRam) * 100)}%` }}
@@ -377,7 +377,7 @@ export default function HUD() {
     return (
         <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-6 max-md:p-0 z-50 select-none overflow-hidden" style={hudStyle}>
             {/* TOP AREA (HUD + Clock + MiniMap) */}
-            <div className="flex flex-col relative pointer-events-auto h-[120px] max-md:h-[100px] mt-4 max-md:mt-0 w-full max-md:w-[133.33%] max-md:scale-75 max-md:origin-top-left items-center">
+            <div className="flex flex-col relative pointer-events-auto h-[120px] max-md:h-[100px] mt-4 max-md:mt-0 w-full max-md:w-[153.8%] max-md:scale-[0.65] max-md:origin-top-left items-center">
                 <TopBar
                     sectorId={gameState.sectorId}
                     seed={gameState.seed}
@@ -414,7 +414,7 @@ export default function HUD() {
             </div>
 
             <div className="flex justify-between max-md:justify-end items-end w-full">
-                <div className="max-md:absolute max-md:top-48 max-md:left-4 max-md:z-20">
+                <div className="max-md:absolute max-md:top-[16rem] max-md:left-4 max-md:z-20">
                     <NotificationLog logs={logs} />
                 </div>
                 <MiniMap />

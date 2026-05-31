@@ -87,7 +87,7 @@ export default function TouchControlsOverlay({ onLookMove }) {
                 
                 {/* FIRE (Left Click) */}
                 <button 
-                    className="absolute bottom-[16rem] right-[18rem] w-20 h-20 rounded-full bg-cyan/20 border-2 border-cyan text-cyan font-bold tracking-widest shadow-[0_0_15px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto text-sm"
+                    className="absolute bottom-[12.66rem] right-[14.66rem] w-20 h-20 rounded-full bg-cyan/20 border-2 border-cyan text-cyan font-bold tracking-widest shadow-[0_0_15px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto text-sm"
                     onPointerDown={(e) => { e.stopPropagation(); triggerMouse(0, 'mousedown'); }}
                     onPointerUp={(e) => { e.stopPropagation(); triggerMouse(0, 'mouseup'); }}
                 >
@@ -96,7 +96,7 @@ export default function TouchControlsOverlay({ onLookMove }) {
 
                 {/* SHRED (Right Click) */}
                 <button 
-                    className="absolute bottom-[20rem] right-[4rem] w-16 h-16 rounded-full bg-magenta/20 border-2 border-magenta text-magenta font-bold shadow-[0_0_15px_#FF00FF] active:bg-magenta active:text-black pointer-events-auto text-xs"
+                    className="absolute bottom-[17.33rem] right-[1.33rem] w-16 h-16 rounded-full bg-magenta/20 border-2 border-magenta text-magenta font-bold shadow-[0_0_15px_#FF00FF] active:bg-magenta active:text-black pointer-events-auto text-xs"
                     onPointerDown={(e) => { e.stopPropagation(); triggerMouse(2, 'mousedown'); }}
                     onPointerUp={(e) => { e.stopPropagation(); triggerMouse(2, 'mouseup'); }}
                 >
@@ -143,7 +143,7 @@ export default function TouchControlsOverlay({ onLookMove }) {
             </div>
             
             {/* Inventory */}
-            <div className="absolute top-4 right-4 pointer-events-auto">
+            <div className="absolute top-32 left-4 pointer-events-auto">
                 <button 
                     className="p-3 border border-cyan text-cyan bg-black/80 font-mono shadow-[0_0_10px_#00FFFF]"
                     onPointerDown={(e) => triggerKey('i', 'KeyI', 'keydown')}
