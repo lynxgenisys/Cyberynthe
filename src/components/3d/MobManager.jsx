@@ -678,8 +678,8 @@ export default function MobManager({ maze, floorLevel }) {
                     }
 
                     // INFECTION SPREAD (Continuous jump chance while alive)
-                    if (Math.random() < 2.0 * delta) {
-                        const jumpRange = 6 + (playerLevel * 0.5);
+                    if (Math.random() < 0.1 * delta) {
+                        const jumpRange = 3 + (playerLevel * 0.2);
                         const jumpRangeSq = jumpRange * jumpRange;
 
                         currentMobs.forEach((target, j) => {
@@ -687,7 +687,7 @@ export default function MobManager({ maze, floorLevel }) {
                                 const dx = mob.x - target.x;
                                 const dz = mob.z - target.z;
                                 if (dx * dx + dz * dz < jumpRangeSq) {
-                                    const jumpChance = 0.35 + (playerLevel * 0.05);
+                                    const jumpChance = 0.15 + (playerLevel * 0.01);
                                     if (Math.random() < jumpChance) {
                                         target.isHacked = true;
                                         target.hackTimer = 3.0 + (playerLevel * 0.2);
@@ -709,9 +709,9 @@ export default function MobManager({ maze, floorLevel }) {
 
                 // SHRED v2 DEATH JUMP - Worm jumps to nearest mob on host death
                 if (mob.currentHp <= 0 && mob.isHacked && mob.wasAliveLastFrame) {
-                    const deathJumpChance = 0.85 + (playerLevel * 0.05); // 85% base chance to jump on death
+                    const deathJumpChance = 0.40 + (playerLevel * 0.01); // 40% base chance to jump on death
                     if (Math.random() < deathJumpChance) {
-                        const jumpRange = 8 + (playerLevel * 0.5);
+                        const jumpRange = 3 + (playerLevel * 0.2);
                         const jumpRangeSq = jumpRange * jumpRange;
 
                         let nearestTarget = null;

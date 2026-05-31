@@ -16,7 +16,7 @@ export default function MobileCameraControls() {
             const { x, y } = e.detail;
             const sensitivity = 0.005; // Base sensitivity for touch
             
-            euler.current.setFromQuaternion(camera.quaternion);
+            euler.current.setFromQuaternion(camera.quaternion, 'YXZ');
             
             euler.current.y -= x * sensitivity;
             euler.current.x -= y * sensitivity;

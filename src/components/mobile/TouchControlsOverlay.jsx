@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 const triggerKey = (key, code, type) => {
     document.dispatchEvent(new KeyboardEvent(type, { key, code, bubbles: true, cancelable: true }));
@@ -10,6 +10,7 @@ const triggerMouse = (button, type) => {
 
 export default function TouchControlsOverlay({ onLookMove }) {
     const swipeAreaRef = useRef(null);
+    const [isRunning, setIsRunning] = useState(false);
 
     useEffect(() => {
         if (!swipeAreaRef.current) return;
@@ -63,7 +64,7 @@ export default function TouchControlsOverlay({ onLookMove }) {
                 
                 {/* FIRE (Left Click) */}
                 <button 
-                    className="absolute bottom-20 left-10 w-24 h-24 rounded-full bg-cyan/20 border-2 border-cyan text-cyan font-bold tracking-widest shadow-[0_0_15px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto"
+                    className="absolute top-28 right-4 w-20 h-20 rounded-full bg-cyan/20 border-2 border-cyan text-cyan font-bold tracking-widest shadow-[0_0_15px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto text-sm"
                     onPointerDown={(e) => { e.stopPropagation(); triggerMouse(0, 'mousedown'); }}
                     onPointerUp={(e) => { e.stopPropagation(); triggerMouse(0, 'mouseup'); }}
                 >
@@ -72,7 +73,7 @@ export default function TouchControlsOverlay({ onLookMove }) {
 
                 {/* SHRED (Right Click) */}
                 <button 
-                    className="absolute bottom-8 left-36 w-16 h-16 rounded-full bg-magenta/20 border-2 border-magenta text-magenta font-bold shadow-[0_0_15px_#FF00FF] active:bg-magenta active:text-black pointer-events-auto text-xs"
+                    className="absolute top-28 right-28 w-16 h-16 rounded-full bg-magenta/20 border-2 border-magenta text-magenta font-bold shadow-[0_0_15px_#FF00FF] active:bg-magenta active:text-black pointer-events-auto text-xs"
                     onPointerDown={(e) => { e.stopPropagation(); triggerMouse(2, 'mousedown'); }}
                     onPointerUp={(e) => { e.stopPropagation(); triggerMouse(2, 'mouseup'); }}
                 >
@@ -81,7 +82,7 @@ export default function TouchControlsOverlay({ onLookMove }) {
 
                 {/* JUMP (Space) */}
                 <button 
-                    className="absolute bottom-32 right-8 w-20 h-20 rounded-full bg-white/10 border-2 border-white/50 text-white font-bold active:bg-white active:text-black pointer-events-auto text-xs"
+                    className="absolute top-52 right-4 w-16 h-16 rounded-full bg-white/10 border-2 border-white/50 text-white font-bold active:bg-white active:text-black pointer-events-auto text-xs"
                     onPointerDown={(e) => { e.stopPropagation(); triggerKey(' ', 'Space', 'keydown'); }}
                     onPointerUp={(e) => { e.stopPropagation(); triggerKey(' ', 'Space', 'keyup'); }}
                 >
@@ -113,9 +114,17 @@ export default function TouchControlsOverlay({ onLookMove }) {
             {/* Run Lock */}
             <div className="absolute top-1/2 left-4 pointer-events-auto">
                 <button 
-                    className="w-12 h-12 rounded-full border border-purple-500 text-purple-500 bg-purple-500/20 active:bg-purple-500 active:text-black font-bold text-xs"
-                    onPointerDown={(e) => triggerKey('r', 'KeyR', 'keydown')}
-                    onPointerUp={(e) => triggerKey('r', 'KeyR', 'keyup')}
+                    className={`w-12 h-12 rounded-full border border-purple-500 font-bold text-xs ${isRunning ? 'bg-purple-500 text-black shadow-[0_0_10px_#A855F7]' : 'text-purple-500 bg-purple-500/20'}`}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (isRunning) {
+                            triggerKey('r', 'KeyR', 'keyup');
+                            setIsRunning(false);
+                        } else {
+                            triggerKey('r', 'KeyR', 'keydown');
+                            setIsRunning(true);
+                        }
+                    }}
                 >
                     RUN
                 </button>

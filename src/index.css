@@ -67,7 +67,7 @@ body {
 /* MOBILE TAILWIND SCALING */
 @media (max-width: 800px) and (orientation: portrait), (max-height: 500px) and (orientation: landscape) {
     html {
-        font-size: 8px !important; /* Shrink all Tailwind rem units by ~50% */
+        font-size: 6px !important; /* Shrink all Tailwind rem units heavily for mobile menus */
     }
 }
 
