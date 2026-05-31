@@ -669,7 +669,7 @@ export default function MobManager({ maze, floorLevel }) {
                 const posArr = mobPositionBuffer.current;
                 posArr[i * 3] = mob.x;
                 // Accurate Y-pos for hit detection: Wisp higher (3.5), Sentry mid (2.5), Boss core (3.5)
-                const mobY = (mob.id === 'NULL_WISP' ? 3.5 : (mob.id === 'IO_SENTINEL') ? 3.5 : (mob.id === 'BYTE_MOTHER') ? 2.0 : mob.id === 'STATELESS_SENTRY' ? 2.5 : 1.0);
+                const mobY = (mob.id === 'NULL_WISP' ? 3.5 : (mob.id === 'IO_SENTINEL') ? 3.5 : (mob.id === 'BYTE_MOTHER') ? 4.5 : mob.id === 'STATELESS_SENTRY' ? 2.5 : 1.0);
                 posArr[i * 3 + 1] = mobY;
                 posArr[i * 3 + 2] = mob.z;
                 mobLifeBuffer.current[i] = mob.currentHp / mob.maxHp;
@@ -838,7 +838,7 @@ export default function MobManager({ maze, floorLevel }) {
                         // Timer logic for mite spawning
                         if (!mob.miteTimer) mob.miteTimer = 0;
                         mob.miteTimer += delta;
-                        if (mob.miteTimer >= 40) {
+                        if (mob.miteTimer >= 4.0) {
                             mob.miteTimer = 0;
                             
                             // Find valid spawn point via BFS from player
@@ -911,9 +911,13 @@ export default function MobManager({ maze, floorLevel }) {
 
                         vx = (nx * distError * approachFactor) + (tx * orbitFactor);
                         vz = (nz * distError * approachFactor) + (tz * orbitFactor);
+                    } else if (mob.id === 'BYTE_MOTHER') {
+                        // Byte Mother sits in the middle of the room
+                        vx = 0;
+                        vz = 0;
                     } else {
                         // Standard Chase
-                        if (!mob.aggroActive && (mob.id === 'BYTE_MOTHER' || mob.id === 'IO_SENTINEL')) {
+                        if (!mob.aggroActive && mob.id === 'IO_SENTINEL') {
                             vx = 0;
                             vz = 0;
                         } else {

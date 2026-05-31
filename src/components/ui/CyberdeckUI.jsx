@@ -87,7 +87,8 @@ export default function CyberdeckUI({ onClose }) {
     }, [hoveredItem]);
 
     return (
-        <div className={`fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-8 backdrop-blur-sm max-md:p-0 max-md:origin-top-left max-md:transform ${activeTab === 'inventory' ? 'max-md:scale-[0.60]' : 'max-md:scale-[0.20]'}`}>
+        <div className={`fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-8 backdrop-blur-sm max-md:p-0 max-md:origin-top-left max-md:transform`}>
+            <div className="w-full h-full max-md:scale-[0.35] max-md:origin-top-left max-md:w-[285%] max-md:h-[285%] flex items-center justify-center">
             {/* TOOLTIP OVERLAY */}
             {hoveredItem && (
                 <div
@@ -528,9 +529,10 @@ export default function CyberdeckUI({ onClose }) {
                 </div>
 
             </ChromaticContainer>
+            </div>
         </div>
     );
-}
+};
 
 const StatRow = ({ label, value, alloc, canUpgrade, onUpgrade, color }) => (
     <div className={`border border-${color}/30 bg-black/40 p-2 flex justify-between items-center transition-colors hover:bg-${color}/5`}>

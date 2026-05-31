@@ -148,20 +148,10 @@ export const InventoryProvider = ({ children }) => {
 
     const equipItem = (item, targetType, slotIndex = 0) => {
         if (targetType === 'active') {
-            const existing = gameState.inventorySlots[slotIndex];
-
-            // 1. Remove new item from backpack
-            dispatch({ type: ACTIONS.REMOVE_ITEM, payload: { item } });
-
-            // 2. Add existing item back to backpack
-            if (existing) {
-                dispatch({ type: ACTIONS.ADD_ITEM, payload: { itemObj: existing } });
-            }
-
-            // 3. Update Slot
+            // 3. Update Slot as a LINK
             setGameState(prev => {
                 const newSlots = [...prev.inventorySlots];
-                newSlots[slotIndex] = { ...item };
+                newSlots[slotIndex] = { ...item, isLink: true };
                 return { ...prev, inventorySlots: newSlots };
             });
         } else {
@@ -174,8 +164,10 @@ export const InventoryProvider = ({ children }) => {
         const item = gameState.inventorySlots[slotIndex];
         if (!item) return;
 
-        // 1. Add to backpack
-        dispatch({ type: ACTIONS.ADD_ITEM, payload: { itemObj: item } });
+        // 1. Add to backpack ONLY if it wasn't just a link
+        if (!item.isLink) {
+            dispatch({ type: ACTIONS.ADD_ITEM, payload: { itemObj: item } });
+        }
 
         // 2. Clear slot
         setGameState(prev => {
@@ -185,11 +177,15 @@ export const InventoryProvider = ({ children }) => {
         });
     };
 
+    const consumeItem = (item, quantity = 1) => {
+        dispatch({ type: ACTIONS.REMOVE_ITEM, payload: { item, quantity } });
+    };
+
     const initInventory = () => dispatch({ type: ACTIONS.INIT_INVENTORY });
     const loadInventoryState = (savedState) => dispatch({ type: ACTIONS.RESTORE_INVENTORY, payload: savedState });
 
     return (
-        <InventoryContext.Provider value={{ state, addItem, equipItem, unequipItem, initInventory, loadInventoryState }}>
+        <InventoryContext.Provider value={{ state, addItem, consumeItem, equipItem, unequipItem, initInventory, loadInventoryState }}>
             {children}
         </InventoryContext.Provider>
     );

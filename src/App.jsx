@@ -272,8 +272,7 @@ function CoreInterface() {
       }
 
       // QUICK-SLOT INVENTORY
-      if (k === '1') useQuickSlot?.(0);
-      if (k === '2') useQuickSlot?.(1);
+      // Handled in QuickSlots.jsx directly
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);

@@ -87,7 +87,7 @@ export default function TouchControlsOverlay({ onLookMove }) {
                 
                 {/* FIRE (Left Click) */}
                 <button 
-                    className="absolute bottom-[350px] right-8 w-20 h-20 rounded-full bg-cyan/20 border-2 border-cyan text-cyan font-bold tracking-widest shadow-[0_0_15px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto text-sm"
+                    className="absolute bottom-24 right-12 w-20 h-20 rounded-full bg-cyan/20 border-2 border-cyan text-cyan font-bold tracking-widest shadow-[0_0_15px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto text-sm"
                     onPointerDown={(e) => { e.stopPropagation(); triggerMouse(0, 'mousedown'); }}
                     onPointerUp={(e) => { e.stopPropagation(); triggerMouse(0, 'mouseup'); }}
                 >
@@ -96,7 +96,7 @@ export default function TouchControlsOverlay({ onLookMove }) {
 
                 {/* SHRED (Right Click) */}
                 <button 
-                    className="absolute bottom-[440px] right-24 w-16 h-16 rounded-full bg-magenta/20 border-2 border-magenta text-magenta font-bold shadow-[0_0_15px_#FF00FF] active:bg-magenta active:text-black pointer-events-auto text-xs"
+                    className="absolute bottom-48 right-32 w-16 h-16 rounded-full bg-magenta/20 border-2 border-magenta text-magenta font-bold shadow-[0_0_15px_#FF00FF] active:bg-magenta active:text-black pointer-events-auto text-xs"
                     onPointerDown={(e) => { e.stopPropagation(); triggerMouse(2, 'mousedown'); }}
                     onPointerUp={(e) => { e.stopPropagation(); triggerMouse(2, 'mouseup'); }}
                 >
@@ -105,7 +105,7 @@ export default function TouchControlsOverlay({ onLookMove }) {
 
                 {/* JUMP (Space) */}
                 <button 
-                    className="absolute bottom-[260px] right-32 w-16 h-16 rounded-full bg-white/10 border-2 border-white/50 text-white font-bold active:bg-white active:text-black pointer-events-auto text-xs"
+                    className="absolute bottom-12 right-40 w-16 h-16 rounded-full bg-white/10 border-2 border-white/50 text-white font-bold active:bg-white active:text-black pointer-events-auto text-xs"
                     onPointerDown={(e) => { e.stopPropagation(); triggerKey(' ', 'Space', 'keydown'); }}
                     onPointerUp={(e) => { e.stopPropagation(); triggerKey(' ', 'Space', 'keyup'); }}
                 >
@@ -115,7 +115,7 @@ export default function TouchControlsOverlay({ onLookMove }) {
             </div>
 
             {/* Run Lock & Interact (Above Joystick) */}
-            <div className="absolute bottom-[350px] left-8 flex gap-4 pointer-events-auto">
+            <div className="absolute bottom-96 left-64 flex gap-4 pointer-events-auto">
                 {/* INTERACT (F) */}
                 <button 
                     className="w-14 h-14 rounded-full border-2 border-green-500 text-green-500 bg-green-500/20 active:bg-green-500 active:text-black font-mono text-xs font-bold flex items-center justify-center shadow-[0_0_10px_#22C55E]"

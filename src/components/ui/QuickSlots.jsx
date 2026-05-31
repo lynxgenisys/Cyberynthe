@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useGame } from '../../context/GameContext';
 import { usePlayer } from '../../context/PlayerContext';
+import { useInventory } from '../../context/InventoryContext';
 
 /**
  * IDENTITY: GRADIENT_MORALS_04
@@ -11,12 +12,28 @@ import { usePlayer } from '../../context/PlayerContext';
 const QuickSlots = () => {
     const { gameState, useQuickSlot } = useGame();
     const { restoreRam, healKernel } = usePlayer();
+    const { state: inventoryState, consumeItem, unequipItem } = useInventory();
 
     const slots = gameState.inventorySlots || [null, null];
 
-    const handleSlotClick = (index) => {
+    const getRealQuantity = (item) => {
+        if (!item) return 0;
+        if (item.isLink) {
+            const backpackItem = inventoryState.backpack.find(i => i.id === item.id);
+            return backpackItem ? backpackItem.quantity || backpackItem.count || 1 : 0;
+        }
+        return item.quantity || item.count || 1;
+    };
+
+    const handleSlotClick = useCallback((index) => {
         const item = slots[index];
         if (!item) return;
+
+        const qty = getRealQuantity(item);
+        if (qty <= 0) {
+            unequipItem(index); // Auto-clear if empty
+            return;
+        }
 
         // Bridge Logic: GameContext cannot access PlayerContext, so we trigger effects here
         if (item.type === 'MRAM_INJECTOR') {
@@ -24,8 +41,21 @@ const QuickSlots = () => {
             healKernel(40);
         }
 
+        if (item.isLink) {
+            consumeItem(item, 1);
+        }
+
         useQuickSlot(index);
-    };
+    }, [slots, getRealQuantity, unequipItem, restoreRam, healKernel, consumeItem, useQuickSlot]);
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === '1') handleSlotClick(0);
+            if (e.key === '2') handleSlotClick(1);
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handleSlotClick]);
 
     const getSlotColor = (item) => {
         if (!item) return '#333333';
@@ -52,7 +82,7 @@ const QuickSlots = () => {
             fontFamily: 'monospace',
             zIndex: 100
         }}
-        className="max-md:scale-[0.40] max-md:origin-bottom">
+        className="max-md:scale-[0.15] max-md:origin-bottom">
             {slots.map((item, index) => (
                 <div
                     key={index}
@@ -117,7 +147,7 @@ const QuickSlots = () => {
                             </div>
 
                             {/* Stack count */}
-                            {item.count && item.count > 1 && (
+                            {getRealQuantity(item) > 1 && (
                                 <div style={{
                                     position: 'absolute',
                                     bottom: '4px',
@@ -127,7 +157,7 @@ const QuickSlots = () => {
                                     fontWeight: 'bold',
                                     textShadow: '0 0 4px #00FFFF'
                                 }}>
-                                    x{item.count}
+                                    x{getRealQuantity(item)}
                                 </div>
                             )}
                         </div>

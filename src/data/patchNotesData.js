@@ -1,5 +1,24 @@
 export const patchNotes = [
     {
+        version: "v0.14.2",
+        date: "2026-05-31",
+        categories: {
+            "Added": [
+                "Highest Achieved XP and Player Level tracked in the scoreboard."
+            ],
+            "Changed": [
+                "Byte Mother: Removed the 80% default armor reduction. You can now deal normal damage to her even without a critical spot or scan.",
+                "Byte Mother: She will now wait patiently in the center of the boss chamber until you engage her, rather than immediately rushing you on spawn.",
+                "Byte Mother: Legs scaled down and repositioned to the middle of her mass for a more grounded spider-like aesthetic."
+            ],
+            "Fixed": [
+                "M-RAM Injectors: Fixed a major inventory bug where using the quick slot would consume the entire stack instead of just 1 item.",
+                "M-RAM Injectors: Fixed the regeneration logic to properly restore 40% of max capacity over a steady 4-second window (10% per second).",
+                "Mob Spawning: Fixed an issue on Floor 20 where no mobs would spawn (Boss only floor)."
+            ]
+        }
+    },
+    {
         version: "v0.14.0",
         date: "2026-05-30",
         categories: {

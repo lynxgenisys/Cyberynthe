@@ -615,37 +615,17 @@ export const GameProvider = ({ children }) => {
                 break;
 
             case 'MRAM_INJECTOR':
-                setGameState(prev => {
-                    const slots = [...prev.inventorySlots];
-                    let added = false;
-                    
-                    if (lootItem.stackable) {
-                        for (let i = 0; i < slots.length; i++) {
-                            if (slots[i] && slots[i].type === lootItem.type) {
-                                slots[i] = { ...slots[i], count: Math.min(slots[i].count + (lootItem.count || 1), 999) };
-                                added = true;
-                                break;
-                            }
-                        }
-                    }
-                    
-                    if (!added) {
-                        for (let i = 0; i < slots.length; i++) {
-                            if (!slots[i]) {
-                                slots[i] = { ...lootItem, count: lootItem.stackable ? 1 : undefined };
-                                added = true;
-                                break;
-                            }
-                        }
-                    }
-                    
-                    if (added) {
-                        return { ...prev, inventorySlots: slots };
-                    } else if (inventoryAPI) {
-                        inventoryAPI.addItem(lootItem);
-                    }
-                    return prev;
-                });
+            case 'GHOST_PROTOCOL':
+            case 'SYSTEM_PING':
+            case 'KERNEL_SPIKE':
+            case 'SECTOR_BREACH':
+            case 'CORE_SWAP':
+                // Add to inventory backpack
+                if (inventoryAPI) {
+                    inventoryAPI.addItem(lootItem);
+                } else {
+                    addToInventory(lootItem); // Fallback
+                }
                 break;
 
             case 'LOGIC_FRAGMENT':
@@ -741,6 +721,7 @@ export const GameProvider = ({ children }) => {
                     ...prev,
                     inventorySlots: slots.map((s, i) => {
                         if (i !== slotIndex) return s;
+                        if (s.isLink) return s; // InventoryContext handles quantity for links
                         if (s.stackable && s.quantity > 1) return { ...s, quantity: s.quantity - 1 };
                         return null;
                     })

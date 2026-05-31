@@ -89,6 +89,7 @@ export function rollCorruptedLoot(floorLevel = 1, collectedFragments = []) {
  */
 function generateItem(itemType, floorLevel, collectedFragments) {
     const item = {
+        id: crypto.randomUUID(),
         type: itemType,
         name: getItemName(itemType),
         color: getItemColor(itemType)

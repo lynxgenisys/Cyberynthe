@@ -130,7 +130,7 @@ export default function VirtualJoystick() {
 
     return (
         <div 
-            className="fixed bottom-32 left-32 w-32 h-32 rounded-full border-2 border-cyan/30 bg-cyan/10 backdrop-blur-md z-[100] touch-none select-none flex items-center justify-center"
+            className="fixed bottom-64 left-64 w-32 h-32 rounded-full border-2 border-cyan/30 bg-cyan/10 backdrop-blur-md z-[100] touch-none select-none flex items-center justify-center"
             ref={containerRef}
             onPointerDown={handleStart}
         >
