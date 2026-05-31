@@ -1,5 +1,16 @@
 export const patchNotes = [
     {
+        version: "v0.14.14",
+        date: "2026-05-31",
+        categories: {
+            "Changed": [
+                "UI (Main Menu): Rewrote CSS for the Main Menu (Splash Screen) to properly scale fonts, padding, and layout down for mobile devices.",
+                "UI (Main Menu): Fixed the navigation tabs wrapping and overlapping the logo on mobile.",
+                "UI (Main Menu): Changed the Mode Selection buttons to stack vertically on small screens so they fit correctly."
+            ]
+        }
+    },
+    {
         version: "v0.14.13",
         date: "2026-05-31",
         categories: {

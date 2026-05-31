@@ -198,7 +198,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                 </button>
             </div>
 
-            <div className="splash-version">v0.14.13 | SWARM_PROTOCOL</div>
+            <div className="splash-version">v0.14.14 | SWARM_PROTOCOL</div>
         </div>
     );
 
@@ -237,7 +237,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                 >
                     ☕ SUPPORT_DEV
                 </a>
-                <div className="flex-1"></div> {/* Spacer */}
+                <div className="hidden md:block flex-1"></div> {/* Spacer */}
                 <button
                     className="nav-tab text-cyan-500 hover:text-cyan-400 border-cyan-900/30"
                     onClick={cycleTrack}

@@ -233,3 +233,47 @@
 .resume-btn:hover::before {
     opacity: 1;
 }
+
+/* MOBILE RESPONSIVE SCALING */
+@media (max-width: 768px) {
+    .splash-nav-tabs {
+        padding: 5px;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+    }
+    .nav-tab {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    .splash-content {
+        padding: 20px;
+    }
+    .splash-title {
+        font-size: 40px;
+        letter-spacing: 4px;
+    }
+    .splash-subtitle {
+        font-size: 12px;
+        margin-bottom: 30px;
+    }
+    .mode-options {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .mode-btn {
+        padding: 15px;
+    }
+    .mode-icon {
+        font-size: 32px;
+        margin-bottom: 5px;
+    }
+    .mode-name {
+        font-size: 16px;
+    }
+    .initialize-btn {
+        margin-top: 30px;
+        padding: 15px 30px;
+        font-size: 18px;
+    }
+}
