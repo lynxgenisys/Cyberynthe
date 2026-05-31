@@ -1,5 +1,14 @@
 export const patchNotes = [
     {
+        version: "v0.14.19",
+        date: "2026-05-31",
+        categories: {
+            "Fixed": [
+                "Engine: Fixed a React race condition where the mobile device detection state was evaluating asynchronously on the first frame, causing the game to occasionally misidentify mobile devices as desktops for the first 100ms. This is what caused the black screen 'Pointer Lock' bug to persist on some phones even after the previous fix."
+            ]
+        }
+    },
+    {
         version: "v0.14.18",
         date: "2026-05-31",
         categories: {
