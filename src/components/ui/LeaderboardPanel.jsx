@@ -250,7 +250,7 @@ export default function LeaderboardPanel() {
             </div>
 
             {/* DESCRIPTION LINE */}
-            <div className="text-cyan text-sm md:text-base font-mono mb-6 text-center px-4 max-w-[250px] mx-auto min-h-[3rem] flex items-center justify-center animate-pulse leading-snug">
+            <div className="text-cyan text-xl md:text-2xl font-mono mb-6 text-center px-4 max-w-[400px] mx-auto min-h-[3rem] flex items-center justify-center animate-pulse leading-snug">
                 {DESCRIPTIONS[activeMetric]}
             </div>
 

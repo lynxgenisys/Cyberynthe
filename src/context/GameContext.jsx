@@ -157,7 +157,7 @@ export const GameProvider = ({ children }) => {
     const setBossSubtitle = (text, duration = 3000) => {
         setGameState(prev => ({
             ...prev,
-            bossSubtitle: { text, duration, timestamp: Date.now() }
+            bossSubtitle: text ? { text, duration, timestamp: Date.now() } : null
         }));
     };
 

@@ -221,8 +221,9 @@
 @media (max-width: 768px) {
     .splash-nav-tabs {
         padding: 5px;
-        flex-wrap: wrap;
-        justify-content: center;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start;
         gap: 5px;
     }
     .nav-tab {
