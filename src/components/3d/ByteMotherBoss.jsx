@@ -94,8 +94,8 @@ export default function ByteMotherBoss({ mob }) {
             </mesh>
 
             {/* HEAD (Inverted Pyramid = Tetrahedron) */}
-            <mesh ref={headRef} position={[0, 0.4, 2.4]} rotation={[Math.PI, 0, 0]}>
-                <tetrahedronGeometry args={[1.4, 0]} />
+            <mesh ref={headRef} position={[0, 0.2, 1.8]} rotation={[Math.PI, 0, 0]}>
+                <tetrahedronGeometry args={[0.7, 0]} />
                 <meshStandardMaterial map={chitinTex} emissiveMap={chitinTex} color="#FFFFFF" emissive={isVulnerable ? "#444400" : "#00FFFF"} emissiveIntensity={1.0} metalness={0.7} roughness={0.3} />
             </mesh>
 

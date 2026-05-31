@@ -1,5 +1,17 @@
 export const patchNotes = [
     {
+        version: "v0.14.13",
+        date: "2026-05-31",
+        categories: {
+            "Changed": [
+                "Byte Mother: Reduced head size by 50% from its previous size and moved it closer to the body so it remains attached.",
+                "Mob Spawning (Floor 20): Mites now spawn consistently along the entire path starting from the player's entry point, instead of only near the boss.",
+                "Mob Spawning: Byte Mother now passively summons mites before being engaged, ensuring her room is well-populated when you arrive.",
+                "UI: Scaled down the mobile Cyberdeck interface by 50% to improve usability on small screens."
+            ]
+        }
+    },
+    {
         version: "v0.14.12",
         date: "2026-05-31",
         categories: {

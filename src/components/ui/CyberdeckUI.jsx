@@ -88,7 +88,7 @@ export default function CyberdeckUI({ onClose }) {
 
     return (
         <div className={`fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-8 backdrop-blur-sm max-md:p-0 max-md:origin-top-left max-md:transform`}>
-            <div className="w-full h-full max-md:scale-[0.35] max-md:origin-top-left max-md:w-[285%] max-md:h-[285%] flex items-center justify-center">
+            <div className="w-full h-full max-md:scale-[0.175] max-md:origin-top-left max-md:w-[570%] max-md:h-[570%] flex items-center justify-center">
             {/* TOOLTIP OVERLAY */}
             {hoveredItem && (
                 <div
@@ -106,7 +106,7 @@ export default function CyberdeckUI({ onClose }) {
                 <div className="flex justify-between items-end border-b border-cyan/30 pb-4 mb-6">
                     <div className="flex items-center gap-6">
                         <div>
-                            <h2 className="text-3xl font-bold text-cyan glitch-text">CYBERDECK_OS v0.14.12</h2>
+                            <h2 className="text-3xl font-bold text-cyan glitch-text">CYBERDECK_OS v0.14.13</h2>
                             <div className="text-sm text-gray-400">ID: {gameState.playerName} // STATUS: ACTIVE</div>
                         </div>
                         <div className="flex gap-2 ml-4">

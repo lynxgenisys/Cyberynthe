@@ -595,21 +595,37 @@ export default function MobManager({ maze, floorLevel }) {
                 newMobs.push({ ...boss, instanceId: Math.random(), x: startX * 2, z: startY * 2, phase: 1, aggroActive: false });
             }
             
-            // Spawn 1-2 Bit Mites at every corner and intersection OUTSIDE the boss room
-            const mazeCorners = cornersAndIntersections.filter(pos =>
-                pos.x < bossRoomStartX || pos.x >= bossRoomEndX || pos.z < bossRoomStartZ || pos.z >= bossRoomEndZ
-            );
-            mazeCorners.forEach(pos => {
+            // Spawn Bit Mites starting from the player's start location, leading to the boss
+            const emptyTiles = [];
+            for (let z = 0; z < maze.height; z++) {
+                for (let x = 0; x < maze.width; x++) {
+                    if (maze.grid[z][x] === 0) {
+                        if (x < bossRoomStartX || x >= bossRoomEndX || z < bossRoomStartZ || z >= bossRoomEndZ) {
+                            emptyTiles.push({x, z});
+                        }
+                    }
+                }
+            }
+            
+            // Sort by distance to player start
+            emptyTiles.sort((a, b) => {
+                const distA = Math.pow(a.x - maze.start.x, 2) + Math.pow(a.z - maze.start.z, 2);
+                const distB = Math.pow(b.x - maze.start.x, 2) + Math.pow(b.z - maze.start.z, 2);
+                return distA - distB;
+            });
+            
+            // Spawn a mite every 3 tiles along the path
+            for (let i = 0; i < emptyTiles.length; i += 3) {
                 const mite = MobLogic.createMob('BIT_MITE', floorLevel);
                 if (mite) {
                     newMobs.push({
                         ...mite,
                         instanceId: Math.random(),
-                        x: pos.x * 2,
-                        z: pos.z * 2
+                        x: emptyTiles[i].x * 2,
+                        z: emptyTiles[i].z * 2
                     });
                 }
-            });
+            }
             
             // Sentries in dead ends OUTSIDE the boss room
             const mazeDeadEnds = deadEnds.filter(pos =>
@@ -1276,11 +1292,11 @@ export default function MobManager({ maze, floorLevel }) {
                 if (mob.id === 'BYTE_MOTHER' && floorLevel !== 999) {
                     mob.summonTimer = (mob.summonTimer || 0) - delta;
                     
-                    if (mob.summonTimer <= 0 && mob.aggroActive) {
+                    if (mob.summonTimer <= 0) {
                         mob.summonTimer = 15.0; // Faster spawns
                         mob.bossState = 'SPAWNING';
                         const count = 3 + Math.floor(Math.random() * 4); // 3 to 6
-                        setBossSubtitle(`SPAWNING_BIT_MITES... [${count}_ANOMALIES]`, 3000);
+                        if (mob.aggroActive) setBossSubtitle(`SPAWNING_BIT_MITES... [${count}_ANOMALIES]`, 3000);
 
                         for (let k = 0; k < count; k++) {
                             const m = MobLogic.createMob('BIT_MITE', floorLevel);
