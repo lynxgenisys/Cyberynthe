@@ -39,7 +39,7 @@ export default function LeaderboardPanel() {
     // When mode changes, ensure metric is valid for that mode
     useEffect(() => {
         if (activeMode === 'accomplishments') {
-            if (['tot_kills', 'tot_runs', 'tot_deaths'].indexOf(activeMetric) === -1) {
+            if (['tot_kills', 'tot_runs', 'tot_deaths', 'max_xp'].indexOf(activeMetric) === -1) {
                 setActiveMetric('tot_kills');
             }
         } else if (activeMode === 'ghost') {
@@ -63,11 +63,30 @@ export default function LeaderboardPanel() {
                 let sortCol = 'total_kills';
                 if (activeMetric === 'tot_runs') sortCol = 'total_runs';
                 if (activeMetric === 'tot_deaths') sortCol = 'total_deaths';
+                if (activeMetric === 'max_xp') sortCol = 'max_xp';
 
                 const result = await getTopAccomplishments(sortCol, 100);
                 if (result.success) {
-                    const mapped = result.data.map((entry, index) => {
+                    const mapped = result.data.sort((a, b) => {
+                        if (sortCol === 'total_kills') {
+                            const killsA = a.total_kills || 0;
+                            const killsB = b.total_kills || 0;
+                            return killsB - killsA;
+                        }
+                        if (sortCol === 'max_xp') {
+                            const xpA = a.max_xp || 0;
+                            const xpB = b.max_xp || 0;
+                            return xpB - xpA;
+                        }
+                        return (b[sortCol] || 0) - (a[sortCol] || 0);
+                    }).map((entry, index) => {
                         let scoreDisplay = entry[sortCol] || 0;
+                        if (sortCol === 'max_xp') {
+                            const xp = entry.max_xp || 0;
+                            // Approximate level from XP formula used elsewhere: Math.floor(Math.pow(xp / 100, 1/1.5)) + 1
+                            const level = Math.floor(Math.pow(xp / 100, 1/1.5)) + 1;
+                            scoreDisplay = `${xp} XP (Lv.${level})`;
+                        }
                         return {
                             rank: index + 1,
                             username: entry.hacker_id || 'UNKNOWN_ID',
@@ -197,6 +216,7 @@ export default function LeaderboardPanel() {
         subTabs = [
             { id: 'tot_kills', label: 'TOTAL KILLS' },
             { id: 'tot_runs', label: 'TOTAL RUNS' },
+            { id: 'max_xp', label: 'HIGHEST XP' },
             { id: 'tot_deaths', label: 'TOTAL DEATHS' }
         ];
     } else if (activeMode === 'ghost') {

@@ -211,6 +211,7 @@ export default function RunTracker() {
                         total_runs: (profile.total_runs || 0) + 1,
                         total_deaths: (profile.total_deaths || 0) + 1, // Assumes every run ends in death/completion
                         total_kills: (profile.total_kills || 0) + submission.session_kills,
+                        max_xp: Math.max(profile.max_xp || 0, gameState.xp || 0),
                         deepest_dives: currentDives,
                         lifetime_kills: currentLifetimeKills,
                         unlocked_fragments: mergedFragments
