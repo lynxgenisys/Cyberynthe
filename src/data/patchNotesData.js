@@ -1,5 +1,17 @@
 export const patchNotes = [
     {
+        version: "v0.14.20",
+        date: "2026-05-31",
+        categories: {
+            "UI (Main Menu)": [
+                "Grouped the RESUME_PREVIOUS_RUN button and L2 Cache data into a stylized box container for better visibility.",
+                "Expanded the width of the L2 Cache box to precisely match the width of the Resume button.",
+                "Increased the font size of the L2 Cache text to closely match the button text size.",
+                "Fixed a responsive scaling bug on mobile where the Resume button was not properly scaling down to match the Initialize button."
+            ]
+        }
+    },
+    {
         version: "v0.14.19",
         date: "2026-05-31",
         categories: {

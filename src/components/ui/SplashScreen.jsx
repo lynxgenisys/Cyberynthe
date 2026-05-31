@@ -166,15 +166,15 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
 
             <div className="action-buttons">
                 {hasSave && (
-                    <div className="flex flex-col items-center">
-                        <button className="resume-btn" onClick={() => {
+                    <div className="resume-container flex flex-col items-stretch justify-center border-2 border-cyan/40 bg-black/60 shadow-[0_0_20px_rgba(0,255,255,0.15)] p-4 md:p-8 w-full max-w-2xl mx-auto mb-6">
+                        <button className="resume-btn !mb-0 w-full" onClick={() => {
                             onResume();
                         }}>
                             RESUME_PREVIOUS_RUN
                         </button>
-                        <div className="bg-black/50 border border-cyan/30 p-2 text-xs font-mono mb-4 w-full max-w-[400px]">
-                            <div className="text-cyan mb-1 font-bold text-center">» ACTIVE_LCACHE_DATA</div>
-                            <div className="flex justify-center gap-x-4 text-gray-300">
+                        <div className="bg-black/50 border border-cyan/30 p-4 mt-6 text-base md:text-xl font-mono text-center w-full">
+                            <div className="text-cyan mb-2 font-bold tracking-widest uppercase">» ACTIVE_LCACHE_DATA</div>
+                            <div className="flex justify-center gap-x-6 md:gap-x-12 text-gray-300">
                                 <span>MODE: <span className="text-white">{(hasSave.gameState?.gameMode || 'NORMAL').toUpperCase()}</span></span>
                                 <span>LVL: <span className="text-white">{hasSave.gameState?.floorLevel || 1}</span></span>
                                 <span>XP: <span className="text-white">{hasSave.gameState?.xp || 0}</span></span>
@@ -188,7 +188,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                 </button>
             </div>
 
-            <div className="splash-version">v0.14.19 | SWARM_PROTOCOL</div>
+            <div className="splash-version">v0.14.20 | SWARM_PROTOCOL</div>
         </div>
     );
 
