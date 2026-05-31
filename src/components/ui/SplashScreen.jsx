@@ -66,10 +66,10 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
         // Attempt Fullscreen & Landscape Lock for Mobile
         try {
             if (document.documentElement.requestFullscreen) {
-                await document.documentElement.requestFullscreen();
+                document.documentElement.requestFullscreen().catch(err => console.warn(err));
             }
             if (window.screen && window.screen.orientation && window.screen.orientation.lock) {
-                await window.screen.orientation.lock('landscape');
+                window.screen.orientation.lock('landscape').catch(err => console.warn(err));
             }
         } catch (err) {
             console.warn("Fullscreen/Orientation lock failed or unsupported:", err);
@@ -123,7 +123,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                         className="flex flex-col items-center justify-center border-2 border-magenta text-magenta px-10 py-5 hover:bg-magenta hover:text-black transition-all font-mono bg-black/50 backdrop-blur-sm shadow-[0_0_20px_rgba(234,0,255,0.4)]"
                         onClick={(e) => { e.stopPropagation(); setWelcomeDismissed(true); }}
                     >
-                        <span className="text-2xl font-bold mb-2">[ ENTER THE LABYRINTH! ]</span>
+                        <span className="text-2xl font-bold mb-2">ENTER THE LABYRINTH!</span>
                         <span className="text-sm animate-pulse-color-cycle">(Click, Or press F key to continue)</span>
                     </button>
                 </div>
@@ -176,29 +176,29 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
 
             <div className="action-buttons">
                 {hasSave && (
-                    <button className="resume-btn" onClick={async () => {
+                    <button className="resume-btn" onClick={() => {
                         try {
                             if (document.documentElement.requestFullscreen) {
-                                await document.documentElement.requestFullscreen();
+                                document.documentElement.requestFullscreen().catch(e => console.warn(e));
                             }
                             if (window.screen && window.screen.orientation && window.screen.orientation.lock) {
-                                await window.screen.orientation.lock('landscape');
+                                window.screen.orientation.lock('landscape').catch(e => console.warn(e));
                             }
                         } catch (err) {
                             console.warn("Fullscreen/Orientation lock failed or unsupported:", err);
                         }
                         onResume();
                     }}>
-                        [ RESUME_SESSION ]
+                        RESUME_SESSION
                     </button>
                 )}
 
                 <button className="initialize-btn" onClick={handleStart}>
-                    [ INITIALIZE_NEW_RUN ]
+                    INITIALIZE_NEW_RUN
                 </button>
             </div>
 
-            <div className="splash-version">v0.14.14 | SWARM_PROTOCOL</div>
+            <div className="splash-version">v0.14.15 | SWARM_PROTOCOL</div>
         </div>
     );
 
@@ -242,19 +242,19 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                     className="nav-tab text-cyan-500 hover:text-cyan-400 border-cyan-900/30"
                     onClick={cycleTrack}
                 >
-                    [ NEXT_TRACK ]
+                    NEXT_TRACK
                 </button>
                 <button
                     className={`nav-tab border-cyan-900/30 ${isMuted ? 'text-gray-500' : 'text-cyan-500'}`}
                     onClick={toggleMute}
                 >
-                    [ {isMuted ? 'UNMUTE' : 'MUTE'} ]
+                    {isMuted ? 'UNMUTE' : 'MUTE'}
                 </button>
                 <button
                     className="nav-tab text-red-500 hover:text-red-400 border-red-900/30"
                     onClick={handleLogout}
                 >
-                    [ LOGOUT ]
+                    LOGOUT
                 </button>
             </div>
 

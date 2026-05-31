@@ -20,12 +20,12 @@ const Button = ({ label, onClick, disabled, color = 'cyan' }) => (
         disabled={disabled}
         className={`w-full border border-${color} text-${color} py-2 hover:bg-${color} hover:text-black transition-all font-bold tracking-widest uppercase disabled:opacity-50 disabled:cursor-wait`}
     >
-        {disabled ? '[ PROCESSING... ]' : `[ ${label} ]`}
+        {disabled ? 'PROCESSING...' : label}
     </button>
 );
 
 const BackBtn = ({ onClick }) => (
-    <button type="button" onClick={onClick} className="text-gray-500 hover:text-white text-xs mt-4 underline">[BACK_TO_ROOT]</button>
+    <button type="button" onClick={onClick} className="text-gray-500 hover:text-white text-xs mt-4 underline">BACK_TO_ROOT</button>
 );
 
 /**

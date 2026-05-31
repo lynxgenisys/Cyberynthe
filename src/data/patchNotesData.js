@@ -1,5 +1,16 @@
 export const patchNotes = [
     {
+        version: "v0.14.15",
+        date: "2026-05-31",
+        categories: {
+            "Fixed": [
+                "UI: Removed all bracket styling [ ] around buttons across the entire UI to prevent text wrapping onto separate lines on mobile.",
+                "Engine: Fixed an issue causing a black screen when starting a run on some mobile browsers by making the fullscreen requests non-blocking.",
+                "UI (Ledger): Scaled down the Leaderboard (Ledger) elements by another 20% on mobile screens for better readability."
+            ]
+        }
+    },
+    {
         version: "v0.14.14",
         date: "2026-05-31",
         categories: {

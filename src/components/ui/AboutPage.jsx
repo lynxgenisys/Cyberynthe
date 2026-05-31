@@ -90,7 +90,7 @@ const AboutPage = () => {
                                       category === 'Changed' ? 'text-yellow-500 border-yellow-500/30' : 
                                       'text-blue-400 border-blue-400/30'}`}
                                 >
-                                    [{category}]
+                                    {category}
                                 </h4>
                                 <ul className="list-disc pl-5 space-y-1">
                                     {items.map((item, i) => (
@@ -108,7 +108,7 @@ const AboutPage = () => {
     return (
         <div className="w-full h-full flex flex-col p-8 text-cyan bg-black/80 font-mono overflow-y-auto">
             <div className="flex justify-between items-end mb-6 border-b border-cyan/30 pb-4">
-                <h1 className="text-4xl font-bold text-magenta glitch-text">[ CYBERYNTHE v0.14.14 ]</h1>
+                <h1 className="text-4xl font-bold text-magenta glitch-text">CYBERYNTHE v0.14.15</h1>
                 
                 <div className="flex gap-4">
                     <button 

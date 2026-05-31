@@ -106,7 +106,7 @@ export default function CyberdeckUI({ onClose }) {
                 <div className="flex justify-between items-end border-b border-cyan/30 pb-4 mb-6">
                     <div className="flex items-center gap-6">
                         <div>
-                            <h2 className="text-3xl font-bold text-cyan glitch-text">CYBERDECK_OS v0.14.14</h2>
+                            <h2 className="text-3xl font-bold text-cyan glitch-text">CYBERDECK_OS v0.14.15</h2>
                             <div className="text-sm text-gray-400">ID: {gameState.playerName} // STATUS: ACTIVE</div>
                         </div>
                         <div className="flex gap-2 ml-4">
@@ -162,9 +162,9 @@ export default function CyberdeckUI({ onClose }) {
                             }}
                             className="text-red-500 hover:text-white font-mono text-lg border border-red-900/50 px-3 hover:bg-red-600/20 transition-all"
                         >
-                            [EXIT_RUN]
+                            EXIT_RUN
                         </button>
-                        <button onClick={onClose} className="text-magenta hover:text-white font-mono text-lg">[CLOSE_DECK]</button>
+                        <button onClick={onClose} className="text-magenta hover:text-white font-mono text-lg">CLOSE_DECK</button>
                     </div>
                 </div>
 
@@ -203,7 +203,7 @@ export default function CyberdeckUI({ onClose }) {
                                 onClick={cycleNavMode}
                                 className="bg-cyan/10 text-cyan text-xs px-3 py-1 hover:bg-cyan hover:text-black font-bold border border-cyan transition-colors"
                             >
-                                [CYCLE]
+                                CYCLE
                             </button>
                         </div>
 
@@ -231,9 +231,9 @@ export default function CyberdeckUI({ onClose }) {
                                 onUpgrade={() => upgradeStat('mRam')}
                                 color="magenta"
                             />
-                            {/* CLOCK SPEED */}
+                            {/* LOCAL_CACHE */}
                             <StatRow
-                                label="[CLOCK_CYCLE]"
+                                label="LOCAL_CACHE"
                                 value={displayClockSpeed + '%'}
                                 upgraded={speedBuff > 0 || (playerState.hardwareBonuses?.clock || 0) > 0}
                                 onUpgrade={() => handleUpgrade('clock')}
@@ -256,7 +256,7 @@ export default function CyberdeckUI({ onClose }) {
                     <div className={`${mobileTab === 'equipped' ? 'flex' : 'hidden'} md:flex flex-1 flex-col items-center justify-center gap-8 md:gap-12 overflow-y-auto py-4`}>
                         {/* ACTIVE THREADS (HOTKEYS) */}
                         <div>
-                            <h3 className="text-sm text-center text-magenta font-mono mb-4 tracking-[0.2em]">[ACTIVE_THREADS // HOTKEYS]</h3>
+                            <h3 className="text-sm text-center text-magenta font-mono mb-4 tracking-[0.2em]">ACTIVE_THREADS // HOTKEYS</h3>
                             <div className="flex flex-wrap justify-center gap-4 md:gap-8">
                                 {gameState.inventorySlots.map((slot, i) => (
                                     <div
@@ -392,7 +392,7 @@ export default function CyberdeckUI({ onClose }) {
                                     onClick={cycleNavMode}
                                     className="border border-cyan text-cyan px-4 py-1 hover:bg-cyan hover:text-black transition-colors"
                                 >
-                                    [{gameState.navSettings.mode}]
+                                    {gameState.navSettings.mode}
                                 </button>
                             </div>
                             <p className="text-xs text-gray-500 mt-2">

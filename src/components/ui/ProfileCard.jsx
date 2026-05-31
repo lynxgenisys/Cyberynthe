@@ -228,7 +228,7 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
                         className="absolute top-2 right-4 text-cyan hover:text-white"
                         onClick={() => setSelectedLore(null)}
                     >
-                        [ CLOSE ]
+                        CLOSE
                     </button>
                     <h3 className="text-xl text-cyan mb-4">{selectedLore.title}</h3>
                     <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
@@ -266,7 +266,7 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
                     onClick={onClose}
                     className="absolute top-2 right-4 text-cyan hover:text-white z-10"
                 >
-                    [X]
+                    X
                 </button>
             )}
 
@@ -276,14 +276,14 @@ export default function ProfileCard({ targetUserId = null, targetUsername = null
                     className={`px-3 py-1 text-xs font-bold border transition-colors ${activeTab === 'dossier' ? 'border-cyan bg-cyan text-black' : 'border-cyan/30 text-cyan hover:bg-cyan/20'}`}
                     onClick={() => setActiveTab('dossier')}
                 >
-                    [ DOSSIER ]
+                    DOSSIER
                 </button>
                 {!targetUserId && (
                     <button 
                         className={`px-3 py-1 text-xs font-bold border transition-colors ${activeTab === 'lore' ? 'border-magenta bg-magenta text-black' : 'border-magenta/30 text-magenta hover:bg-magenta/20'}`}
                         onClick={() => setActiveTab('lore')}
                     >
-                        [ SYSTEM_ARCHIVE ]
+                        SYSTEM_ARCHIVE
                     </button>
                 )}
             </div>
