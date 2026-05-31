@@ -599,7 +599,7 @@ export default function MobManager({ maze, floorLevel }) {
             const emptyTiles = [];
             for (let z = 0; z < maze.height; z++) {
                 for (let x = 0; x < maze.width; x++) {
-                    if (maze.grid[z][x] === 0) {
+                    if (maze.grid[z][x] === 1) {
                         if (x < bossRoomStartX || x >= bossRoomEndX || z < bossRoomStartZ || z >= bossRoomEndZ) {
                             emptyTiles.push({x, z});
                         }
