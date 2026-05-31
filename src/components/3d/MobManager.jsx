@@ -678,8 +678,8 @@ export default function MobManager({ maze, floorLevel }) {
                     }
 
                     // INFECTION SPREAD (Continuous jump chance while alive)
-                    if (Math.random() < 0.1 * delta) {
-                        const jumpRange = 3 + (playerLevel * 0.2);
+                    if (Math.random() < 2.0 * delta) {
+                        const jumpRange = 6 + (playerLevel * 0.5);
                         const jumpRangeSq = jumpRange * jumpRange;
 
                         currentMobs.forEach((target, j) => {
@@ -687,7 +687,7 @@ export default function MobManager({ maze, floorLevel }) {
                                 const dx = mob.x - target.x;
                                 const dz = mob.z - target.z;
                                 if (dx * dx + dz * dz < jumpRangeSq) {
-                                    const jumpChance = 0.05 + (playerLevel * 0.01);
+                                    const jumpChance = 0.35 + (playerLevel * 0.05);
                                     if (Math.random() < jumpChance) {
                                         target.isHacked = true;
                                         target.hackTimer = 3.0 + (playerLevel * 0.2);
@@ -709,9 +709,9 @@ export default function MobManager({ maze, floorLevel }) {
 
                 // SHRED v2 DEATH JUMP - Worm jumps to nearest mob on host death
                 if (mob.currentHp <= 0 && mob.isHacked && mob.wasAliveLastFrame) {
-                    const deathJumpChance = 0.15 + (playerLevel * 0.01); // 15% + 1% per level
+                    const deathJumpChance = 0.85 + (playerLevel * 0.05); // 85% base chance to jump on death
                     if (Math.random() < deathJumpChance) {
-                        const jumpRange = 3 + (playerLevel * 0.2);
+                        const jumpRange = 8 + (playerLevel * 0.5);
                         const jumpRangeSq = jumpRange * jumpRange;
 
                         let nearestTarget = null;
@@ -1314,7 +1314,22 @@ export default function MobManager({ maze, floorLevel }) {
 
                 addNotification(`ENTITY_PURGED: ${mob.name} +${rewardXP} XP`);
                 if (mob.id === 'IO_SENTINEL') { setBossSubtitle("REBOOT_ABORTED.", 3000); setBossKey({ x: mob.x, z: mob.z }); updateBossStatus({ active: false }); }
-                if (mob.id === 'BYTE_MOTHER') { addNotification("BYTE_MOTHER_PURGED"); updateBossStatus({ active: false }); }
+                if (mob.id === 'BYTE_MOTHER') { 
+                    addNotification("BYTE_MOTHER_PURGED"); 
+                    setBossKey({ x: mob.x, z: mob.z });
+                    updateBossStatus({ active: false }); 
+
+                    // Drop Lore Fragment 2 directly at boss location
+                    sparksRef.current.push({
+                        id: Math.random().toString(),
+                        x: mob.x + 2,
+                        z: mob.z,
+                        dropType: 'Lore',
+                        fragmentId: 2,
+                        isSpecial: false
+                    });
+                    setSparks([...sparksRef.current]);
+                }
             }
 
             if (gameState.lastScanTime && (Date.now() - gameState.lastScanTime) / 1000 < 3.0) {
@@ -1545,6 +1560,16 @@ export default function MobManager({ maze, floorLevel }) {
                         setGameState(prev => ({ ...prev, hasUnlockedDoT: true }));
                         addNotification("LOGIC_SHARD_ACQUIRED: BIT_FLIP_DOT_UNLOCKED", "#EA00FF");
                         playSFX('powerup');
+                    } else if (spark.dropType === 'Lore') {
+                        setGameState(prev => {
+                            const current = prev.collectedFragments || [];
+                            if (!current.includes(spark.fragmentId)) {
+                                return { ...prev, collectedFragments: [...current, spark.fragmentId] };
+                            }
+                            return prev;
+                        });
+                        addNotification(`ARCHIVE FRAGMENT [${spark.fragmentId}] RECOVERED`, "#FFAA00");
+                        playSFX('powerup');
                     } else if (spark.dropType === 'FullRecovery') {
                         healKernel(100);
                         restoreRam(100);
@@ -1712,6 +1737,7 @@ export default function MobManager({ maze, floorLevel }) {
                     isFullRecovery={s.dropType === 'FullRecovery'}
                     color={
                         s.isSpecial ? "#EA00FF" : 
+                        s.dropType === 'Lore' ? "#FFAA00" :
                         s.dropType === 'FullRecovery' ? "#00FFAA" : 
                         s.dropType === 'mRAM' ? "#AA00FF" : 
                         s.dropType === 'Integrity' ? "#0088FF" : 
