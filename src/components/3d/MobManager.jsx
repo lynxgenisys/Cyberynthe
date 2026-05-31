@@ -531,6 +531,8 @@ export default function MobManager({ maze, floorLevel }) {
                     if (mite) newMobs.push({ ...mite, instanceId: Math.random(), x: endX + (Math.random()-0.5)*4, z: endZ + (Math.random()-0.5)*4 });
                 }
             }
+        }
+        if (floorLevel !== 999) {
             deadEnds.forEach(pos => {
                 const rand = Math.random();
                 let type = 'BIT_MITE';
@@ -654,20 +656,19 @@ export default function MobManager({ maze, floorLevel }) {
                 if (mob.isHacked) {
                     if (!gameState.hasUnlockedDoT) {
                         mob.isHacked = false;
-                        return;
-                    }
+                    } else {
+                        mob.hackTimer -= delta;
 
-                    mob.hackTimer -= delta;
+                        // Initialize damage tick tracker
+                        if (!mob.hackDamageTick) mob.hackDamageTick = 0;
+                        mob.hackDamageTick += delta;
 
-                    // Initialize damage tick tracker
-                    if (!mob.hackDamageTick) mob.hackDamageTick = 0;
-                    mob.hackDamageTick += delta;
+                        // Damage per tick: 4 + 0.2 per level (Bosses take +1% max HP true damage)
+                        let tickDamage = 4 + (playerLevel * 0.2);
+                        if (mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER') tickDamage += (mob.maxHp * 0.01);
 
-                    // Damage per tick: 4 + 0.2 per level
-                    let tickDamage = 4 + (playerLevel * 0.2);
-
-                    // Tick timing: 2s at level 1, -0.1s per level (minimum 0.5s)
-                    const tickInterval = Math.max(0.5, 2.0 - (playerLevel * 0.1));
+                        // Tick timing: 2s at level 1, -0.1s per level (minimum 0.5s)
+                        const tickInterval = Math.max(0.5, 2.0 - (playerLevel * 0.1));
 
                     //Apply damage on tick (not continuous DPS)
                     if (mob.hackDamageTick >= tickInterval) {
@@ -699,9 +700,10 @@ export default function MobManager({ maze, floorLevel }) {
                         });
                     }
 
-                    if (mob.hackTimer <= 0) {
-                        mob.isHacked = false;
-                        mob.hackDamageTick = 0;
+                        if (mob.hackTimer <= 0) {
+                            mob.isHacked = false;
+                            mob.hackDamageTick = 0;
+                        }
                     }
                 }
 
@@ -1120,7 +1122,7 @@ export default function MobManager({ maze, floorLevel }) {
                 }
 
                 // Minion summoning (Phase 2) - DISABLED IN BESTIARY
-                if (mob.phase === 2 && floorLevel !== 999) {
+                if (mob.id === 'IO_SENTINEL' && mob.phase === 2 && floorLevel !== 999) {
                     mob.summonTimer = (mob.summonTimer || 0) - delta;
                     if (mob.summonTimer <= 0) {
                         mob.summonTimer = 25.0; // Every 25 seconds
@@ -1139,6 +1141,34 @@ export default function MobManager({ maze, floorLevel }) {
                             });
                         }
                         mobsDirty = true;
+                    }
+                }
+                
+                // 3. BYTE_MOTHER: Minion Summoning
+                if (mob.id === 'BYTE_MOTHER' && floorLevel !== 999) {
+                    mob.summonTimer = (mob.summonTimer || 0) - delta;
+                    
+                    if (mob.summonTimer <= 0 && mob.aggroActive) {
+                        mob.summonTimer = 15.0; // Faster spawns
+                        mob.bossState = 'SPAWNING';
+                        const count = 3 + Math.floor(Math.random() * 4); // 3 to 6
+                        setBossSubtitle(`SPAWNING_BIT_MITES... [${count}_ANOMALIES]`, 3000);
+
+                        for (let k = 0; k < count; k++) {
+                            const m = MobLogic.createMob('BIT_MITE', floorLevel);
+                            spawnQueue.current.push({
+                                ...m,
+                                instanceId: Math.random(),
+                                x: mob.x + (Math.random() - 0.5) * 12,
+                                z: mob.z + (Math.random() - 0.5) * 12
+                            });
+                        }
+                        mobsDirty = true;
+                    }
+                    
+                    // Reset boss state quickly after spawning animation
+                    if (mob.bossState === 'SPAWNING' && mob.summonTimer < 14.0) {
+                        mob.bossState = 'IDLE';
                     }
                 }
 
