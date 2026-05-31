@@ -1,5 +1,24 @@
 export const patchNotes = [
     {
+        version: "v0.14.4",
+        date: "2026-05-31",
+        categories: {
+            "Added": [
+                "Cyber-Chitin Texture: The Byte Mother now features a dark metallic hexagonal carapace skin inspired by synthetic armored chitin with blue energy veins.",
+                "Floor 20 Swarm: 1-2 Bit Mites now spawn at every corner and intersection throughout the maze corridors on Floor 20.",
+                "Floor 20 Sentries: Stateless Sentries now guard every dead end in the Floor 20 labyrinth."
+            ],
+            "Changed": [
+                "Byte Mother: Reduced to 60% of previous size for better visual proportions.",
+                "Byte Mother: Now features a dark gunmetal-blue metallic material with higher metalness and lower roughness for a premium armored look."
+            ],
+            "Fixed": [
+                "M-RAM Injectors: Fixed a critical bug where using an MRAM Injector was also restoring Integrity/HP. Injectors now ONLY affect MRAM as intended.",
+                "Mob Spawning: Bit Mites and Sentries on Floor 20 now correctly spawn throughout the maze corridors instead of clustering inside the boss chamber."
+            ]
+        }
+    },
+    {
         version: "v0.14.2",
         date: "2026-05-31",
         categories: {

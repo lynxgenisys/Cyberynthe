@@ -582,6 +582,12 @@ export default function MobManager({ maze, floorLevel }) {
             if (boss) { newMobs.push({ ...boss, instanceId: Math.random(), x: 30, z: 30, phase: 1, aggroActive: false }); }
         } else if (floorLevel === 20) {
             const boss = MobLogic.createMob('BYTE_MOTHER', floorLevel);
+            // Define boss room bounds to exclude from mob spawning
+            const bossRoomStartX = Math.floor(maze.width / 2) - 7;
+            const bossRoomEndX = bossRoomStartX + 15;
+            const bossRoomStartZ = 6;
+            const bossRoomEndZ = bossRoomStartZ + 15;
+
             if (boss) {
                 // Boss is at center of 15x15 room at top of maze
                 const startX = Math.floor(maze.width / 2);
@@ -589,8 +595,11 @@ export default function MobManager({ maze, floorLevel }) {
                 newMobs.push({ ...boss, instanceId: Math.random(), x: startX * 2, z: startY * 2, phase: 1, aggroActive: false });
             }
             
-            // Spawn 1-2 Bit Mites at every corner and intersection
-            cornersAndIntersections.forEach(pos => {
+            // Spawn 1-2 Bit Mites at every corner and intersection OUTSIDE the boss room
+            const mazeCorners = cornersAndIntersections.filter(pos =>
+                pos.x < bossRoomStartX || pos.x >= bossRoomEndX || pos.z < bossRoomStartZ || pos.z >= bossRoomEndZ
+            );
+            mazeCorners.forEach(pos => {
                 const numMites = Math.floor(Math.random() * 2) + 1; // 1 to 2
                 for (let i = 0; i < numMites; i++) {
                     const mite = MobLogic.createMob('BIT_MITE', floorLevel);
@@ -605,8 +614,11 @@ export default function MobManager({ maze, floorLevel }) {
                 }
             });
             
-            // Sentries in dead ends
-            deadEnds.forEach(pos => {
+            // Sentries in dead ends OUTSIDE the boss room
+            const mazeDeadEnds = deadEnds.filter(pos =>
+                pos.x < bossRoomStartX || pos.x >= bossRoomEndX || pos.z < bossRoomStartZ || pos.z >= bossRoomEndZ
+            );
+            mazeDeadEnds.forEach(pos => {
                 const mob = MobLogic.createMob('STATELESS_SENTRY', floorLevel);
                 if (mob) {
                     newMobs.push({ ...mob, instanceId: Math.random(), x: pos.x * 2, z: pos.z * 2, isStationary: true });
@@ -705,7 +717,7 @@ export default function MobManager({ maze, floorLevel }) {
                 const posArr = mobPositionBuffer.current;
                 posArr[i * 3] = mob.x;
                 // Accurate Y-pos for hit detection: Wisp higher (3.5), Sentry mid (2.5), Boss core (3.5)
-                const mobY = (mob.id === 'NULL_WISP' ? 3.5 : (mob.id === 'IO_SENTINEL') ? 3.5 : (mob.id === 'BYTE_MOTHER') ? 4.5 : mob.id === 'STATELESS_SENTRY' ? 2.5 : 1.0);
+                const mobY = (mob.id === 'NULL_WISP' ? 3.5 : (mob.id === 'IO_SENTINEL') ? 3.5 : (mob.id === 'BYTE_MOTHER') ? 2.5 : mob.id === 'STATELESS_SENTRY' ? 2.5 : 1.0);
                 posArr[i * 3 + 1] = mobY;
                 posArr[i * 3 + 2] = mob.z;
                 mobLifeBuffer.current[i] = mob.currentHp / mob.maxHp;

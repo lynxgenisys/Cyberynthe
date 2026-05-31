@@ -2,23 +2,24 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGame } from '../../context/GameContext';
-import biteMiteSkinSrc from '../../assets/mobs/Bite_Mite_Skin.webp';
+import cyberChitinSkinSrc from '../../assets/mobs/cyber_chitin_skin.png';
 
 export default function ByteMotherBoss({ mob }) {
     const groupRef = useRef();
     const bodyRef = useRef();
     const headRef = useRef();
     const legsRef = useRef([]);
-    const [miteTex, setMiteTex] = useState(null);
+    const [chitinTex, setChitinTex] = useState(null);
 
     useEffect(() => {
         const loader = new THREE.TextureLoader();
-        loader.load(biteMiteSkinSrc, (tex) => {
+        loader.load(cyberChitinSkinSrc, (tex) => {
             tex.colorSpace = THREE.SRGBColorSpace;
             tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-            tex.minFilter = THREE.NearestFilter;
-            tex.magFilter = THREE.NearestFilter;
-            setMiteTex(tex);
+            tex.repeat.set(2, 2);
+            tex.minFilter = THREE.LinearFilter;
+            tex.magFilter = THREE.LinearFilter;
+            setChitinTex(tex);
         });
     }, []);
 
@@ -26,12 +27,12 @@ export default function ByteMotherBoss({ mob }) {
         if (!groupRef.current) return;
 
         // Sync position & rotation from mob state
-        groupRef.current.position.set(mob.x, 1.5, mob.z); // Put it on the floor (radius ~1.5)
+        groupRef.current.position.set(mob.x, 1.0, mob.z); // On the floor
         groupRef.current.rotation.y = mob.rotationY || 0;
 
-        // Hover animation (removed/reduced so it stays on floor)
+        // Hover animation (reduced so it stays on floor)
         const time = state.clock.elapsedTime * 2.0; // 200% animation speed
-        groupRef.current.position.y = 1.5 + Math.sin(time * 5.0) * 0.02; // Very subtle wiggle
+        groupRef.current.position.y = 1.0 + Math.sin(time * 5.0) * 0.02; // Very subtle wiggle
 
         // Body pulsing/rotation
         if (bodyRef.current) {
@@ -57,8 +58,8 @@ export default function ByteMotherBoss({ mob }) {
     });
 
     const isVulnerable = mob.isVulnerable;
-    const bodyColor = isVulnerable ? "#FFFF00" : "#88AA00";
-    const emissiveColor = isVulnerable ? "#FFFF00" : "#445500";
+    const bodyColor = isVulnerable ? "#FFFF00" : "#2A3A4A";
+    const emissiveColor = isVulnerable ? "#FFFF00" : "#0A1520";
 
     // 6 legs spread around (Attached to middle of body, 50% height)
     const legs = [];
@@ -68,25 +69,25 @@ export default function ByteMotherBoss({ mob }) {
             <group key={`leg-${i}`} rotation={[0, angle, 0]} position={[0, 0, 0]}>
                 <mesh ref={el => legsRef.current[i] = el} position={[2.5, -0.5, 0]} rotation={[0, 0, Math.PI / 4]}>
                     <cylinderGeometry args={[0.6, 0.3, 3.5, 8]} />
-                    <meshStandardMaterial color="#444422" emissive="#222200" emissiveIntensity={0.5} />
+                    <meshStandardMaterial map={chitinTex} color="#3A4A5A" emissive="#0A1828" emissiveIntensity={0.3} metalness={0.6} roughness={0.4} />
                 </mesh>
             </group>
         );
     }
 
     return (
-        <group ref={groupRef} scale={2.0}>
+        <group ref={groupRef} scale={1.2}>
             {/* BODY (Flattened D20) */}
             <mesh ref={bodyRef} scale={[2.0, 1.4, 2.0]} position={[0, 0, 0]}>
-                <icosahedronGeometry args={[1.5, 0]} />
-                <meshStandardMaterial map={miteTex} color={miteTex ? (isVulnerable ? "#FFFF00" : "#FFFFFF") : bodyColor} emissive={miteTex ? (isVulnerable ? "#444400" : "#000000") : emissiveColor} emissiveIntensity={isVulnerable ? 1.0 : 0.2} wireframe={false} metalness={0.2} roughness={0.8} />
-                <pointLight position={[0, 2, 0]} intensity={2.0} distance={10} color="#FFFF00" />
+                <icosahedronGeometry args={[1.5, 1]} />
+                <meshStandardMaterial map={chitinTex} color={isVulnerable ? "#FFFF00" : "#8899AA"} emissive={isVulnerable ? "#444400" : "#0A2040"} emissiveIntensity={isVulnerable ? 1.0 : 0.4} wireframe={false} metalness={0.7} roughness={0.3} />
+                <pointLight position={[0, 2, 0]} intensity={1.5} distance={8} color={isVulnerable ? "#FFFF00" : "#2244AA"} />
             </mesh>
 
             {/* HEAD (Inverted Pyramid = Tetrahedron) */}
             <mesh ref={headRef} position={[0, 0, 1.2 * 2.0]} rotation={[Math.PI, 0, 0]}>
                 <tetrahedronGeometry args={[0.7 * 2.0, 0]} />
-                <meshStandardMaterial color="#88AA00" emissive="#445500" emissiveIntensity={0.8} metalness={0.2} />
+                <meshStandardMaterial map={chitinTex} color="#6688AA" emissive={isVulnerable ? "#444400" : "#0A1828"} emissiveIntensity={0.6} metalness={0.7} roughness={0.3} />
             </mesh>
 
             {/* LEGS */}
