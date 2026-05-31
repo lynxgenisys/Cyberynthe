@@ -109,20 +109,14 @@ export default function ProjectileSystem() {
             const gx = Math.round(px / 2), gz = Math.round(pz / 2);
             if (gameState.mazeGrid && gx >= 0 && gx < gameState.mazeWidth && gz >= 0 && gz < gameState.mazeHeight) {
                 if (gameState.mazeGrid[gz][gx] === 0) {
-                    lArr[i] = 0;
-                    const impactColor = (tArr[i] === 1 && playerLevel >= 5) ? '#00FF00' : (tArr[i] === 1 ? '#EA00FF' : '#00FFFF');
-                    triggerImpact({ x: px, y: py, z: pz }, impactColor);
-                    playSFX('miss');
+                    lArr[i] = 0; // Silently kill projectile - no impact VFX on miss
                     continue;
                 }
             }
 
             // COLLISION: FLOOR
             if (py <= 0.2) {
-                lArr[i] = 0;
-                const impactColor = (tArr[i] === 1 && playerLevel >= 5) ? '#00FF00' : (tArr[i] === 1 ? '#EA00FF' : '#00FFFF');
-                triggerImpact({ x: px, y: 0, z: pz }, impactColor);
-                playSFX('miss');
+                lArr[i] = 0; // Silently kill projectile - no impact VFX on miss
                 continue;
             }
 

@@ -1,5 +1,14 @@
 export const patchNotes = [
     {
+        version: "v0.14.5",
+        date: "2026-05-31",
+        categories: {
+            "Changed": [
+                "Projectile Feedback: Shots that miss or hit a wall/floor no longer produce an impact splatter or burst VFX. Only confirmed hits on valid targets show impact particles and play the hit sound, making it immediately obvious when you're landing shots vs. missing."
+            ]
+        }
+    },
+    {
         version: "v0.14.4",
         date: "2026-05-31",
         categories: {
