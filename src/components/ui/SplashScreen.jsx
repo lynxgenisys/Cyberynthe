@@ -203,7 +203,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
     );
 
     return (
-        <div className="splash-screen max-md:scale-[0.15] max-md:origin-top-left max-md:transform-gpu max-md:h-[666%] max-md:w-[666%]">
+        <div className="splash-screen">
             <div className="splash-nav-tabs">
                 <button
                     className={`nav-tab ${activeTab === 'play' ? 'active' : ''}`}
