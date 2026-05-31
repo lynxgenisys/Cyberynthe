@@ -6,7 +6,7 @@ import { useGame } from '../../context/GameContext';
  * DIRECTIVE: Render Mini-Map / Tactical View with Fog of War
  */
 export const MiniMap = React.memo(() => {
-    const { gameState, discoveryRef, fastStateRef, revealMap, toggleTacticalView, playerRotationRef } = useGame();
+    const { gameState, discoveryRef, fastStateRef, revealMap, toggleTacticalView, playerRotationRef, triggerScan } = useGame();
     const canvasRef = useRef(null);
     const temporaryBlipsRef = useRef({}); // Fading blips (mobs)
     const permanentMarkersRef = useRef({}); // Permanent markers (caches, portals)
@@ -324,9 +324,9 @@ export const MiniMap = React.memo(() => {
             transition-all duration-300 ease-out
         `}>
             <div className={`
-                relative overflow-hidden border border-cyan/50 bg-black/90 shadow-[0_0_20px_rgba(0,255,255,0.2)]
+                relative overflow-hidden border border-cyan/50 bg-black/90 shadow-[0_0_20px_rgba(0,255,255,0.2)] pointer-events-auto cursor-pointer
                 ${isTactical ? 'w-[90vw] h-[90vh] rounded-lg' : 'w-48 h-48 rounded-full'}
-            `}>
+            `} onClick={() => { if (!isTactical && triggerScan) triggerScan(); }}>
                 <canvas
                     ref={canvasRef}
                     width={isTactical ? window.innerWidth * 0.9 : 200}

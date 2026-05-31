@@ -176,6 +176,70 @@ const BossBeam = ({ mob, maze }) => {
 
 // SentryBeam Component Removed - Migrated to InstancedMesh for stability
 
+const FlashLight = ({ position, color, onComplete }) => {
+    const ref = useRef();
+    useFrame((state, delta) => {
+        if (!ref.current) return;
+        ref.current.intensity -= delta * 15.0; // Rapid fade
+        if (ref.current.intensity <= 0) {
+            onComplete();
+        }
+    });
+    return <pointLight ref={ref} position={position} intensity={5.0} distance={5} color={color} />;
+};
+
+const LightFlashesSystem = ({ queueRef }) => {
+    const [flashes, setFlashes] = useState([]);
+    useFrame(() => {
+        if (queueRef.current && queueRef.current.length > 0) {
+            const newFlashes = [...queueRef.current];
+            queueRef.current = [];
+            setFlashes(prev => [...prev, ...newFlashes]);
+        }
+    });
+    return flashes.map(f => (
+        <FlashLight key={f.id} position={f.position} color={f.color} onComplete={() => setFlashes(prev => prev.filter(p => p.id !== f.id))} />
+    ));
+};
+
+const JumpSpark = ({ startX, startZ, endX, endZ, onComplete }) => {
+    const ref = useRef();
+    useFrame((state, delta) => {
+        if (!ref.current) return;
+        ref.current.userData.progress += delta * 3.0;
+        if (ref.current.userData.progress >= 1.0) {
+            if (onComplete) onComplete();
+        } else {
+            const p = ref.current.userData.progress;
+            const cx = startX + (endX - startX) * p;
+            const cz = startZ + (endZ - startZ) * p;
+            const cy = 1.0 + Math.sin(p * Math.PI) * 2.0;
+            ref.current.position.set(cx, cy, cz);
+        }
+    });
+    return (
+        <mesh ref={ref} userData={{ progress: 0 }} position={[startX, 1.0, startZ]}>
+            <sphereGeometry args={[0.2, 8, 8]} />
+            <meshBasicMaterial color="#00FF00" />
+            <pointLight color="#00FF00" intensity={2} distance={3} />
+        </mesh>
+    );
+};
+
+const JumpSparksSystem = ({ queueRef }) => {
+    const [jumps, setJumps] = useState([]);
+    useFrame(() => {
+        if (queueRef.current && queueRef.current.length > 0) {
+            const newJumps = [...queueRef.current];
+            queueRef.current = [];
+            setJumps(prev => [...prev, ...newJumps]);
+        }
+    });
+    return jumps.map(j => (
+        <JumpSpark key={j.id} {...j} onComplete={() => setJumps(prev => prev.filter(p => p.id !== j.id))} />
+    ));
+};
+
 export default function MobManager({ maze, floorLevel }) {
     const [mobs, setMobs] = useState([]);
     const mobsRef = useRef([]);
@@ -186,6 +250,8 @@ export default function MobManager({ maze, floorLevel }) {
     const [bossKey, setBossKey] = useState(null);
     const [sparks, setSparks] = useState([]);
     const sparksRef = useRef([]);
+    const jumpSparkQueueRef = useRef([]);
+    const lightFlashQueueRef = useRef([]);
     const shardDroppedRef = useRef(false);
 
     const { gameState, setGameState, addNotification, setBossSubtitle, updateBossStatus, fastStateRef, getLevelFromXP, getNextLevelXP, setInteractionPrompt, updateScannedTargets, triggerCrit, consumeMobQueue, playerRotationRef } = useGame();
@@ -674,6 +740,7 @@ export default function MobManager({ maze, floorLevel }) {
                     if (mob.hackDamageTick >= tickInterval) {
                         mob.currentHp -= tickDamage;
                         triggerImpact({ x: mob.x, y: mobY, z: mob.z }, "#00FF00");
+                        if (lightFlashQueueRef.current) lightFlashQueueRef.current.push({ id: Math.random(), position: [mob.x, mobY, mob.z], color: "#00FF00" });
                         mob.hackDamageTick = 0;
                     }
 
@@ -693,6 +760,7 @@ export default function MobManager({ maze, floorLevel }) {
                                         target.hackTimer = 3.0 + (playerLevel * 0.2);
                                         target.hackDamageTick = 0;
                                         triggerImpact({ x: target.x, y: 1.0, z: target.z }, "#00FF00");
+                                        if (jumpSparkQueueRef.current) jumpSparkQueueRef.current.push({ id: Math.random(), startX: mob.x, startZ: mob.z, endX: target.x, endZ: target.z });
                                         addNotification("SHRED_v2 >> SPREAD");
                                     }
                                 }
@@ -734,6 +802,7 @@ export default function MobManager({ maze, floorLevel }) {
                             nearestTarget.hackTimer = 3.0 + (playerLevel * 0.2);
                             nearestTarget.hackDamageTick = 0;
                             triggerImpact({ x: nearestTarget.x, y: 1.0, z: nearestTarget.z }, "#00FF00");
+                            if (jumpSparkQueueRef.current) jumpSparkQueueRef.current.push({ id: Math.random(), startX: mob.x, startZ: mob.z, endX: nearestTarget.x, endZ: nearestTarget.z });
                             addNotification("SHRED_v2 >> WORM_JUMP");
                         }
                     }
@@ -1719,6 +1788,9 @@ export default function MobManager({ maze, floorLevel }) {
             {/* Boss Beam */}
             {mobs.map(m => m.id === 'IO_SENTINEL' && <BossBeam key={`bossbeam-${m.instanceId}`} mob={m} maze={maze} />)}
             {mobs.map(m => m.id === 'BYTE_MOTHER' && <ByteMotherBoss key={`BYTE_MOTHER-${m.instanceId}`} mob={m} />)}
+
+            <JumpSparksSystem queueRef={jumpSparkQueueRef} />
+            <LightFlashesSystem queueRef={lightFlashQueueRef} />
 
             {/* RESTORED: Dynamic PointLights for Firing Sentries (Flare Effect) */}
             {mobs.map(m => m.id === 'STATELESS_SENTRY' && m.attackState === 'FIRING' && (

@@ -1,13 +1,26 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGame } from '../../context/GameContext';
+import biteMiteSkinSrc from '../../assets/mobs/Bite_Mite_Skin.webp';
 
 export default function ByteMotherBoss({ mob }) {
     const groupRef = useRef();
     const bodyRef = useRef();
     const headRef = useRef();
     const legsRef = useRef([]);
+    const [miteTex, setMiteTex] = useState(null);
+
+    useEffect(() => {
+        const loader = new THREE.TextureLoader();
+        loader.load(biteMiteSkinSrc, (tex) => {
+            tex.colorSpace = THREE.SRGBColorSpace;
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            tex.minFilter = THREE.NearestFilter;
+            tex.magFilter = THREE.NearestFilter;
+            setMiteTex(tex);
+        });
+    }, []);
 
     useFrame((state, delta) => {
         if (!groupRef.current) return;
@@ -16,9 +29,9 @@ export default function ByteMotherBoss({ mob }) {
         groupRef.current.position.set(mob.x, 2.0, mob.z);
         groupRef.current.rotation.y = mob.rotationY || 0;
 
-        // Hover animation
+        // Hover animation (15% float height, 2.5x speed)
         const time = state.clock.elapsedTime;
-        groupRef.current.position.y = 2.0 + Math.sin(time * 2) * 0.3;
+        groupRef.current.position.y = 2.0 + Math.sin(time * 5.0) * 0.045;
 
         // Body pulsing/rotation
         if (bodyRef.current) {
@@ -47,14 +60,14 @@ export default function ByteMotherBoss({ mob }) {
     const bodyColor = isVulnerable ? "#FFFF00" : "#88AA00";
     const emissiveColor = isVulnerable ? "#FFFF00" : "#445500";
 
-    // 6 legs spread around
+    // 6 legs spread around (Attached to middle of body, 50% height)
     const legs = [];
     for (let i = 0; i < 6; i++) {
         const angle = (Math.PI * 2 / 6) * i;
         legs.push(
-            <group key={`leg-${i}`} rotation={[0, angle, 0]} position={[0, -0.5, 0]}>
-                <mesh ref={el => legsRef.current[i] = el} position={[1.5 * 2.0, 0, 0]} rotation={[0, 0, Math.PI / 4]}>
-                    <cylinderGeometry args={[0.45, 0.22, 9, 8]} />
+            <group key={`leg-${i}`} rotation={[0, angle, 0]} position={[0, 0, 0]}>
+                <mesh ref={el => legsRef.current[i] = el} position={[1.5, -1.0, 0]} rotation={[0, 0, Math.PI / 4]}>
+                    <cylinderGeometry args={[0.45, 0.22, 4.5, 8]} />
                     <meshStandardMaterial color="#444422" emissive="#222200" emissiveIntensity={0.5} />
                 </mesh>
             </group>
@@ -66,7 +79,7 @@ export default function ByteMotherBoss({ mob }) {
             {/* BODY (Flattened D20) */}
             <mesh ref={bodyRef} scale={[2.0, 1.4, 2.0]} position={[0, 0, 0]}>
                 <icosahedronGeometry args={[1.5, 0]} />
-                <meshStandardMaterial color={bodyColor} emissive={emissiveColor} emissiveIntensity={0.8} wireframe={false} metalness={0.2} roughness={0.8} />
+                <meshStandardMaterial map={miteTex} emissiveMap={miteTex} color={miteTex ? "#FFFFFF" : bodyColor} emissive={miteTex ? "#FFFFFF" : emissiveColor} emissiveIntensity={0.8} wireframe={false} metalness={0.2} roughness={0.8} />
                 <pointLight position={[0, 2, 0]} intensity={2.0} distance={10} color="#FFFF00" />
             </mesh>
             <mesh scale={[2.1, 1.5, 2.1]}>

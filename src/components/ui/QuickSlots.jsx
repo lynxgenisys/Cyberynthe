@@ -48,10 +48,11 @@ const QuickSlots = () => {
             left: '50%',
             transform: 'translateX(-50%)',
             display: 'flex',
-            gap: '12px',
+            gap: '10px',
             fontFamily: 'monospace',
             zIndex: 100
-        }}>
+        }}
+        className="max-md:scale-[0.40] max-md:origin-bottom">
             {slots.map((item, index) => (
                 <div
                     key={index}

@@ -1,6 +1,13 @@
 # CHANGELOG - CYBERYNTHE
 
 
+## [0.14.1] - 2026-05-30
+
+### Changed
+- **Mobile UI**: Heavily optimized mobile layouts. Reduced HUD and Cyberdeck UI sizes, decoupled joystick/swipe touches, and moved action buttons (Fire/Shred/Jump) to the bottom right.
+- **M-RAM Injectors**: Injectors now stack fully up to 999 in quick slots, and heal 40% over a smooth 3-second regen window instead of an instant burst.
+- **Byte-Mother Boss**: Improved animation to a scuttling hop, reduced leg height, and applied standard Bite-Mite textures.
+- **Shred v2 DoT Visuals**: Added flashing green light pulses on damage ticks, and physical green spark-jump arcs when the infection spreads to a new target.
 ## [0.14.0] - 2026-05-30
 
 ### Added

@@ -615,12 +615,37 @@ export const GameProvider = ({ children }) => {
                 break;
 
             case 'MRAM_INJECTOR':
-                // Standard Logic: Always Store, User chooses when to use.
-                if (inventoryAPI) {
-                    inventoryAPI.addItem(lootItem);
-                } else {
-                    addToInventory(lootItem);
-                }
+                setGameState(prev => {
+                    const slots = [...prev.inventorySlots];
+                    let added = false;
+                    
+                    if (lootItem.stackable) {
+                        for (let i = 0; i < slots.length; i++) {
+                            if (slots[i] && slots[i].type === lootItem.type) {
+                                slots[i] = { ...slots[i], count: Math.min(slots[i].count + (lootItem.count || 1), 999) };
+                                added = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (!added) {
+                        for (let i = 0; i < slots.length; i++) {
+                            if (!slots[i]) {
+                                slots[i] = { ...lootItem, count: lootItem.stackable ? 1 : undefined };
+                                added = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (added) {
+                        return { ...prev, inventorySlots: slots };
+                    } else if (inventoryAPI) {
+                        inventoryAPI.addItem(lootItem);
+                    }
+                    return prev;
+                });
                 break;
 
             case 'LOGIC_FRAGMENT':
@@ -711,11 +736,9 @@ export const GameProvider = ({ children }) => {
 
             // HANDLE SPECIAL TYPES FIRST
             if (item.type === 'MRAM_INJECTOR') {
-                addNotification("[SYSTEM_RESTORE]: Integrity/M-RAM Replenished");
+                addNotification("[SYSTEM_RESTORE]: M-RAM Injector Activated");
                 return {
                     ...prev,
-                    playerIntegrity: Math.min(100, (prev.playerIntegrity || 100) + 40),
-                    playerMRAM: Math.min(100, (prev.playerMRAM || 100) + 40),
                     inventorySlots: slots.map((s, i) => {
                         if (i !== slotIndex) return s;
                         if (s.stackable && s.count > 1) return { ...s, count: s.count - 1 };
