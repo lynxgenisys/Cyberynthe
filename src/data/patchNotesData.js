@@ -1,5 +1,16 @@
 export const patchNotes = [
     {
+        version: "v0.14.16",
+        date: "2026-05-31",
+        categories: {
+            "Fixed": [
+                "UI (Ledger): Significantly reduced font sizes and margins across the entire Ledger table for mobile screens.",
+                "Engine: Completely removed fullscreen and orientation requests from the start sequence, as they were still causing black screens on some mobile devices.",
+                "UI: Removed final stray brackets from the mobile HUD CYBERDECK button."
+            ]
+        }
+    },
+    {
         version: "v0.14.15",
         date: "2026-05-31",
         categories: {

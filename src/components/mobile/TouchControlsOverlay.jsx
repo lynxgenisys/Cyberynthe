@@ -149,7 +149,7 @@ export default function TouchControlsOverlay({ onLookMove }) {
                     onPointerDown={(e) => triggerKey('i', 'KeyI', 'keydown')}
                     onPointerUp={(e) => triggerKey('i', 'KeyI', 'keyup')}
                 >
-                    [ CYBERDECK ]
+                    CYBERDECK
                 </button>
             </div>
         </div>

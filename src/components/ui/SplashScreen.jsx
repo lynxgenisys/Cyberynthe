@@ -63,17 +63,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
     };
 
     const handleStart = async () => {
-        // Attempt Fullscreen & Landscape Lock for Mobile
-        try {
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().catch(err => console.warn(err));
-            }
-            if (window.screen && window.screen.orientation && window.screen.orientation.lock) {
-                window.screen.orientation.lock('landscape').catch(err => console.warn(err));
-            }
-        } catch (err) {
-            console.warn("Fullscreen/Orientation lock failed or unsupported:", err);
-        }
+        // Removed fullscreen request due to mobile browser lockups
 
         setGameState(prev => ({
             ...prev,
@@ -177,16 +167,6 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
             <div className="action-buttons">
                 {hasSave && (
                     <button className="resume-btn" onClick={() => {
-                        try {
-                            if (document.documentElement.requestFullscreen) {
-                                document.documentElement.requestFullscreen().catch(e => console.warn(e));
-                            }
-                            if (window.screen && window.screen.orientation && window.screen.orientation.lock) {
-                                window.screen.orientation.lock('landscape').catch(e => console.warn(e));
-                            }
-                        } catch (err) {
-                            console.warn("Fullscreen/Orientation lock failed or unsupported:", err);
-                        }
                         onResume();
                     }}>
                         RESUME_SESSION
@@ -198,7 +178,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                 </button>
             </div>
 
-            <div className="splash-version">v0.14.15 | SWARM_PROTOCOL</div>
+            <div className="splash-version">v0.14.16 | SWARM_PROTOCOL</div>
         </div>
     );
 
