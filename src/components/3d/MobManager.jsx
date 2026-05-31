@@ -208,7 +208,11 @@ const JumpSpark = ({ startX, startZ, endX, endZ, onComplete }) => {
         if (!ref.current) return;
         ref.current.userData.progress += delta * 3.0;
         if (ref.current.userData.progress >= 1.0) {
-            if (onComplete) onComplete();
+            if (!ref.current.userData.completed) {
+                ref.current.userData.completed = true;
+                ref.current.visible = false;
+                if (onComplete) onComplete();
+            }
         } else {
             const p = ref.current.userData.progress;
             const cx = startX + (endX - startX) * p;

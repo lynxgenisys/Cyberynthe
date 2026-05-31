@@ -278,7 +278,10 @@ export const GameProvider = ({ children }) => {
         // Increment session count
         state.runSessions = (state.runSessions || 1) + 1;
 
-        setGameState(state);
+        setGameState(prev => ({
+            ...state,
+            playerName: prev.playerName // Preserve logged-in user!
+        }));
         addNotification("SESSION_RESTORED");
     };
 

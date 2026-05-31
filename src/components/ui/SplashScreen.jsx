@@ -176,7 +176,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                             <div className="text-cyan mb-2 font-bold tracking-widest uppercase">» ACTIVE_LCACHE_DATA</div>
                             <div className="flex justify-center gap-x-6 md:gap-x-12 text-gray-300">
                                 <span>MODE: <span className="text-white">{(hasSave.gameState?.gameMode || 'NORMAL').toUpperCase()}</span></span>
-                                <span>LVL: <span className="text-white">{hasSave.gameState?.floorLevel || 1}</span></span>
+                                <span>FLOOR: <span className="text-white">{hasSave.gameState?.floorLevel || 1}</span></span>
                                 <span>XP: <span className="text-white">{hasSave.gameState?.xp || 0}</span></span>
                             </div>
                         </div>
