@@ -696,7 +696,7 @@ export default function MobManager({ maze, floorLevel }) {
                     }
 
                     // BOSS ARMOR LOGIC (80% Resistance unless Vulnerable/Hacked)
-                    if ((mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER') && !mob.isVulnerable && !mob.isHacked) {
+                    if (mob.id === 'IO_SENTINEL' && !mob.isVulnerable && !mob.isHacked) {
                         dmg *= 0.2; // 80% Reduction
                     }
 
@@ -913,8 +913,13 @@ export default function MobManager({ maze, floorLevel }) {
                         vz = (nz * distError * approachFactor) + (tz * orbitFactor);
                     } else {
                         // Standard Chase
-                        vx = (dx / dist) * speed;
-                        vz = (dz / dist) * speed;
+                        if (!mob.aggroActive && (mob.id === 'BYTE_MOTHER' || mob.id === 'IO_SENTINEL')) {
+                            vx = 0;
+                            vz = 0;
+                        } else {
+                            vx = (dx / dist) * speed;
+                            vz = (dz / dist) * speed;
+                        }
                     }
 
                     const nextX = mob.x + vx * delta;

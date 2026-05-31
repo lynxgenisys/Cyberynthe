@@ -741,7 +741,7 @@ export const GameProvider = ({ children }) => {
                     ...prev,
                     inventorySlots: slots.map((s, i) => {
                         if (i !== slotIndex) return s;
-                        if (s.stackable && s.count > 1) return { ...s, count: s.count - 1 };
+                        if (s.stackable && s.quantity > 1) return { ...s, quantity: s.quantity - 1 };
                         return null;
                     })
                 };

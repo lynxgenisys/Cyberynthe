@@ -135,8 +135,8 @@ function playerReducer(state, action) {
             let newQueue = state.stats.mRamRegenQueue || 0;
             
             if (newQueue > 0) {
-                // Distribute 40% of max RAM over 3 seconds linearly
-                let injectedAmount = Math.min(newQueue, (mRamMax * 0.40) / (3.0 / delta));
+                // Distribute 40% of max RAM over 4 seconds linearly
+                let injectedAmount = Math.min(newQueue, (mRamMax * 0.40) / (4.0 / delta));
                 recovered += injectedAmount;
                 newQueue -= injectedAmount;
                 if (newQueue < 0.1) newQueue = 0;

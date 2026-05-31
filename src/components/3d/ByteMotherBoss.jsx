@@ -66,8 +66,8 @@ export default function ByteMotherBoss({ mob }) {
         const angle = (Math.PI * 2 / 6) * i;
         legs.push(
             <group key={`leg-${i}`} rotation={[0, angle, 0]} position={[0, 0, 0]}>
-                <mesh ref={el => legsRef.current[i] = el} position={[1.5, -1.0, 0]} rotation={[0, 0, Math.PI / 4]}>
-                    <cylinderGeometry args={[0.45, 0.22, 4.5, 8]} />
+                <mesh ref={el => legsRef.current[i] = el} position={[1.5, 0, 0]} rotation={[0, 0, Math.PI / 4]}>
+                    <cylinderGeometry args={[0.45, 0.22, 2.25, 8]} />
                     <meshStandardMaterial color="#444422" emissive="#222200" emissiveIntensity={0.5} />
                 </mesh>
             </group>
