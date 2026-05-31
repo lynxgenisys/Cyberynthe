@@ -185,12 +185,12 @@ const TopBar = memo(({ sectorId, seed, floorLevel, runStartTime, totalPausedTime
 const BossHealthBar = memo(({ active, name, hp, maxHp }) => {
     if (!active) return null;
     return (
-        <div className="absolute top-[14rem] z-20 w-[90%] max-w-[500px] animate-fade-in-down flex flex-col items-center">
+        <div className="absolute top-16 max-md:top-[14rem] z-20 w-[90%] max-w-[500px] animate-fade-in-down flex flex-col items-center">
             <div className="flex justify-between w-full text-cyan font-bold text-xs max-md:text-lg mb-1 tracking-widest drop-shadow-[0_0_5px_#00FFFF]">
                 <span>{name}</span>
                 <span>{(hp / maxHp * 100).toFixed(0)}%</span>
             </div>
-            <div className="h-6 w-full bg-black/80 border border-cyan/50 skew-x-[-10deg] p-[1px]">
+            <div className="h-2 max-md:h-6 w-full bg-black/80 border border-cyan/50 skew-x-[-10deg] p-[1px]">
                 <div
                     className="h-full bg-cyan transition-all duration-200 ease-out shadow-[0_0_15px_#00FFFF]"
                     style={{ width: `${Math.max(0, (hp / maxHp) * 100)}%` }}
@@ -201,13 +201,13 @@ const BossHealthBar = memo(({ active, name, hp, maxHp }) => {
 });
 
 const StatMeters = memo(({ hp, maxHp, ram, maxRam, ethicsScore }) => (
-    <div className="flex flex-col justify-center gap-3 p-4 min-w-[200px] max-w-[200px]">
+    <div className="flex flex-col justify-center gap-3 p-4 min-w-[300px] max-md:min-w-[200px] max-md:max-w-[200px]">
         <div className="w-full">
             <div className="flex justify-between items-end text-cyan font-mono text-[10px] max-md:text-lg tracking-widest mb-1">
                 <span>INTEGRITY</span>
                 <span className="font-bold">{Math.floor(hp)} / {maxHp}</span>
             </div>
-            <div className="h-6 w-full bg-black/60 border border-cyan/30 skew-x-[-15deg] p-[2px]">
+            <div className="h-3 max-md:h-6 w-full bg-black/60 border border-cyan/30 skew-x-[-15deg] p-[2px]">
                 <div
                     className={`h-full bg-cyan shadow-[0_0_10px_#00FFFF] transition-all duration-300 ease-out ${hp < 30 ? 'animate-pulse' : ''}`}
                     style={{ width: `${Math.max(0, (hp / maxHp) * 100)}%` }}
@@ -219,7 +219,7 @@ const StatMeters = memo(({ hp, maxHp, ram, maxRam, ethicsScore }) => (
                 <span>M-RAM</span>
                 <span className="font-bold">{Math.floor(ram)} / {maxRam}</span>
             </div>
-            <div className="h-6 w-full bg-black/60 border border-magenta/30 skew-x-[-15deg] p-[2px]">
+            <div className="h-3 max-md:h-6 w-full bg-black/60 border border-magenta/30 skew-x-[-15deg] p-[2px]">
                 <div
                     className="h-full bg-magenta shadow-[0_0_10px_#EA00FF] transition-all duration-300 ease-out"
                     style={{ width: `${Math.max(0, (ram / maxRam) * 100)}%` }}

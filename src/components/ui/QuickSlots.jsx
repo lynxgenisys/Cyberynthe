@@ -81,13 +81,13 @@ const QuickSlots = () => {
             fontFamily: 'monospace',
             zIndex: 100
         }}
-        className="max-md:scale-[0.15] max-md:origin-bottom">
+        className="max-md:scale-50 max-md:origin-bottom">
             {slots.map((item, index) => (
                 <div
                     key={index}
                     style={{
-                        width: '40px',
-                        height: '40px',
+                        width: '80px',
+                        height: '80px',
                         border: `2px solid ${getSlotBorderColor(item)}`,
                         borderRadius: '4px',
                         backgroundColor: 'rgba(0, 0, 0, 0.7)',
@@ -124,20 +124,20 @@ const QuickSlots = () => {
                         }}>
                             {/* Item icon (colored square for now) */}
                             <div style={{
-                                width: '16px',
-                                height: '16px',
+                                width: '32px',
+                                height: '32px',
                                 backgroundColor: getSlotColor(item),
                                 borderRadius: '2px',
                                 boxShadow: `0 0 10px ${getSlotColor(item)}80`,
-                                marginBottom: '2px'
+                                marginBottom: '4px'
                             }} />
 
                             {/* Item name */}
                             <div style={{
-                                fontSize: '6px',
+                                fontSize: '9px',
                                 color: '#FFFFFF',
                                 textAlign: 'center',
-                                lineHeight: '6px',
+                                lineHeight: '10px',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap',
@@ -150,9 +150,9 @@ const QuickSlots = () => {
                             {getRealQuantity(item) > 1 && (
                                 <div style={{
                                     position: 'absolute',
-                                    bottom: '2px',
-                                    right: '2px',
-                                    fontSize: '8px',
+                                    bottom: '4px',
+                                    right: '4px',
+                                    fontSize: '12px',
                                     color: '#00FFFF',
                                     fontWeight: 'bold',
                                     textShadow: '0 0 4px #00FFFF'
