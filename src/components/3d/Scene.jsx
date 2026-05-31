@@ -141,8 +141,8 @@ const CyberScene = () => {
             )}
 
             {/* AMBIENT GLOW (DARKER FOR MYSTERY) */}
-            <ambientLight intensity={0.2} color="#FFFFFF" />
-            <pointLight position={[10, 10, 10]} intensity={0.5} color={lightColor} />
+            <ambientLight intensity={0.25} color="#FFFFFF" />
+            <pointLight position={[10, 10, 10]} intensity={0.6} color={lightColor} />
 
             <Physics gravity={[0, -20, 0]}>
                 <MazeRenderer />

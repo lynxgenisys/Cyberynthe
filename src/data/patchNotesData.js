@@ -1,5 +1,14 @@
 export const patchNotes = [
     {
+        version: "v0.14.12",
+        date: "2026-05-31",
+        categories: {
+            "Changed": [
+                "Lighting: Increased the global ambient light and point light intensities by ~15-20% to brighten the entire level overall."
+            ]
+        }
+    },
+    {
         version: "v0.14.11",
         date: "2026-05-31",
         categories: {
