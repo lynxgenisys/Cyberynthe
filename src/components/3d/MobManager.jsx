@@ -604,6 +604,14 @@ export default function MobManager({ maze, floorLevel }) {
                     }
                 }
             });
+            
+            // Sentries in dead ends
+            deadEnds.forEach(pos => {
+                const mob = MobLogic.createMob('STATELESS_SENTRY', floorLevel);
+                if (mob) {
+                    newMobs.push({ ...mob, instanceId: Math.random(), x: pos.x * 2, z: pos.z * 2, isStationary: true });
+                }
+            });
         } else if (floorLevel === 999) {
             const specs = [{ id: 'BIT_MITE', x: 4, z: 4 }, { id: 'NULL_WISP', x: 4, z: 10 }, { id: 'HUNTER', x: 10, z: 4 }, { id: 'STATELESS_SENTRY', x: 10, z: 10 }, { id: 'IO_SENTINEL', x: 7, z: 7 }];
             specs.forEach(s => {
