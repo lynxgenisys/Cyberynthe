@@ -75,13 +75,12 @@ const QuickSlots = () => {
             position: 'fixed',
             bottom: '20px',
             left: '50%',
-            transform: 'translateX(-50%)',
             display: 'flex',
             gap: '10px',
             fontFamily: 'monospace',
             zIndex: 100
         }}
-        className="max-md:scale-50 max-md:origin-bottom">
+        className="-translate-x-1/2 max-md:scale-[0.25] max-md:origin-bottom">
             {slots.map((item, index) => (
                 <div
                     key={index}

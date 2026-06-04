@@ -320,14 +320,13 @@ export const MiniMap = React.memo(() => {
 
     return (
         <div className={`
-            ${isTactical ? 'fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center pointer-events-auto' : 'absolute right-4 bottom-4 z-20 pointer-events-none'}
-            transition-all duration-300 ease-out
+            ${isTactical ? 'fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center' : 'absolute right-4 bottom-4 z-20'}
+            pointer-events-auto transition-all duration-300 ease-out
         `}>
             <div className={`
-                relative overflow-hidden border border-cyan/50 bg-black/90 shadow-[0_0_20px_rgba(0,255,255,0.2)] pointer-events-auto cursor-pointer
+                relative overflow-hidden border border-cyan/50 bg-black/90 shadow-[0_0_20px_rgba(0,255,255,0.2)] pointer-events-auto cursor-pointer touch-none
                 ${isTactical ? 'w-[90vw] h-[90vh] rounded-lg' : 'w-48 h-48 rounded-full'}
-            `} onClick={() => { if (!isTactical && triggerScan) triggerScan(); }}
-               onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); if (!isTactical && triggerScan) triggerScan(); }}>
+            `} onPointerDown={(e) => { e.stopPropagation(); if (!isTactical && triggerScan) triggerScan(); }}>
                 <canvas
                     ref={canvasRef}
                     width={isTactical ? window.innerWidth * 0.9 : 200}

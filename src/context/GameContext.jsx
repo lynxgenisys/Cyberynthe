@@ -661,18 +661,7 @@ export const GameProvider = ({ children }) => {
                 }));
                 break;
 
-            case 'GHOST_PROTOCOL':
-            case 'SYSTEM_PING':
-            case 'KERNEL_SPIKE':
-            case 'SECTOR_BREACH':
-            case 'CORE_SWAP':
-                // Add to inventory backpack
-                if (inventoryAPI) {
-                    inventoryAPI.addItem(lootItem);
-                } else {
-                    addToInventory(lootItem); // Fallback
-                }
-                break;
+
 
             default:
                 console.warn('Unknown loot type:', type);

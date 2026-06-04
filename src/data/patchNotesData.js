@@ -1,5 +1,18 @@
 export const patchNotes = [
     {
+        version: "v0.14.3",
+        date: "2026-06-04",
+        categories: {
+            "Changed": [
+                "UI (Mobile): Scaled down the Quick Slots on mobile screens to be exactly 1/4th of their original size, fixing an issue where they were ignoring scaling rules due to overriding inline transform styles.",
+                "UI (Mobile): Fixed the Mini-Map 'Tap-to-Scan' feature. Replaced the restrictive touch-start event listener with a universal pointer-down listener to ensure immediate response on all touch devices without breaking browser default behaviors."
+            ],
+            "Fixed": [
+                "Engine: Cleaned up a minor syntax warning in GameContext related to duplicate switch statement clauses."
+            ]
+        }
+    },
+    {
         version: "v0.14.21",
         date: "2026-05-31",
         categories: {
