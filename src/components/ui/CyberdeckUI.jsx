@@ -14,7 +14,7 @@ import ChromaticContainer from './ChromaticContainer';
 
 export default function CyberdeckUI({ onClose }) {
     const { state, equipItem, unequipItem } = useInventory();
-    const { gameState, getLevelFromXP, getNextLevelXP, cycleNavMode, triggerExitRun, setMusicVolume, setIsMusicShuffle, setCompactHUDLogs } = useGame();
+    const { gameState, getLevelFromXP, getNextLevelXP, cycleNavMode, triggerExitRun, setMusicVolume, setIsMusicShuffle, setCompactHUDLogs, setLookSensitivity } = useGame();
     const { state: playerState, upgradeStat } = usePlayer();
 
     // UI Local State
@@ -368,6 +368,26 @@ export default function CyberdeckUI({ onClose }) {
                                 >
                                     {gameState.isMusicShuffle ? 'ENABLED' : 'DISABLED'}
                                 </button>
+                            </div>
+                        </div>
+
+                        <div className="bg-black/50 border border-gray-700 p-4">
+                            <h4 className="text-cyan mb-2">CONTROLS</h4>
+                            <div className="flex items-center justify-between">
+                                <span>Look Sensitivity</span>
+                                <div className="flex items-center gap-2 w-1/2">
+                                    <input 
+                                        type="range" min="0.5" max="3" step="0.1" 
+                                        value={gameState.lookSensitivity}
+                                        onChange={(e) => {
+                                            if (setLookSensitivity) {
+                                                setLookSensitivity(parseFloat(e.target.value));
+                                            }
+                                        }}
+                                        className="w-full accent-cyan cursor-pointer"
+                                    />
+                                    <span className="text-xs font-mono">{gameState.lookSensitivity?.toFixed(2)}x</span>
+                                </div>
                             </div>
                         </div>
 

@@ -138,13 +138,13 @@ export default function VirtualJoystick() {
 
     return (
         <div 
-            className="fixed bottom-12 left-12 w-32 h-32 rounded-full border-2 border-cyan/30 bg-cyan/10 backdrop-blur-md z-[100] touch-none select-none flex items-center justify-center"
+            className="fixed bottom-12 left-12 w-48 h-48 rounded-full border-2 border-cyan/30 bg-cyan/10 backdrop-blur-md z-[100] touch-none select-none flex items-center justify-center"
             ref={containerRef}
             onTouchStart={handleStart}
             onMouseDown={handleStart}
         >
             <div 
-                className="w-12 h-12 rounded-full bg-cyan/50 border border-cyan shadow-[0_0_15px_#00FFFF] pointer-events-none"
+                className="w-16 h-16 rounded-full bg-cyan/50 border border-cyan shadow-[0_0_15px_#00FFFF] pointer-events-none"
                 ref={stickRef}
                 style={{ transition: active ? 'none' : 'transform 0.2s ease-out' }}
             />

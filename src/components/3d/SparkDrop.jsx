@@ -2,6 +2,7 @@ import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Sparkles } from '@react-three/drei';
+import useDeviceDetect from '../../hooks/useDeviceDetect';
 
 /**
  * IDENTITY: AESTHETICS_NODE
@@ -19,6 +20,8 @@ const SparkDrop = ({ position, type, color = '#00FFFF', isSpecial = false, isFul
         z: Math.random() * Math.PI * 2,
         speed: 1.5 + Math.random() * 0.5
     }), []);
+
+    const { isMobile } = useDeviceDetect();
 
     useFrame((state, delta) => {
         if (!groupRef.current || !meshRef.current) return;
@@ -71,12 +74,14 @@ const SparkDrop = ({ position, type, color = '#00FFFF', isSpecial = false, isFul
                 />
             </mesh>
             
-            {/* Ambient glow */}
-            <pointLight 
-                color={color} 
-                intensity={isSpecial ? 2 : 0.8} 
-                distance={3} 
-            />
+            {/* Ambient glow - Disabled on mobile to prevent WebGL shader recompile stall (black screen) */}
+            {!isMobile && (
+                <pointLight 
+                    color={color} 
+                    intensity={isSpecial ? 2 : 0.8} 
+                    distance={3} 
+                />
+            )}
 
             {/* Sparkles */}
             <Sparkles 

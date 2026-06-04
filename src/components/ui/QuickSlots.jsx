@@ -80,13 +80,13 @@ const QuickSlots = () => {
             fontFamily: 'monospace',
             zIndex: 100
         }}
-        className="-translate-x-1/2 max-md:scale-[0.25] max-md:origin-bottom">
+        className="-translate-x-1/2 origin-bottom transition-all">
             {slots.map((item, index) => (
                 <div
                     key={index}
                     style={{
-                        width: '80px',
-                        height: '80px',
+                        width: '128px',
+                        height: '128px',
                         border: `2px solid ${getSlotBorderColor(item)}`,
                         borderRadius: '4px',
                         backgroundColor: 'rgba(0, 0, 0, 0.7)',

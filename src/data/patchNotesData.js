@@ -1,5 +1,21 @@
 export const patchNotes = [
     {
+        version: "v0.14.4",
+        date: "2026-06-04",
+        title: "Mobile Optimization & Overclock System",
+        type: "patch",
+        changes: [
+            "ADDED: Dedicated Overclock toggle switch in mobile UI to replace run button.",
+            "ADDED: Ping button (E) on mobile UI overlay.",
+            "ADDED: Look Sensitivity slider in settings (default 1.15x).",
+            "ADJUSTED: Increased Joystick size to match Minimap (48 units / 192px).",
+            "ADJUSTED: Re-scaled Quick Slots up to original 128px size for better hit detection.",
+            "ADJUSTED: Jump button resized to match Fire buttons and relocated.",
+            "FIXED: Critical memory leak/black screen stutter when processing Spark/Loot drop post-processing on mobile devices.",
+            "FIXED: Mobile action buttons (Jump, Ping, Shred) not firing correctly due to synthetic event scoping."
+        ]
+    },
+    {
         version: "v0.14.3",
         date: "2026-06-04",
         categories: {

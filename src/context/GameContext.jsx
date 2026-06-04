@@ -102,6 +102,7 @@ export const GameProvider = ({ children }) => {
         musicVolume: parseFloat(localStorage.getItem('CyberSynthe_MusicVolume') || '0.5'),
         sfxVolume: parseFloat(localStorage.getItem('CyberSynthe_SfxVolume') || '0.7'),
         masterVolume: parseFloat(localStorage.getItem('CyberSynthe_MasterVolume') || '1.0'),
+        lookSensitivity: parseFloat(localStorage.getItem('CyberSynthe_LookSensitivity') || '1.15'),
         compactHUDLogs: localStorage.getItem('CyberSynthe_CompactLogs') === 'true',
         isMusicShuffle: localStorage.getItem('CyberSynthe_MusicShuffle') === 'true',
         currentTrackName: null
@@ -853,6 +854,10 @@ export const GameProvider = ({ children }) => {
             setMusicVolume: (volume) => {
                 localStorage.setItem('CyberSynthe_MusicVolume', volume);
                 setGameState(prev => ({ ...prev, musicVolume: volume }));
+            },
+            setLookSensitivity: (val) => {
+                localStorage.setItem('CyberSynthe_LookSensitivity', val);
+                setGameState(prev => ({ ...prev, lookSensitivity: val }));
             },
             setIsMusicShuffle: (isShuffle) => {
                 localStorage.setItem('CyberSynthe_MusicShuffle', isShuffle);
