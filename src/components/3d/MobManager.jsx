@@ -1598,9 +1598,9 @@ export default function MobManager({ maze, floorLevel }) {
             // CRITICAL: Reset scale to prevent contamination from previous mobs (especially sentry hearts)
             tempObject.scale.set(1, 1, 1);
 
-            // Bit Mites are 30% smaller (0.65 -> 0.45)
+            // Bit Mites: Scaled to be rounded and beetle/tick-like (wider, flatter, longer)
             if (mob.id === 'BIT_MITE') {
-                tempObject.scale.set(0.45, 0.45, 0.45);
+                tempObject.scale.set(0.6, 0.3, 0.8);
             }
             // Null Wisps are ~35% (0.35)
             
@@ -1895,9 +1895,9 @@ export default function MobManager({ maze, floorLevel }) {
 
     return (
         <group>
-            {/* BIT MITE: Tetrahedron, Cyan/Magenta Texture */}
+            {/* BIT MITE: Beetle/Tick Shape (Sphere scaled down later) */}
             <instancedMesh ref={miteRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false}>
-                <tetrahedronGeometry args={[0.8, 0]} />
+                <sphereGeometry args={[0.8, 16, 16]} />
                 <meshStandardMaterial ref={miteMatRef} alphaMap={miteTex} emissiveMap={miteTex} emissive="#FFFFFF" emissiveIntensity={2} transparent opacity={1} />
             </instancedMesh>
 
