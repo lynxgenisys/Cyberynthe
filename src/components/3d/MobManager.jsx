@@ -1913,9 +1913,12 @@ export default function MobManager({ maze, floorLevel }) {
                 <meshStandardMaterial ref={wispOverlayMatRef} alphaMap={wispTex2} emissiveMap={wispTex2} emissive="#FFFFFF" emissiveIntensity={2} transparent opacity={1} depthWrite={false} wireframe />
             </instancedMesh>
 
-            {/* HUNTER: Dodecahedron - Metallic Shimmer with Fade */}
-            <instancedMesh ref={trackerRef} args={[null, null, 100]} count={0} frustumCulled={false}><boxGeometry args={[0.8, 0.8, 0.8]} /><meshStandardMaterial color="#ff00ff" emissive="#ff0000" emissiveIntensity={2} wireframe /></instancedMesh>
-              <instancedMesh ref={trackerScanRef} args={[null, null, 100]} count={0} frustumCulled={false} renderOrder={999}><sphereGeometry args={[0.5, 16, 16]} /><meshBasicMaterial color="#ff0000" wireframe transparent opacity={0.8} depthTest={false} /></instancedMesh>
+            {/* STATEFUL_TRACKER: Octahedron - Logic Lattice Theme */}
+            <instancedMesh ref={trackerRef} args={[null, null, 100]} count={0} frustumCulled={false}>
+                <octahedronGeometry args={[0.9, 0]} />
+                <meshStandardMaterial color="#220022" emissive="#ffaa00" emissiveIntensity={1.5} wireframe={false} metalness={0.9} roughness={0.1} />
+            </instancedMesh>
+            <instancedMesh ref={trackerScanRef} args={[null, null, 100]} count={0} frustumCulled={false} renderOrder={999}><sphereGeometry args={[0.5, 16, 16]} /><meshBasicMaterial color="#ffaa00" wireframe transparent opacity={0.8} depthTest={false} /></instancedMesh>
               <instancedMesh ref={hunterRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false}>
                 <dodecahedronGeometry args={[0.7, 0]} />
                 <meshStandardMaterial ref={hunterMatRef} map={hunterTex} emissiveMap={hunterTex} emissive="#FFFFFF" emissiveIntensity={1} metalness={0.8} roughness={0.2} transparent opacity={0.8} />

@@ -17,6 +17,8 @@ import wallGlitchAASrc from '../../assets/Wall_GlitchCode_AA.webp';
 import wallCityASrc from '../../assets/Wall_City_A.webp';
 import floorASrc from '../../assets/Floor_A.webp';
 import floorCSrc from '../../assets/Floor_C.webp';
+import logicLatticeWallSrc from '../../assets/logic_lattice_wall.png';
+import dataGridFloorSrc from '../../assets/data_grid_floor.png';
 
 /**
  * IDENTITY: ARCH_SYS_01
@@ -214,10 +216,9 @@ export default function MazeRenderer() {
         let floorTex = null;
 
         if (isSector3) {
-            wallTex = loader.load(wallGlitchAASrc); // Reusing glitch but tinting it
-            floorTex = loader.load(floorASrc);
+            wallTex = loader.load(logicLatticeWallSrc);
+            floorTex = loader.load(dataGridFloorSrc);
             wallTex.colorSpace = floorTex.colorSpace = THREE.SRGBColorSpace;
-            wallTex.wrapS = wallTex.wrapT = THREE.RepeatWrapping;
             floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping;
             floorTex.repeat.set(CELL_SIZE, CELL_SIZE);
             wallTex.repeat.set(CELL_SIZE, 1);
