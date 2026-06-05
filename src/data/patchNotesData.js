@@ -1,5 +1,22 @@
 export const patchNotes = [
     {
+        version: "v0.16.0",
+        date: "2026-06-04",
+        categories: {
+            "Added": [
+                "Mobile UI: Integrated Ping scanning directly into the Minimap. Tap the minimap to ping the surrounding area.",
+                "Mobile UI: Re-ordered layout to support larger, more accessible thumb targets."
+            ],
+            "Fixed": [
+                "Desktop Viewport: Fixed a critical CSS leak where the mobile layout media query inadvertently squashed the PC layout.",
+                "Runtime Crash: Resolved a 'dist is not defined' ReferenceError in the MobManager caused by duplicated AI logic blocks.",
+                "Runtime Crash: Resolved a silent freeze crash on run start caused by an undeclared isSprinting reference in the footstep audio logic.",
+                "Mobile UI: Fixed Quick Slot buttons not triggering due to an invisible pointer-events blocking layer.",
+                "Mobile UI: Enlarged Quick Slot buttons, Jump button, and Spike button to better match thumb dimensions (96x96)."
+            ]
+        }
+    },
+    {
         version: "v0.15.3",
         date: "2026-06-04",
         categories: {

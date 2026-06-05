@@ -496,6 +496,7 @@ const PlayerController = () => {
                 // AUDIO: Footsteps
                 if (hit && hit.toi < 2.0) { // Grounded
                     footstepTimer.current += delta;
+                    const isSprinting = currentSpeed > SPEED;
                     const footstepInterval = isSprinting ? 0.3 : 0.45;
                     if (footstepTimer.current > footstepInterval) {
                         playSFX('footstep');

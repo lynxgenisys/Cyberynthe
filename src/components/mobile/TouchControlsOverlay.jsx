@@ -90,27 +90,20 @@ export default function TouchControlsOverlay({ onLookMove }) {
                 
             {/* ACTION BUTTONS */}
             
-            {/* FIRE (Left Click) */}
-            <button 
-                className="absolute bottom-24 right-12 w-20 h-20 rounded-full bg-cyan/20 border-2 border-cyan text-cyan font-bold tracking-widest shadow-[0_0_15px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto text-sm"
-                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileFireStart')); }}
-                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileFireEnd')); }}
-            >
-                FIRE
-            </button>
+            {/* FIRE (Left Click) removed - Ping is now on MiniMap */}
 
-            {/* SHRED (Right Click) */}
+            {/* SPIKE (Right Click) */}
             <button 
-                className="absolute bottom-48 right-4 w-16 h-16 rounded-full bg-magenta/20 border-2 border-magenta text-magenta font-bold shadow-[0_0_15px_#FF00FF] active:bg-magenta active:text-black pointer-events-auto text-xs"
+                className="absolute bottom-32 right-6 w-24 h-24 rounded-full bg-magenta/20 border-2 border-magenta text-magenta font-bold shadow-[0_0_15px_#FF00FF] active:bg-magenta active:text-black pointer-events-auto text-sm"
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredStart')); }}
                 onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredEnd')); }}
             >
-                SHRED
+                SPIKE
             </button>
 
             {/* JUMP (Space) */}
             <button 
-                className="absolute bottom-6 right-36 w-20 h-20 rounded-full bg-white/10 border-2 border-white/50 text-white font-bold active:bg-white active:text-black pointer-events-auto text-sm"
+                className="absolute bottom-6 right-36 w-24 h-24 rounded-full bg-white/10 border-2 border-white/50 text-white font-bold active:bg-white active:text-black pointer-events-auto text-sm"
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileJump')); }}
                 onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey(' ', 'Space', 'keyup'); }}
             >
@@ -136,14 +129,14 @@ export default function TouchControlsOverlay({ onLookMove }) {
             </button>
 
             {/* Overclock (Run) Slider - Between Quick items (Center) and Jump (Right) */}
-            <div className="absolute bottom-8 right-[45%] translate-x-1/2 pointer-events-auto cursor-pointer touch-none"
+            <div className="absolute bottom-16 right-[28%] translate-x-1/2 pointer-events-auto cursor-pointer touch-none"
                  onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); toggleRunLock(); }}>
                 <div className={`flex items-center gap-2 p-2 border ${gameState.isRunLocked ? 'border-magenta shadow-[0_0_15px_#FF00FF]' : 'border-cyan shadow-[0_0_10px_#00FFFF]'} bg-black/80 font-mono transition-colors`}>
                     <span className={gameState.isRunLocked ? 'text-orange-500 font-bold animate-pulse text-xs' : 'text-cyan text-xs'}>
                         OVERCLOCK
                     </span>
-                    <div className={`w-10 h-5 border ${gameState.isRunLocked ? 'border-magenta bg-magenta/20' : 'border-cyan bg-cyan/20'} relative transition-colors`}>
-                        <div className={`absolute top-0 w-5 h-full transition-all duration-200 ${gameState.isRunLocked ? 'right-0 bg-orange-500' : 'left-0 bg-cyan'}`} />
+                    <div className={`w-12 h-6 border ${gameState.isRunLocked ? 'border-magenta bg-magenta/20' : 'border-cyan bg-cyan/20'} relative transition-colors`}>
+                        <div className={`absolute top-0 w-6 h-full transition-all duration-200 ${gameState.isRunLocked ? 'right-0 bg-orange-500 shadow-[0_0_10px_#f97316]' : 'left-0 bg-cyan'}`} />
                     </div>
                 </div>
             </div>

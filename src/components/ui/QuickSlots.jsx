@@ -76,26 +76,27 @@ const QuickSlots = () => {
             bottom: '20px',
             left: '50%',
             display: 'flex',
-            gap: '10px',
+            gap: '12px',
             fontFamily: 'monospace',
-            zIndex: 100
+            zIndex: 100,
+            pointerEvents: 'auto'
         }}
-        className="-translate-x-1/2 origin-bottom transition-all max-md:scale-50 max-md:bottom-2">
+        className="-translate-x-1/2 origin-bottom transition-all">
             {slots.map((item, index) => (
                 <div
                     key={index}
                     style={{
-                        width: '64px',
-                        height: '64px',
+                        width: '96px',
+                        height: '96px',
                         border: `2px solid ${getSlotBorderColor(item)}`,
-                        borderRadius: '4px',
+                        borderRadius: '6px',
                         backgroundColor: 'rgba(0, 0, 0, 0.7)',
                         position: 'relative',
                         cursor: item ? 'pointer' : 'default',
                         boxShadow: item ? `0 0 15px ${getSlotBorderColor(item)}40` : 'none',
                         transition: 'all 0.2s ease'
                     }}
-                    onPointerDown={() => handleSlotClick(index)}
+                    onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); handleSlotClick(index); }}
                     onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); handleSlotClick(index); }}
                 >
                     {/* Key binding label */}
@@ -123,20 +124,20 @@ const QuickSlots = () => {
                         }}>
                             {/* Item icon (colored square for now) */}
                             <div style={{
-                                width: '32px',
-                                height: '32px',
+                                width: '48px',
+                                height: '48px',
                                 backgroundColor: getSlotColor(item),
-                                borderRadius: '2px',
-                                boxShadow: `0 0 10px ${getSlotColor(item)}80`,
-                                marginBottom: '4px'
+                                borderRadius: '4px',
+                                boxShadow: `0 0 12px ${getSlotColor(item)}80`,
+                                marginBottom: '6px'
                             }} />
 
                             {/* Item name */}
                             <div style={{
-                                fontSize: '9px',
+                                fontSize: '11px',
                                 color: '#FFFFFF',
                                 textAlign: 'center',
-                                lineHeight: '10px',
+                                lineHeight: '12px',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap',

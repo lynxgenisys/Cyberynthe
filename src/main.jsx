@@ -11,6 +11,8 @@ const MobileController = {
         this.isPWA = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
 
         if (this.isMobile) {
+            document.documentElement.classList.add('mobile-device');
+            document.body.classList.add('mobile-device');
             this.setupMobileFlow();
         }
     },

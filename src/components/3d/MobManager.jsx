@@ -893,41 +893,6 @@ export default function MobManager({ maze, floorLevel }) {
                     // WISP LOGIC: ORBIT & SLEEP
                     let vx = 0, vz = 0;
                     
-                if (mob.id === 'STATEFUL_TRACKER') {
-                    if (dist < 15) {
-                        if (!mob.attackState) mob.attackState = 'IDLE';
-                        if (mob.attackState === 'IDLE') {
-                            if (Math.random() < 0.01) {
-                                mob.attackState = 'CHARGING';
-                                mob.chargeTimer = 1.5;
-                                addNotification("ALERT: STATEFUL_TRACKER_PHASE_LOCK", "#EA00FF");
-                            }
-                        } else if (mob.attackState === 'CHARGING') {
-                            mob.chargeTimer -= delta;
-                            mob.isStationary = true;
-                            if (mob.chargeTimer <= 0) {
-                                mob.attackState = 'FIRING';
-                                mob.fireTimer = 0.5;
-                            }
-                        } else if (mob.attackState === 'FIRING') {
-                            mob.fireTimer -= delta;
-                            if (mob.fireTimer <= 0) {
-                                dispatch({ type: 'TAKE_DAMAGE', amount: mob.damage || 15 });
-                                addNotification("CRITICAL: PHASE_LOCK_HIT", "#FF0000");
-                                createDamageText(playerPos.x, playerPos.y + 1, playerPos.z, mob.damage || 15, true);
-                                mob.attackState = 'COOLDOWN';
-                                mob.cooldownTimer = 2.0;
-                                mob.isStationary = false;
-                            }
-                        } else if (mob.attackState === 'COOLDOWN') {
-                            mob.cooldownTimer -= delta;
-                            if (mob.cooldownTimer <= 0) {
-                                mob.attackState = 'IDLE';
-                            }
-                        }
-                    }
-                }
-
                 if (mob.id === 'NULL_WISP') {
                         if (dist > 15) return; // Sleep if > 15m away
 
@@ -1624,82 +1589,12 @@ export default function MobManager({ maze, floorLevel }) {
             }
             // Null Wisps are ~35% (0.35)
             
-                if (mob.id === 'STATEFUL_TRACKER') {
-                    if (dist < 15) {
-                        if (!mob.attackState) mob.attackState = 'IDLE';
-                        if (mob.attackState === 'IDLE') {
-                            if (Math.random() < 0.01) {
-                                mob.attackState = 'CHARGING';
-                                mob.chargeTimer = 1.5;
-                                addNotification("ALERT: STATEFUL_TRACKER_PHASE_LOCK", "#EA00FF");
-                            }
-                        } else if (mob.attackState === 'CHARGING') {
-                            mob.chargeTimer -= delta;
-                            mob.isStationary = true;
-                            if (mob.chargeTimer <= 0) {
-                                mob.attackState = 'FIRING';
-                                mob.fireTimer = 0.5;
-                            }
-                        } else if (mob.attackState === 'FIRING') {
-                            mob.fireTimer -= delta;
-                            if (mob.fireTimer <= 0) {
-                                dispatch({ type: 'TAKE_DAMAGE', amount: mob.damage || 15 });
-                                addNotification("CRITICAL: PHASE_LOCK_HIT", "#FF0000");
-                                createDamageText(playerPos.x, playerPos.y + 1, playerPos.z, mob.damage || 15, true);
-                                mob.attackState = 'COOLDOWN';
-                                mob.cooldownTimer = 2.0;
-                                mob.isStationary = false;
-                            }
-                        } else if (mob.attackState === 'COOLDOWN') {
-                            mob.cooldownTimer -= delta;
-                            if (mob.cooldownTimer <= 0) {
-                                mob.attackState = 'IDLE';
-                            }
-                        }
-                    }
-                }
-
                 if (mob.id === 'NULL_WISP') {
                 tempObject.scale.set(0.35, 0.35, 0.35);
             }
 
             let mobY = mob.id === 'NULL_WISP' ? 3.5 : 1;
             
-                if (mob.id === 'STATEFUL_TRACKER') {
-                    if (dist < 15) {
-                        if (!mob.attackState) mob.attackState = 'IDLE';
-                        if (mob.attackState === 'IDLE') {
-                            if (Math.random() < 0.01) {
-                                mob.attackState = 'CHARGING';
-                                mob.chargeTimer = 1.5;
-                                addNotification("ALERT: STATEFUL_TRACKER_PHASE_LOCK", "#EA00FF");
-                            }
-                        } else if (mob.attackState === 'CHARGING') {
-                            mob.chargeTimer -= delta;
-                            mob.isStationary = true;
-                            if (mob.chargeTimer <= 0) {
-                                mob.attackState = 'FIRING';
-                                mob.fireTimer = 0.5;
-                            }
-                        } else if (mob.attackState === 'FIRING') {
-                            mob.fireTimer -= delta;
-                            if (mob.fireTimer <= 0) {
-                                dispatch({ type: 'TAKE_DAMAGE', amount: mob.damage || 15 });
-                                addNotification("CRITICAL: PHASE_LOCK_HIT", "#FF0000");
-                                createDamageText(playerPos.x, playerPos.y + 1, playerPos.z, mob.damage || 15, true);
-                                mob.attackState = 'COOLDOWN';
-                                mob.cooldownTimer = 2.0;
-                                mob.isStationary = false;
-                            }
-                        } else if (mob.attackState === 'COOLDOWN') {
-                            mob.cooldownTimer -= delta;
-                            if (mob.cooldownTimer <= 0) {
-                                mob.attackState = 'IDLE';
-                            }
-                        }
-                    }
-                }
-
                 if (mob.id === 'NULL_WISP') {
                 // Bobbing: Base 3.75, Amp 0.25 (3.5 to 4.0)
                 const t = state.clock.elapsedTime;

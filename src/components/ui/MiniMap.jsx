@@ -327,8 +327,8 @@ export const MiniMap = React.memo(() => {
                 relative overflow-hidden border border-cyan/50 bg-black/90 shadow-[0_0_20px_rgba(0,255,255,0.2)] pointer-events-auto cursor-pointer touch-none
                 ${isTactical ? 'w-[90vw] h-[90vh] rounded-lg' : 'w-48 h-48 rounded-full'}
             `} 
-                onPointerDown={(e) => { e.stopPropagation(); if (!isTactical && triggerScan) triggerScan(); }}
-                onTouchStart={(e) => { e.stopPropagation(); if (!isTactical && triggerScan) triggerScan(); }}
+                onPointerDown={(e) => { e.stopPropagation(); if (!isTactical) { if (triggerScan) triggerScan(); window.dispatchEvent(new CustomEvent('mobilePing')); } }}
+                onTouchStart={(e) => { e.stopPropagation(); if (!isTactical) { if (triggerScan) triggerScan(); window.dispatchEvent(new CustomEvent('mobilePing')); } }}
             >
                 <canvas
                     ref={canvasRef}
