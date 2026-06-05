@@ -1,6 +1,6 @@
 export const patchNotes = [
     {
-        version: "v0.16.0",
+        version: "v0.16.1",
         date: "2026-06-04",
         categories: {
             "Added": [

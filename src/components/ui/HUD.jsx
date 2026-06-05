@@ -159,15 +159,15 @@ const SessionTimer = memo(({ startTime, totalPausedTime, isPaused, pauseStartTim
 });
 
 const TopBar = memo(({ sectorId, seed, floorLevel, runStartTime, totalPausedTime, isPaused, pauseStartTime }) => (
-    <div className="absolute top-1 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4 animate-fade-in-down max-md:scale-75 max-md:top-12">
-        <div className="text-[10px] max-md:text-lg text-gray-400 font-mono tracking-widest bg-black/80 px-2 py-0.5 rounded border border-gray-800/50 backdrop-blur-sm">
+    <div className="absolute top-1 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4 animate-fade-in-down mobile:scale-75 mobile:top-12">
+        <div className="text-[10px] mobile:text-lg text-gray-400 font-mono tracking-widest bg-black/80 px-2 py-0.5 rounded border border-gray-800/50 backdrop-blur-sm">
             <span>SECTOR {sectorId}</span>
             <span className="text-magenta">//</span>
             <span>SEED: {seed}</span>
         </div>
 
         <div className="flex gap-2">
-            <div className="text-base max-md:text-2xl font-bold text-blue-400 tracking-widest drop-shadow-[0_0_5px_rgba(0,100,255,0.8)] bg-black/60 px-3 py-0.5 rounded-full border border-blue-500/20 backdrop-blur-md">
+            <div className="text-base mobile:text-2xl font-bold text-blue-400 tracking-widest drop-shadow-[0_0_5px_rgba(0,100,255,0.8)] bg-black/60 px-3 py-0.5 rounded-full border border-blue-500/20 backdrop-blur-md">
                 FLOOR {floorLevel.toString().padStart(4, '0')}
             </div>
 
@@ -185,12 +185,12 @@ const TopBar = memo(({ sectorId, seed, floorLevel, runStartTime, totalPausedTime
 const BossHealthBar = memo(({ active, name, hp, maxHp }) => {
     if (!active) return null;
     return (
-        <div className="absolute top-16 max-md:top-[14rem] z-20 w-[90%] max-w-[500px] animate-fade-in-down flex flex-col items-center">
-            <div className="flex justify-between w-full text-cyan font-bold text-xs max-md:text-lg mb-1 tracking-widest drop-shadow-[0_0_5px_#00FFFF]">
+        <div className="absolute top-16 mobile:top-[14rem] z-20 w-[90%] max-w-[500px] animate-fade-in-down flex flex-col items-center">
+            <div className="flex justify-between w-full text-cyan font-bold text-xs mobile:text-lg mb-1 tracking-widest drop-shadow-[0_0_5px_#00FFFF]">
                 <span>{name}</span>
                 <span>{(hp / maxHp * 100).toFixed(0)}%</span>
             </div>
-            <div className="h-2 max-md:h-6 w-full bg-black/80 border border-cyan/50 skew-x-[-10deg] p-[1px]">
+            <div className="h-2 mobile:h-6 w-full bg-black/80 border border-cyan/50 skew-x-[-10deg] p-[1px]">
                 <div
                     className="h-full bg-cyan transition-all duration-200 ease-out shadow-[0_0_15px_#00FFFF]"
                     style={{ width: `${Math.max(0, (hp / maxHp) * 100)}%` }}
@@ -201,13 +201,13 @@ const BossHealthBar = memo(({ active, name, hp, maxHp }) => {
 });
 
 const StatMeters = memo(({ hp, maxHp, ram, maxRam, ethicsScore }) => (
-    <div className="flex flex-col justify-center gap-3 p-4 min-w-[300px] max-md:min-w-[200px] max-md:max-w-[200px]">
+    <div className="flex flex-col justify-center gap-3 p-4 min-w-[300px] mobile:min-w-[200px] mobile:max-w-[200px]">
         <div className="w-full">
-            <div className="flex justify-between items-end text-cyan font-mono text-[10px] max-md:text-lg tracking-widest mb-1">
+            <div className="flex justify-between items-end text-cyan font-mono text-[10px] mobile:text-lg tracking-widest mb-1">
                 <span>INTEGRITY</span>
                 <span className="font-bold">{Math.floor(hp)} / {maxHp}</span>
             </div>
-            <div className="h-3 max-md:h-6 w-full bg-black/60 border border-cyan/30 skew-x-[-15deg] p-[2px]">
+            <div className="h-3 mobile:h-6 w-full bg-black/60 border border-cyan/30 skew-x-[-15deg] p-[2px]">
                 <div
                     className={`h-full bg-cyan shadow-[0_0_10px_#00FFFF] transition-all duration-300 ease-out ${hp < 30 ? 'animate-pulse' : ''}`}
                     style={{ width: `${Math.max(0, (hp / maxHp) * 100)}%` }}
@@ -215,11 +215,11 @@ const StatMeters = memo(({ hp, maxHp, ram, maxRam, ethicsScore }) => (
             </div>
         </div>
         <div className="w-full">
-            <div className="flex justify-between items-end text-magenta font-mono text-[10px] max-md:text-lg tracking-widest mb-1">
+            <div className="flex justify-between items-end text-magenta font-mono text-[10px] mobile:text-lg tracking-widest mb-1">
                 <span>M-RAM</span>
                 <span className="font-bold">{Math.floor(ram)} / {maxRam}</span>
             </div>
-            <div className="h-3 max-md:h-6 w-full bg-black/60 border border-magenta/30 skew-x-[-15deg] p-[2px]">
+            <div className="h-3 mobile:h-6 w-full bg-black/60 border border-magenta/30 skew-x-[-15deg] p-[2px]">
                 <div
                     className="h-full bg-magenta shadow-[0_0_10px_#EA00FF] transition-all duration-300 ease-out"
                     style={{ width: `${Math.max(0, (ram / maxRam) * 100)}%` }}
@@ -233,21 +233,21 @@ const StatMeters = memo(({ hp, maxHp, ram, maxRam, ethicsScore }) => (
                     style={{ transform: `rotate(${(ethicsScore || 0.5) * 180}deg)` }}
                 />
             </div>
-            <span className="text-[9px] max-md:text-sm text-gray-500 font-mono tracking-widest">LOGIC_ALIGNMENT</span>
+            <span className="text-[9px] mobile:text-sm text-gray-500 font-mono tracking-widest">LOGIC_ALIGNMENT</span>
         </div>
     </div>
 ));
 
 const XPAndEbits = memo(({ currentLevel, xp, eBits, lastScanTriggered }) => (
-    <div className="absolute right-0 top-0 h-full flex items-stretch z-10 max-md:items-start max-md:pt-4">
+    <div className="absolute right-0 top-0 h-full flex items-stretch z-10 mobile:items-start mobile:pt-4">
         <div className="relative flex flex-col justify-center min-h-[80px] w-64">
             <div className="absolute inset-0 bg-black/80 border border-blue-500/30 border-r-0 border-l-0 backdrop-blur-sm -z-10" style={{ maskImage: 'linear-gradient(to left, black 50%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to left, black 50%, transparent 100%)' }} />
             <div className="text-right pr-4">
-                <div className="flex justify-end gap-3 text-[10px] max-md:text-base text-blue-500/80">
+                <div className="flex justify-end gap-3 text-[10px] mobile:text-base text-blue-500/80">
                     <span>ACCESS_LEVEL</span>
                     <span className="text-blue-300 font-bold">Lvl: {currentLevel}</span>
                 </div>
-                <span className="text-xl max-md:text-3xl text-blue-500 font-mono font-bold">{xp || 0} XP</span>
+                <span className="text-xl mobile:text-3xl text-blue-500 font-mono font-bold">{xp || 0} XP</span>
             </div>
         </div>
         {lastScanTriggered && (
@@ -255,11 +255,11 @@ const XPAndEbits = memo(({ currentLevel, xp, eBits, lastScanTriggered }) => (
         )}
         <div className="bg-black/80 p-4 border border-yellow-500/30 border-l-0 backdrop-blur-sm rounded-r-2xl flex items-center gap-3 min-h-[80px]">
             <div className="text-right">
-                <div className="text-[10px] max-md:text-base text-yellow-500/80">AVAIALBLE_CREDITS</div>
-                <span className="text-2xl max-md:text-4xl text-yellow-500 font-mono font-bold">{eBits}</span>
+                <div className="text-[10px] mobile:text-base text-yellow-500/80">AVAIALBLE_CREDITS</div>
+                <span className="text-2xl mobile:text-4xl text-yellow-500 font-mono font-bold">{eBits}</span>
             </div>
             <div className="w-1 h-8 bg-yellow-500/20"></div>
-            <span className="text-xs max-md:text-lg text-yellow-500">eBITS</span>
+            <span className="text-xs mobile:text-lg text-yellow-500">eBITS</span>
         </div>
     </div>
 ));
@@ -275,7 +275,7 @@ const NotificationLog = memo(({ logs }) => {
     };
 
     return (
-        <div className="w-96 flex flex-col-reverse max-md:flex-col gap-1 items-start justify-end max-md:justify-start pointer-events-none mask-image-linear-gradient max-md:mask-image-none mb-28 max-md:mb-0">
+        <div className="w-96 flex flex-col-reverse mobile:flex-col gap-1 items-start justify-end mobile:justify-start pointer-events-none mask-image-linear-gradient mobile:mask-image-none mb-28 mobile:mb-0">
             {logs.map((log, i) => {
                 let baseColor = log.color ? `text-[${log.color}] border-[${log.color}]` : "text-cyan-glow border-cyan";
                 if (!log.color) {
@@ -375,9 +375,9 @@ export default function HUD() {
 
     // --- RENDER ---
     return (
-        <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-6 max-md:p-0 z-[100] select-none overflow-hidden" style={hudStyle}>
+        <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-6 mobile:p-0 z-[100] select-none overflow-hidden" style={hudStyle}>
             {/* TOP AREA (HUD + Clock + MiniMap) */}
-            <div className="flex flex-col relative pointer-events-auto h-[120px] max-md:h-[100px] mt-4 max-md:mt-0 w-full max-md:w-[153.8%] max-md:scale-[0.65] max-md:origin-top-left items-center">
+            <div className="flex flex-col relative pointer-events-auto h-[120px] mobile:h-[100px] mt-4 mobile:mt-0 w-full mobile:w-[153.8%] mobile:scale-[0.65] mobile:origin-top-left items-center">
                 <TopBar
                     sectorId={gameState.sectorId}
                     seed={gameState.seed}
@@ -413,8 +413,8 @@ export default function HUD() {
                 <XPAndEbits currentLevel={stats.currentLevel} xp={gameState.xp} eBits={gameState.eBits} lastScanTriggered={gameState.lastScanTime && (Date.now() - gameState.lastScanTime < 1000)} />
             </div>
 
-            <div className="flex justify-between max-md:justify-end items-end w-full">
-                <div className="max-md:absolute max-md:top-[16rem] max-md:left-4 max-md:z-20">
+            <div className="flex justify-between mobile:justify-end items-end w-full">
+                <div className="mobile:absolute mobile:top-[16rem] mobile:left-4 mobile:z-20">
                     <NotificationLog logs={logs} />
                 </div>
                 <MiniMap />

@@ -105,7 +105,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                 <img 
                     src="/Cyberynthe_SPLASH_Cover.png" 
                     alt="Cyberynthe Splash" 
-                    className="w-full md:w-[50%] max-h-[65vh] object-contain mb-8 max-md:mb-[15vh]"
+                    className="w-full md:w-[50%] max-h-[65vh] object-contain mb-8 mobile:mb-[15vh]"
                 />
 
                 <div className="flex flex-col items-center">
@@ -188,7 +188,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
                 </button>
             </div>
 
-            <div className="splash-version">v0.16.0 | SWARM_PROTOCOL</div>
+            <div className="splash-version">v0.16.1 | SWARM_PROTOCOL</div>
         </div>
     );
 

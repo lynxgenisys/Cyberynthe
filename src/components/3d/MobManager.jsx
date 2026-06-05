@@ -888,7 +888,7 @@ export default function MobManager({ maze, floorLevel }) {
             if (!mob.isStasis && !mob.isStationary && floorLevel !== 999) { // Stationary sentries don't move
                 if (distSq < 10000 || mob.id === "HUNTER") {
                     const speed = (mob.id === 'HUNTER' ? 3.5 : 2.5);
-                    const dist = Math.sqrt(distSq);
+                    const dist = Math.max(0.001, Math.sqrt(distSq));
 
                     // WISP LOGIC: ORBIT & SLEEP
                     let vx = 0, vz = 0;
@@ -1035,7 +1035,7 @@ export default function MobManager({ maze, floorLevel }) {
 
             // --- MOB ATTACK LOGIC (BESTIARY 2.0) ---
             if (!mob.isStasis && floorLevel !== 999 && mob.currentHp > 0) {
-                const dist = Math.sqrt(distSq);
+                const dist = Math.max(0.001, Math.sqrt(distSq));
 
                 // 1. BIT_MITE: NIBBLE (Melee)
                 if (mob.id === 'BIT_MITE') {
@@ -1086,7 +1086,7 @@ export default function MobManager({ maze, floorLevel }) {
                             let isLineOfSight = true;
                             if (maze && maze.grid) {
                                 // Simple DDA-like ray march
-                                const dist = Math.sqrt(distSq); // Recalculate exact distance
+                                const dist = Math.max(0.001, Math.sqrt(distSq)); // Recalculate exact distance
                                 const steps = Math.ceil(dist * 2); // 2 steps per meter (0.5m resolution)
                                 const stepX = targetDx / steps;
                                 const stepZ = targetDz / steps;

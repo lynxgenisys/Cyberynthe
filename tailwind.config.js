@@ -32,5 +32,5 @@ export default {
             },
         },
     },
-    plugins: [],
+    plugins: [require('tailwindcss/plugin')(function({ addVariant }) { addVariant('mobile', '.mobile-device &'); })],
 }

@@ -87,7 +87,7 @@ export default function CyberdeckUI({ onClose }) {
     }, [hoveredItem]);
 
     return (
-        <div className={`fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-8 backdrop-blur-sm max-md:p-2`}>
+        <div className={`fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-8 backdrop-blur-sm mobile:p-2`}>
             <div className="w-full h-full flex items-center justify-center">
             {/* TOOLTIP OVERLAY */}
             {hoveredItem && (

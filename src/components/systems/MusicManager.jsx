@@ -5,6 +5,7 @@ import { useGame } from '../../context/GameContext';
 const menuTracksRaw = import.meta.glob('../../assets/OST/Menus/*.mp3', { eager: true, query: '?url', import: 'default' });
 const levelTracksRaw = import.meta.glob('../../assets/OST/Levels/*.mp3', { eager: true, query: '?url', import: 'default' });
 const bossTracksRaw = import.meta.glob('../../assets/OST/BOSS/*.mp3', { eager: true, query: '?url', import: 'default' });
+const ghostTracksRaw = import.meta.glob('../../assets/OST/Ghosted/*.mp3', { eager: true, query: '?url', import: 'default' });
 
 // Extract file name for display
 const formatTrackName = (path) => {
@@ -16,7 +17,8 @@ const formatTrackName = (path) => {
 const tracks = {
     MENUS: Object.values(menuTracksRaw).map(url => ({ url, name: formatTrackName(url) })),
     LEVELS: Object.values(levelTracksRaw).map(url => ({ url, name: formatTrackName(url) })),
-    BOSS: Object.values(bossTracksRaw).map(url => ({ url, name: formatTrackName(url) }))
+    BOSS: Object.values(bossTracksRaw).map(url => ({ url, name: formatTrackName(url) })),
+    GHOSTED: Object.values(ghostTracksRaw).map(url => ({ url, name: formatTrackName(url) }))
 };
 
 export default function MusicManager() {
@@ -48,7 +50,9 @@ export default function MusicManager() {
         let newZone = 'LEVELS';
         if (gameState.isInMenu) {
             newZone = 'MENUS';
-        } else if (gameState.floorLevel % 10 === 0 && gameState.gameMode !== 'ghost') {
+        } else if (gameState.gameMode === 'ghost') {
+            newZone = 'GHOSTED';
+        } else if (gameState.floorLevel % 10 === 0) {
             newZone = 'BOSS';
         }
         
