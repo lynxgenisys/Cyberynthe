@@ -83,7 +83,7 @@ display: flex; justify-content: center; align-items: center;
 font-family: sans-serif; color: #fff; text-align: center;
 padding: 20px; box-sizing: border-box;
 }
-.splash-content { max-width: 450px; width: 100%; }
+#mobile-splash-overlay .splash-content { max-width: 450px; width: 100%; }
 .instruction-box { background: #1a1a24; padding: 15px; border-radius: 6px; margin: 20px 0; border: 1px solid #333; font-size: 0.95rem; line-height: 1.4; }
 #btn-enter-fullscreen { width: 100%; padding: 16px; font-weight: bold; font-size: 1.1rem; cursor: pointer; background: #00ffcc; color: #000; border: none; border-radius: 4px; }
 
