@@ -99,18 +99,27 @@ export default function TouchControlsOverlay({ onLookMove }) {
                 SPIKE
             </button>
 
-            {/* SHRED (Right Click) - Left of MiniMap, below Data Spike */}
+            {/* SHRED (Right Click) - Above SPIKE */}
             <button 
-                className="absolute bottom-8 right-[18rem] w-20 h-20 rounded-full bg-magenta/20 border-2 border-magenta text-magenta font-bold shadow-[0_0_15px_#FF00FF] active:bg-magenta active:text-black pointer-events-auto text-xs"
+                className="absolute bottom-[16rem] right-[8rem] w-16 h-16 rounded-full bg-magenta/20 border-2 border-magenta text-magenta font-bold active:bg-magenta active:text-black shadow-[0_0_15px_#EA00FF] pointer-events-auto text-xs"
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredStart')); }}
                 onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredEnd')); }}
             >
                 SHRED
             </button>
 
-            {/* JUMP (Space) - Above MiniMap */}
+            {/* PING (Scan) - Above SHRED */}
             <button 
-                className="absolute bottom-[18rem] right-12 w-20 h-20 rounded-full bg-white/10 border-2 border-white/50 text-white font-bold active:bg-white active:text-black pointer-events-auto text-xs"
+                className="absolute bottom-[22rem] right-[4rem] w-14 h-14 rounded-full bg-yellow-500/20 border-2 border-yellow-500 text-yellow-500 font-bold active:bg-yellow-500 active:text-black shadow-[0_0_15px_#EAB308] pointer-events-auto text-xs"
+                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobilePing')); }}
+                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('e', 'KeyE', 'keyup'); }}
+            >
+                PING
+            </button>
+
+            {/* JUMP (Space) - Between Joystick and Jump */}
+            <button 
+                className="absolute bottom-[6rem] right-[18rem] w-16 h-16 rounded-full bg-white/10 border-2 border-white/50 text-white font-bold active:bg-white active:text-black pointer-events-auto text-[10px]"
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileJump')); }}
                 onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey(' ', 'Space', 'keyup'); }}
             >
@@ -119,34 +128,33 @@ export default function TouchControlsOverlay({ onLookMove }) {
 
             {/* INTERACT (F) - Above Joystick */}
             <button 
-                className="absolute bottom-64 left-24 w-16 h-16 rounded-full border-2 border-green-500 text-green-500 bg-green-500/20 active:bg-green-500 active:text-black font-mono text-xs font-bold flex items-center justify-center shadow-[0_0_10px_#22C55E] pointer-events-auto"
+                className="absolute bottom-64 left-16 w-16 h-16 rounded-full border-2 border-green-500 text-green-500 bg-green-500/20 active:bg-green-500 active:text-black font-mono text-xs font-bold flex items-center justify-center shadow-[0_0_10px_#22C55E] pointer-events-auto"
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('f', 'KeyF', 'keydown'); }}
                 onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('f', 'KeyF', 'keyup'); }}
             >
                 INT
             </button>
             
-            {/* CYBERDECK (Inventory) - Between Joystick and QuickSlots */}
+            {/* CYBERDECK (Inventory) - Top Center Right */}
             <button 
-                className="absolute bottom-16 left-[30%] -translate-x-1/2 p-3 border border-cyan text-cyan bg-black/80 font-mono shadow-[0_0_10px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto text-xs"
-                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('i', 'KeyI', 'keydown'); }}
-                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('i', 'KeyI', 'keyup'); }}
+                className="absolute top-8 right-[25%] p-3 border border-cyan text-cyan bg-black/80 font-mono shadow-[0_0_10px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto text-xs"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileToggleDeck')); }}
+                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileToggleDeck')); }}
             >
                 CYBERDECK
             </button>
 
-            {/* Overclock (Run) Slider - Top center ish to keep it out of the way */}
-            <div className="absolute top-24 left-1/2 -translate-x-1/2 pointer-events-auto cursor-pointer touch-none"
+            {/* Overclock (Run) Slider - Top center left */}
+            <button className="absolute top-8 left-[25%] p-3 border border-yellow-500 text-yellow-500 bg-black/80 font-mono shadow-[0_0_10px_#EAB308] active:bg-yellow-500 active:text-black pointer-events-auto text-xs cursor-pointer"
+                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleRunLock(); }}
                  onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); toggleRunLock(); }}>
-                <div className={`flex items-center gap-2 p-2 border ${gameState.isRunLocked ? 'border-magenta shadow-[0_0_15px_#FF00FF]' : 'border-cyan shadow-[0_0_10px_#00FFFF]'} bg-black/80 font-mono transition-colors`}>
-                    <span className={gameState.isRunLocked ? 'text-orange-500 font-bold animate-pulse text-xs' : 'text-cyan text-xs'}>
-                        OVERCLOCK
-                    </span>
-                    <div className={`w-12 h-6 border ${gameState.isRunLocked ? 'border-magenta bg-magenta/20' : 'border-cyan bg-cyan/20'} relative transition-colors`}>
-                        <div className={`absolute top-0 w-6 h-full transition-all duration-200 ${gameState.isRunLocked ? 'right-0 bg-orange-500 shadow-[0_0_10px_#f97316]' : 'left-0 bg-cyan'}`} />
+                <div className="flex flex-col items-center">
+                    <span className="text-[10px] uppercase font-bold tracking-widest leading-none mb-1">OVERCLOCK</span>
+                    <div className="w-12 h-1 bg-gray-800 rounded-full overflow-hidden">
+                        <div className={`h-full ${gameState.runLock ? 'bg-yellow-500 w-full' : 'w-0'}`}></div>
                     </div>
                 </div>
-            </div>
+            </button>
         </div>
     );
 }

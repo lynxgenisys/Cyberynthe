@@ -100,7 +100,7 @@ export default function CyberdeckUI({ onClose }) {
                     {hoveredItem.rarity && <div className="text-[9px] text-magenta mt-2 uppercase tracking-wider">[{hoveredItem.rarity}]</div>}
                 </div>
             )}
-            <ChromaticContainer className="w-full max-w-6xl h-full flex flex-col p-6 bg-gray-900/80">
+            <ChromaticContainer className="w-full max-w-none px-4 md:px-12 h-full flex flex-col bg-gray-900/80">
 
                 {/* HEADER */}
                 <div className="flex justify-between items-end border-b border-cyan/30 pb-4 mb-6">
@@ -253,7 +253,7 @@ export default function CyberdeckUI({ onClose }) {
                     </div>
 
                     {/* CENTER: ACTIVE MEMORY */}
-                    <div className={`${mobileTab === 'equipped' ? 'flex' : 'hidden'} md:flex flex-1 flex-col items-center justify-center gap-8 md:gap-12 overflow-y-auto py-4`}>
+                    <div className={`${mobileTab === 'equipped' ? 'flex' : 'hidden'} md:flex w-full md:w-2/4 flex-col items-center justify-center gap-8 md:gap-12 overflow-y-auto py-4`}>
                         {/* ACTIVE THREADS (HOTKEYS) */}
                         <div>
                             <h3 className="text-sm text-center text-magenta font-mono mb-4 tracking-[0.2em]">ACTIVE_THREADS // HOTKEYS</h3>
@@ -303,7 +303,7 @@ export default function CyberdeckUI({ onClose }) {
                     </div>
 
                     {/* RIGHT: BACKPACK (GRID) */}
-                    <div className={`${mobileTab === 'storage' ? 'flex' : 'hidden'} md:flex w-full md:w-1/3 flex-col gap-4 md:pl-8 md:border-l border-gray-800`}>
+                    <div className={`${mobileTab === 'storage' ? 'flex' : 'hidden'} md:flex w-full md:w-1/4 flex-col gap-4 md:pl-8 md:border-l border-gray-800`}>
                         <div className="flex justify-between items-end">
                             <h3 className="text-sm text-gray-400 font-bold tracking-widest">STORAGE_PARTITION</h3>
                             <span className={`text-xs font-mono ${state.overhead > 10 ? 'text-magenta animate-pulse' : 'text-gray-500'}`}>

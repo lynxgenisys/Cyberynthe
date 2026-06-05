@@ -271,26 +271,30 @@ function CoreInterface() {
   useEffect(() => {
     if (gameState.isInMenu) return; // Use gameState instead of local state
 
-    const handleKey = (e) => {
-      if (!e || !e.key) return;
-      const k = e.key.toLowerCase();
-      // UI TOGGLES
-      if (k === 'i') setIsDeckOpen(prev => !prev);
-      if (k === 'm' && e.shiftKey) setShowDebug(prev => !prev);
-      if (k === 'h') setShowHelp(prev => !prev);
+      const handleKey = (e) => {
+        if (!e || !e.key) return;
+        const k = e.key.toLowerCase();
+        // UI TOGGLES
+        if (k === 'i') setIsDeckOpen(prev => !prev);
+        if (k === 'm' && e.shiftKey) setShowDebug(prev => !prev);
+        if (k === 'h') setShowHelp(prev => !prev);
 
-      // ACTIONS
-      if (k === 'e') handleScan();
-      if (k === '0') {
-        if (import.meta.env.DEV) handleNav(); // DEBUG: Advance Floor
-      }
+        // ACTIONS
+        if (k === 'e') handleScan();
+        if (k === '0') {
+          triggerExitRun();
+        }
+      };
 
-      // QUICK-SLOT INVENTORY
-      // Handled in QuickSlots.jsx directly
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [gameState.isInMenu]); // Updated dependency
+      const handleMobileToggleDeck = () => setIsDeckOpen(prev => !prev);
+
+      window.addEventListener('keydown', handleKey);
+      window.addEventListener('mobileToggleDeck', handleMobileToggleDeck);
+      return () => {
+        window.removeEventListener('keydown', handleKey);
+        window.removeEventListener('mobileToggleDeck', handleMobileToggleDeck);
+      };
+    }, [gameState.isInMenu]); // Updated dependency
 
   // QUEST INPUT (Y/N)
   useEffect(() => {
