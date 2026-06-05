@@ -259,31 +259,38 @@ const PlayerController = () => {
             if (!isCharging) return;
             setIsCharging(false);
             setChargingWeapon(false);
+            
             if (chargeSoundRef.current) {
-                chargeSoundRef.current.stop();
+                try {
+                    const ctx = chargeSoundRef.current.osc.context;
+                    const t = ctx.currentTime;
+                    chargeSoundRef.current.gain.gain.linearRampToValueAtTime(0, t + 0.1);
+                    chargeSoundRef.current.osc.stop(t + 0.1);
+                } catch (e) {}
                 chargeSoundRef.current = null;
             }
 
             const rawDuration = Date.now() - mouseDownTime.current;
             const duration = rawDuration * cycleMultiplier;
 
-            if (duration < 200) return;
+            const direction = new THREE.Vector3();
+            camera.getWorldDirection(direction);
+            const startPos = body.current.translation();
+            const spawnPos = new THREE.Vector3(startPos.x, startPos.y + 1.5, startPos.z).add(direction.clone().multiplyScalar(0.2));
 
-            let damage = 25;
-            let type = 0; // PING
-            let energyCost = 5;
+            const playerLevel = getLevelFromXP(gameState.xp || 0);
+            const canBurst = playerLevel >= 5;
 
-            if (duration > 800) {
-                damage = 75;
-                type = 1; // SHRED
-                energyCost = 20;
-            }
-
-            if (energy >= energyCost) {
-                dispatch({ type: 'SPEND_ENERGY', amount: energyCost });
-                fireProjectile(_cameraDirection, _spawnVector, type, damage * dmgMultiplier);
+            if (canBurst && duration > 1000) {
+                if (lockResource(10)) {
+                    fireBurst(spawnPos, direction, 'PING');
+                    playSFX('data_spike_attack');
+                }
             } else {
-                playSFX('error');
+                if (lockResource(5)) {
+                    fireProjectile(spawnPos, direction, 'PING');
+                    playSFX('shoot');
+                }
             }
         };
 
@@ -303,7 +310,23 @@ const PlayerController = () => {
         window.addEventListener('mobileFireStart', handleMobileFireStart);
         window.addEventListener('mobileFireEnd', handleMobileFireEnd);
         window.addEventListener('mobileJump', handleMobileJump);
+        
+        const handleMobileShredStart = () => {
+            // Shred is instant fire right now? Let's check original mousedown
+        };
+        const handleMobileShredEnd = () => {
+            const direction = new THREE.Vector3();
+            camera.getWorldDirection(direction);
+            const startPos = body.current.translation();
+            const spawnPos = new THREE.Vector3(startPos.x, startPos.y + 1.5, startPos.z).add(direction.clone().multiplyScalar(0.2));
+            if (lockResource(5)) {
+                fireProjectile(spawnPos, direction, 'SHRED');
+                playSFX('shoot');
+            }
+        };
+        window.addEventListener('mobileShredEnd', handleMobileShredEnd);
         window.addEventListener('mobilePing', handleMobilePing);
+
 
         window.addEventListener('mousedown', handleMouseDown);
         window.addEventListener('mouseup', handleMouseUp);
@@ -313,6 +336,7 @@ const PlayerController = () => {
             window.removeEventListener('mobileFireStart', handleMobileFireStart);
             window.removeEventListener('mobileFireEnd', handleMobileFireEnd);
             window.removeEventListener('mobileJump', handleMobileJump);
+            window.removeEventListener('mobileShredEnd', handleMobileShredEnd);
             window.removeEventListener('mobilePing', handleMobilePing);
 
             window.removeEventListener('mousedown', handleMouseDown);
