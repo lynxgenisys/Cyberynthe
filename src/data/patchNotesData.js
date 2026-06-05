@@ -1,5 +1,19 @@
 export const patchNotes = [
     {
+        version: "v0.15.3",
+        date: "2026-06-04",
+        categories: {
+            "Added": [
+                "Mobile Splash Screen overlay enforcing an explicit user gesture to trigger the Fullscreen API safely on mobile browsers."
+            ],
+            "Changed": [
+                "Index Viewport: Updated meta viewport tags to lock scaling (maximum-scale=1.0) and prevent accidental zoom on mobile.",
+                "Mobile CSS: Applied CSS Media Queries (max-width: 768px) to safely stack UI panels vertically on narrow mobile screens and prevent element overlapping.",
+                "Engine Initialization: Refactored mobile boot sequence to wait for explicit 'ENTER GAME' confirmation before unlocking the canvas, fully resolving the 'half-loaded freeze' issue."
+            ]
+        }
+    },
+    {
         version: "v0.15.0",
         date: "2026-06-04",
         categories: {
