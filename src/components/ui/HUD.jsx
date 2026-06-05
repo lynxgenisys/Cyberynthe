@@ -151,8 +151,8 @@ const SessionTimer = memo(({ startTime, totalPausedTime, isPaused, pauseStartTim
 
     // Doomsday Style: Green Digital LED, Monospace, Glowing
     return (
-        <div className="font-mono text-xl font-bold text-green-500 tracking-widest drop-shadow-[0_0_8px_#00FF00] bg-black/80 px-4 py-0.5 rounded-full border border-green-500/30 backdrop-blur-md flex items-center gap-2">
-            <span className="text-[10px] text-green-800 animate-pulse">T-MINUS</span>
+        <div className="font-mono text-xl mobile:text-4xl font-bold text-green-500 tracking-widest drop-shadow-[0_0_8px_#00FF00] bg-black/80 px-4 py-0.5 rounded-full border border-green-500/30 backdrop-blur-md flex items-center gap-2">
+            <span className="text-[10px] mobile:text-xl text-green-800 animate-pulse">T-MINUS</span>
             <span>{timeStr}</span>
         </div>
     );
@@ -160,14 +160,14 @@ const SessionTimer = memo(({ startTime, totalPausedTime, isPaused, pauseStartTim
 
 const TopBar = memo(({ sectorId, seed, floorLevel, runStartTime, totalPausedTime, isPaused, pauseStartTime }) => (
     <div className="absolute top-1 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4 animate-fade-in-down mobile:scale-75 mobile:top-12">
-        <div className="text-[10px] mobile:text-lg text-gray-400 font-mono tracking-widest bg-black/80 px-2 py-0.5 rounded border border-gray-800/50 backdrop-blur-sm">
+        <div className="text-[10px] mobile:text-3xl text-gray-400 font-mono tracking-widest bg-black/80 px-2 py-0.5 rounded border border-gray-800/50 backdrop-blur-sm">
             <span>SECTOR {sectorId}</span>
             <span className="text-magenta">//</span>
             <span>SEED: {seed}</span>
         </div>
 
         <div className="flex gap-2">
-            <div className="text-base mobile:text-2xl font-bold text-blue-400 tracking-widest drop-shadow-[0_0_5px_rgba(0,100,255,0.8)] bg-black/60 px-3 py-0.5 rounded-full border border-blue-500/20 backdrop-blur-md">
+            <div className="text-base mobile:text-4xl font-bold text-blue-400 tracking-widest drop-shadow-[0_0_5px_rgba(0,100,255,0.8)] bg-black/60 px-3 py-0.5 rounded-full border border-blue-500/20 backdrop-blur-md">
                 FLOOR {floorLevel.toString().padStart(4, '0')}
             </div>
 

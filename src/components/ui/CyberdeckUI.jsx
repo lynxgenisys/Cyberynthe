@@ -170,7 +170,7 @@ export default function CyberdeckUI({ onClose }) {
 
                 {/* MAIN CONTENT AREA */}
                 {activeTab === 'inventory' ? (
-                <div className="flex flex-col md:flex-row flex-1 gap-4 md:gap-8 overflow-hidden mb-6">
+                <div className="flex flex-col md:flex-row flex-1 gap-4 md:gap-8 overflow-y-auto mb-6">
                     {/* MOBILE TAB BAR */}
                     <div className="flex md:hidden w-full border-b border-gray-800 shrink-0">
                         <button onClick={() => setMobileTab('stats')} className={`flex-1 text-xs py-3 font-mono ${mobileTab === 'stats' ? 'text-cyan border-b-2 border-cyan bg-cyan/10' : 'text-gray-500'}`}>STATS</button>
@@ -311,7 +311,7 @@ export default function CyberdeckUI({ onClose }) {
                             </span>
                         </div>
 
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 md:gap-3 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
+                        <div className="grid grid-cols-6 sm:grid-cols-8 gap-1 md:gap-2 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
                             {state.backpack.map((item, i) => (
                                 <div
                                     key={i}
@@ -321,16 +321,16 @@ export default function CyberdeckUI({ onClose }) {
                                         setMousePos({ x: e.clientX, y: e.clientY }); // Immediate Sync
                                     }}
                                     onMouseLeave={() => setHoveredItem(null)}
-                                    className={`aspect-square border p-2 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 relative group
+                                    className={`aspect-square border p-1 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 relative group
                                         ${selectedItem && selectedItem.id === item.id
                                             ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_10px_#FFD700]'
                                             : 'border-gray-800 bg-gray-900/80 hover:border-cyan hover:bg-gray-800 hover:shadow-[0_0_10px_rgba(0,255,255,0.2)]'}
                                     `}
                                 >
-                                    <div className="w-6 h-6 bg-gray-600 mb-2 rounded-sm group-hover:bg-cyan-500 transition-colors"></div>
-                                    <span className="text-[10px] break-words leading-tight text-gray-300 group-hover:text-white">{item.name}</span>
+                                    <div className="w-3 h-3 bg-gray-600 mb-1 rounded-sm group-hover:bg-cyan-500 transition-colors"></div>
+                                    <span className="text-[6px] md:text-[8px] break-words leading-tight text-gray-300 group-hover:text-white">{item.name}</span>
                                     {item.quantity > 1 && (
-                                        <div className="absolute top-1 right-1 bg-magenta text-white text-[9px] px-1 font-bold rounded-sm">
+                                        <div className="absolute top-0 right-0 bg-magenta text-white text-[6px] px-[2px] font-bold rounded-sm">
                                             x{item.quantity}
                                         </div>
                                     )}
@@ -345,7 +345,7 @@ export default function CyberdeckUI({ onClose }) {
 
                 </div>
                 ) : (
-                <div className="flex flex-1 gap-8 overflow-hidden mb-6">
+                <div className="flex flex-1 gap-8 overflow-y-auto mb-6">
                     <div className="w-1/2 flex flex-col gap-6 overflow-y-auto pr-4">
                         <h3 className="text-xl text-magenta font-bold border-b border-magenta/30 pb-2">SYSTEM SETTINGS</h3>
                         

@@ -119,7 +119,7 @@ export default function ChargingReticle({ isCharging, critTimestamp }) {
             >
                 {[0, 120, 240].map((angle, i) => {
                     const rad = (angle * Math.PI) / 180;
-                    const baseDist = 12; // Base offset
+                    const baseDist = 7.2; // Base offset (Tightened to 60%)
                     const dist = baseDist * expansion;
 
                     const x = Math.sin(rad) * dist;

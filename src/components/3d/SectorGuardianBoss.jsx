@@ -1,11 +1,24 @@
 import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 
 export default function SectorGuardianBoss({ mob }) {
     const groupRef = useRef();
     const coreRef = useRef();
     const shieldsRef = useRef([]);
+
+    // Load textures
+    const shieldTex = useTexture('/boss_shield_texture.png');
+    const bodyTex = useTexture('/boss_body_texture.png');
+    
+    // Set texture wrapping
+    useMemo(() => {
+        shieldTex.wrapS = shieldTex.wrapT = THREE.RepeatWrapping;
+        shieldTex.repeat.set(2, 2);
+        bodyTex.wrapS = bodyTex.wrapT = THREE.RepeatWrapping;
+        bodyTex.repeat.set(2, 2);
+    }, [shieldTex, bodyTex]);
 
     useFrame((state, delta) => {
         if (!groupRef.current) return;
@@ -52,11 +65,14 @@ export default function SectorGuardianBoss({ mob }) {
                 <mesh position={[4, 0, 0]}>
                     <boxGeometry args={[0.5, 4, 2]} />
                     <meshStandardMaterial 
+                        map={shieldTex}
                         color="#222222" 
                         emissive={coreColor} 
                         emissiveIntensity={isVulnerable ? 0.2 : 0.8} 
                         metalness={0.9} 
                         roughness={0.1} 
+                        transparent
+                        opacity={0.9}
                         wireframe={isVulnerable}
                     />
                 </mesh>
@@ -65,11 +81,12 @@ export default function SectorGuardianBoss({ mob }) {
     }
 
     return (
-        <group ref={groupRef} scale={1.5}>
+        <group ref={groupRef} scale={0.9}>
             {/* CORE (Octahedron) */}
             <mesh ref={coreRef}>
                 <octahedronGeometry args={[1.5, 0]} />
                 <meshStandardMaterial 
+                    map={bodyTex}
                     color="#FFFFFF" 
                     emissive={coreColor} 
                     emissiveIntensity={isFiring ? 2.0 : 1.0} 

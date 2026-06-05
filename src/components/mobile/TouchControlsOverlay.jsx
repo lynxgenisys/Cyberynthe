@@ -174,15 +174,15 @@ export default function TouchControlsOverlay({ onLookMove }) {
                 <div
                     style={{
                         clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)',
-                        width: 'calc(100% - 4px)',
-                        height: 'calc(100% - 4px)',
+                        width: '46px',
+                        height: '46px',
                         background: 'rgba(0, 0, 0, 0.85)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         color: '#00FFFF',
                         fontFamily: 'monospace',
-                        fontSize: '9px',
+                        fontSize: '11px',
                         fontWeight: 'bold',
                         letterSpacing: '0.02em',
                     }}
