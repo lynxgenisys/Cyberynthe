@@ -3,18 +3,14 @@ import { useGame } from '../../context/GameContext';
 
 // ============================================================
 // !! CRITICAL: DO NOT MOVE BUTTONS UNLESS USER EXPLICITLY ASKS.
-// Layout approved by user. Positions are intentional.
-// Last confirmed working: commit abbc4d4
+// Layout: JUMP/SPIKE/SHRED arranged in a quarter-circle around
+// the minimap (bottom-right). OVERCLOCK centered between JUMP
+// and QuickSlots. CYBERDECK/INT on left side above joystick.
+// Last confirmed by user: 2026-06-04
 // ============================================================
 
 const triggerKey = (key, code, type) => {
     const event = new KeyboardEvent(type, { key, code, bubbles: true, cancelable: true });
-    window.dispatchEvent(event);
-    document.dispatchEvent(event);
-};
-
-const triggerMouse = (button, type) => {
-    const event = new MouseEvent(type, { button, bubbles: true, cancelable: true, clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 });
     window.dispatchEvent(event);
     document.dispatchEvent(event);
 };
@@ -26,10 +22,7 @@ export default function TouchControlsOverlay({ onLookMove }) {
     useEffect(() => {
         if (!swipeAreaRef.current) return;
         const area = swipeAreaRef.current;
-        let lastX = 0;
-        let lastY = 0;
-        let isDragging = false;
-        let touchId = null;
+        let lastX = 0, lastY = 0, isDragging = false, touchId = null;
 
         const handleStart = (e) => {
             e.stopPropagation();
@@ -40,16 +33,12 @@ export default function TouchControlsOverlay({ onLookMove }) {
             lastX = touch.clientX;
             lastY = touch.clientY;
         };
-
         const handleMove = (e) => {
             if (!isDragging) return;
             e.stopPropagation();
             let touch = null;
             for (let i = 0; i < e.changedTouches.length; i++) {
-                if (e.changedTouches[i].identifier === touchId) {
-                    touch = e.changedTouches[i];
-                    break;
-                }
+                if (e.changedTouches[i].identifier === touchId) { touch = e.changedTouches[i]; break; }
             }
             if (!touch) return;
             const deltaX = touch.clientX - lastX;
@@ -59,15 +48,10 @@ export default function TouchControlsOverlay({ onLookMove }) {
             lastX = touch.clientX;
             lastY = touch.clientY;
         };
-
         const handleEnd = (e) => {
             if (!isDragging) return;
             for (let i = 0; i < e.changedTouches.length; i++) {
-                if (e.changedTouches[i].identifier === touchId) {
-                    isDragging = false;
-                    touchId = null;
-                    break;
-                }
+                if (e.changedTouches[i].identifier === touchId) { isDragging = false; touchId = null; break; }
             }
         };
 
@@ -81,71 +65,71 @@ export default function TouchControlsOverlay({ onLookMove }) {
         };
     }, [onLookMove]);
 
+    // ──────────────────────────────────────────────────────────
+    // QUARTER-CIRCLE LAYOUT around minimap (bottom-right corner)
+    // Minimap: ~240px wide, sits at right-4 bottom-4 (16px)
+    // Buttons: w-20 h-20 (80px). Radius ~180px from map corner.
+    //
+    //  [JUMP]          ← 12 o'clock position: directly above map
+    //                     right-[16px + 80px] = right-24 (96px from edge, centre of btn)
+    //                     bottom = minimap height + gap = 240+16+16 = ~[17rem]
+    //
+    //  [SPIKE]         ← ~10 o'clock: above-left of map
+    //                     right-[17rem], bottom-[12rem]
+    //
+    //  [SHRED]         ← 9 o'clock: directly left of map
+    //                     right-[17rem], bottom-[3rem] (same height as map bottom)
+    //
+    //  [OVERCLOCK]     ← centred between JUMP and quickslots
+    //                     bottom-[17rem] centred horizontally by left-[50%]... 
+    //                     actually place it bottom-[17rem] right-[22rem]
+    // ──────────────────────────────────────────────────────────
+
+    const btnClass = "absolute w-20 h-20 rounded-full font-bold pointer-events-auto text-sm flex items-center justify-center select-none";
+
     return (
         <div className="absolute inset-0 z-[90] pointer-events-none">
             {/* Right side: Swipe to look */}
             <div className="absolute right-0 top-0 w-1/2 h-full pointer-events-auto touch-none bg-transparent" ref={swipeAreaRef} />
 
-            {/* DATA SPIKE (Left Click) - Left of MiniMap */}
-            <button
-                className="absolute bottom-32 right-[18rem] w-20 h-20 rounded-full bg-cyan/20 border-2 border-cyan text-cyan font-bold shadow-[0_0_15px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto text-xs"
-                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileFireStart')); }}
-                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileFireEnd')); }}
-            >
-                SPIKE
-            </button>
+            {/* ── QUARTER-CIRCLE COMBAT BUTTONS (around minimap) ── */}
 
-            {/* SHRED (Right Click) - Left of MiniMap, below Data Spike */}
+            {/* JUMP — directly above minimap (12 o'clock) */}
             <button
-                className="absolute bottom-8 right-[18rem] w-20 h-20 rounded-full bg-[#FF00FF]/20 border-2 border-[#FF00FF] text-[#FF00FF] font-bold shadow-[0_0_15px_#FF00FF] active:bg-[#FF00FF]/60 active:text-black pointer-events-auto text-xs"
-                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredStart')); }}
-                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredEnd')); }}
-            >
-                SHRED
-            </button>
-
-            {/* JUMP (Space) - Above MiniMap */}
-            <button
-                className="absolute bottom-[18rem] right-12 w-20 h-20 rounded-full bg-white/10 border-2 border-white/50 text-white font-bold active:bg-white active:text-black pointer-events-auto text-xs"
+                className={`${btnClass} bottom-[17rem] right-6 bg-white/10 border-2 border-white/60 text-white active:bg-white/40`}
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileJump')); }}
                 onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey(' ', 'Space', 'keyup'); }}
             >
                 JUMP
             </button>
 
-            {/* INTERACT (F) - Above Joystick */}
+            {/* SPIKE — upper-left of minimap (10 o'clock) */}
             <button
-                className="absolute bottom-64 left-24 w-16 h-16 rounded-full border-2 border-green-500 text-green-500 bg-green-500/20 active:bg-green-500 active:text-black font-mono text-xs font-bold flex items-center justify-center shadow-[0_0_10px_#22C55E] pointer-events-auto"
-                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('f', 'KeyF', 'keydown'); }}
-                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('f', 'KeyF', 'keyup'); }}
+                className={`${btnClass} bottom-[12rem] right-[8rem] bg-cyan/20 border-2 border-cyan text-cyan shadow-[0_0_15px_#00FFFF] active:bg-cyan/50`}
+                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileFireStart')); }}
+                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileFireEnd')); }}
             >
-                INT
+                SPIKE
             </button>
 
-            {/* CYBERDECK (Inventory) - Between Joystick and QuickSlots */}
-            {/* Fires both 'i' keydown AND mobileToggleDeck custom event so App.jsx catches it */}
+            {/* SHRED — directly left of minimap (9 o'clock) */}
             <button
-                className="absolute bottom-16 left-[30%] -translate-x-1/2 p-3 border border-cyan text-cyan bg-black/80 font-mono shadow-[0_0_10px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto text-xs"
-                onTouchStart={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    triggerKey('i', 'KeyI', 'keydown');
-                    window.dispatchEvent(new CustomEvent('mobileToggleDeck'));
-                }}
-                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('i', 'KeyI', 'keyup'); }}
+                className={`${btnClass} bottom-[4rem] right-[16rem] bg-[#FF00FF]/20 border-2 border-[#FF00FF] text-[#FF00FF] shadow-[0_0_15px_#FF00FF] active:bg-[#FF00FF]/50`}
+                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredStart')); }}
+                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredEnd')); }}
             >
-                CYBERDECK
+                SHRED
             </button>
 
-            {/* OVERCLOCK (Run Toggle Slider) - Centered between JUMP and QuickSlots */}
-            {/* Cyan = off, orange/magenta pulse = on. DO NOT MOVE THIS. */}
+            {/* ── OVERCLOCK SLIDER — centred between JUMP btn and quickslots ── */}
+            {/* Position: bottom-[17.5rem] horizontally centred in the right area */}
             <div
-                className="absolute bottom-[9rem] right-[9rem] pointer-events-auto cursor-pointer touch-none"
+                className="absolute bottom-[20rem] right-[10rem] pointer-events-auto cursor-pointer touch-none"
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); toggleRunLock(); }}
                 onClick={(e) => { e.preventDefault(); toggleRunLock(); }}
             >
-                <div className={`flex items-center gap-2 p-2 border ${gameState.isRunLocked ? 'border-[#FF00FF] shadow-[0_0_15px_#FF00FF]' : 'border-cyan shadow-[0_0_10px_#00FFFF]'} bg-black/80 font-mono transition-colors`}>
-                    <span className={gameState.isRunLocked ? 'text-orange-500 font-bold animate-pulse text-xs' : 'text-cyan text-xs'}>
+                <div className={`flex items-center gap-2 px-3 py-2 border font-mono transition-all ${gameState.isRunLocked ? 'border-[#FF00FF] shadow-[0_0_15px_#FF00FF]' : 'border-cyan shadow-[0_0_10px_#00FFFF]'} bg-black/80`}>
+                    <span className={`text-xs ${gameState.isRunLocked ? 'text-orange-500 font-bold animate-pulse' : 'text-cyan'}`}>
                         OVERCLOCK
                     </span>
                     <div className={`w-12 h-6 border ${gameState.isRunLocked ? 'border-[#FF00FF] bg-[#FF00FF]/20' : 'border-cyan bg-cyan/20'} relative transition-colors`}>
@@ -153,6 +137,48 @@ export default function TouchControlsOverlay({ onLookMove }) {
                     </div>
                 </div>
             </div>
+
+            {/* ── LEFT SIDE BUTTONS ── */}
+
+            {/* INTERACT (F) — above joystick */}
+            <button
+                className="absolute bottom-64 left-24 w-16 h-16 rounded-full border-2 border-green-500 text-green-500 bg-green-500/20 active:bg-green-500 active:text-black font-mono text-xs font-bold flex items-center justify-center shadow-[0_0_10px_#22C55E] pointer-events-auto select-none"
+                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('f', 'KeyF', 'keydown'); }}
+                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('f', 'KeyF', 'keyup'); }}
+            >
+                INT
+            </button>
+
+            {/* CYBERDECK — between joystick and QuickSlots, hexagonal feel */}
+            <button
+                className="absolute bottom-16 left-[30%] -translate-x-1/2 pointer-events-auto select-none"
+                onTouchStart={(e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    triggerKey('i', 'KeyI', 'keydown');
+                    window.dispatchEvent(new CustomEvent('mobileToggleDeck'));
+                }}
+                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('i', 'KeyI', 'keyup'); }}
+                style={{
+                    clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
+                    width: '80px',
+                    height: '64px',
+                    background: 'rgba(0, 255, 255, 0.1)',
+                    border: 'none',
+                    outline: '2px solid #00FFFF',
+                    outlineOffset: '-2px',
+                    color: '#00FFFF',
+                    fontFamily: 'monospace',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 0 12px #00FFFF80',
+                    letterSpacing: '0.05em',
+                }}
+            >
+                DECK
+            </button>
         </div>
     );
 }
