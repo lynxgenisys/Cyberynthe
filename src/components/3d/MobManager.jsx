@@ -1146,10 +1146,6 @@ export default function MobManager({ maze, floorLevel }) {
                                 mob.attackState = 'CHARGING';
                                 mob.chargeTimer = 2.0;
                                 addNotification("ALERT: STATEFUL_TRACKER_PHASE_LOCK", "#EA00FF");
-                            } else {
-                                // Wander or move towards player slowly
-                                vx = (dx / dist) * 1.5;
-                                vz = (dz / dist) * 1.5;
                             }
                         } else if (mob.attackState === 'CHARGING') {
                             mob.chargeTimer -= delta;
@@ -1171,9 +1167,8 @@ export default function MobManager({ maze, floorLevel }) {
                             if (mob.fireTimer <= 0) {
                                 // Raycast Hit
                                 if (dist < 25) { // Unavoidable if in sight and fired
-                                    dispatch({ type: 'TAKE_DAMAGE', amount: mob.damage || 20 });
+                                    damageKernel(mob.damage || 20);
                                     addNotification("CRITICAL: PHASE_LOCK_HIT", "#FF0000");
-                                    createDamageText(playerPos.x, playerPos.y + 1, playerPos.z, mob.damage || 20, true);
                                 }
                                 mob.attackState = 'COOLDOWN';
                                 mob.cooldownTimer = 3.0;
@@ -1184,9 +1179,6 @@ export default function MobManager({ maze, floorLevel }) {
                             if (mob.cooldownTimer <= 0) {
                                 mob.attackState = 'IDLE';
                             }
-                            // Retreat slowly
-                            vx = -(dx / dist) * 1.0;
-                            vz = -(dz / dist) * 1.0;
                         }
                     }
                 }
