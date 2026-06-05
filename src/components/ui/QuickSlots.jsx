@@ -80,7 +80,7 @@ const QuickSlots = () => {
             fontFamily: 'monospace',
             zIndex: 100
         }}
-        className="-translate-x-1/2 origin-bottom transition-all">
+        className="-translate-x-1/2 origin-bottom transition-all max-md:scale-50 max-md:bottom-2">
             {slots.map((item, index) => (
                 <div
                     key={index}

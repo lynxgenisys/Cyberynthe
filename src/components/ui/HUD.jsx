@@ -375,7 +375,7 @@ export default function HUD() {
 
     // --- RENDER ---
     return (
-        <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-6 max-md:p-0 z-50 select-none overflow-hidden" style={hudStyle}>
+        <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-6 max-md:p-0 z-[100] select-none overflow-hidden" style={hudStyle}>
             {/* TOP AREA (HUD + Clock + MiniMap) */}
             <div className="flex flex-col relative pointer-events-auto h-[120px] max-md:h-[100px] mt-4 max-md:mt-0 w-full max-md:w-[153.8%] max-md:scale-[0.65] max-md:origin-top-left items-center">
                 <TopBar

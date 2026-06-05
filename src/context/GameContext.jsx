@@ -863,7 +863,7 @@ export const GameProvider = ({ children }) => {
                 localStorage.setItem('CyberSynthe_MusicShuffle', isShuffle);
                 setGameState(prev => ({ ...prev, isMusicShuffle: isShuffle }));
             },
-            setCurrentTrackName: (name) => setGameState(prev => ({ ...prev, currentTrackName: name })),
+            setCurrentTrackName: (name) => setGameState(prev => prev.currentTrackName === name ? prev : { ...prev, currentTrackName: name }),
 
             // LOOT SYSTEM
             processLootDrop,
