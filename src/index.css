@@ -79,7 +79,7 @@ position: fixed;
 top: 0; left: 0; width: 100vw; height: 100vh;
 background: rgba(10, 10, 15, 0.98);
 z-index: 99999;
-display: flex; justify-content: center; align-items: center;
+display: none; justify-content: center; align-items: center;
 font-family: sans-serif; color: #fff; text-align: center;
 padding: 20px; box-sizing: border-box;
 }
