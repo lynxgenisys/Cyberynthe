@@ -1,5 +1,23 @@
 export const patchNotes = [
     {
+        version: "v0.16.3",
+        date: "2026-06-05",
+        categories: {
+            "Added": [
+                "Boss: Generated brand new hi-res textures for the Sector Guardian's main body hull and rotating energy shields.",
+                "UI: Enabled full scrolling functionality across all Cyberdeck UI partitions for both PC and Mobile."
+            ],
+            "Changed": [
+                "Mechanics: Fully reverted Data Spike tap/charge logic. A single tap now fires instantly upon release. Charge shots remain locked until Player Level 5, triggering when held and released.",
+                "UI: Shrunk the view size of backpack/storage items to 25% their original size to allow a massive 48-slot scrolling grid.",
+                "UI: Tightened the tri-bead charging reticle to 60% of its original radius for improved target visibility.",
+                "Boss: Scaled down the physical 3D mesh of the Sector Guardian to 60% of its massive size to better fit the floor 30 arena.",
+                "Mobile UI: Cleaned up the Cyberdeck overlay button, utilizing thin borders and doubling the font size for legibility.",
+                "Mobile UI: Doubled the scale of the top-bar HUD elements (Doomsday Clock, Floor Level, Sector info) exclusively for mobile users."
+            ]
+        }
+    },
+    {
         version: "v0.16.2",
         date: "2026-06-04",
         title: "Sector 3 Unlocked & Stateful Tracker",
