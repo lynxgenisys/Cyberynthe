@@ -145,7 +145,11 @@ const ExitTile = React.memo(({ x, z, gameState, advanceFloor, addNotification, W
 
 export default function MazeRenderer() {
     const { gameState, advanceFloor, setGameState, addNotification } = useGame();
-    const CELL_SIZE = 2;
+    
+    // Dynamic Cell Size: Wider passages for Sector 3 (Floors 21-30)
+    const isSector3 = gameState.floorLevel > 20 && gameState.floorLevel <= 30;
+    const CELL_SIZE = isSector3 ? 2.4 : 2.0;
+    
     const WALL_HEIGHT = 4;
     const [maze, setMaze] = useState(null);
 
@@ -202,12 +206,22 @@ export default function MazeRenderer() {
 
     useEffect(() => {
         if (!maze) return;
-        const isSector2 = gameState.floorLevel >= 11 && gameState.floorLevel <= 25;
+        const isSector2 = gameState.floorLevel >= 11 && gameState.floorLevel <= 20;
+        const isSector3 = gameState.floorLevel > 20 && gameState.floorLevel <= 30;
+        
         const loader = new THREE.TextureLoader();
         let wallTex = null;
         let floorTex = null;
 
-        if (isSector2) {
+        if (isSector3) {
+            wallTex = loader.load(wallGlitchAASrc); // Reusing glitch but tinting it
+            floorTex = loader.load(floorASrc);
+            wallTex.colorSpace = floorTex.colorSpace = THREE.SRGBColorSpace;
+            wallTex.wrapS = wallTex.wrapT = THREE.RepeatWrapping;
+            floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping;
+            floorTex.repeat.set(CELL_SIZE, CELL_SIZE);
+            wallTex.repeat.set(CELL_SIZE, 1);
+        } else if (isSector2) {
             wallTex = loader.load(wallCityASrc);
             floorTex = loader.load(floorCSrc);
             wallTex.colorSpace = floorTex.colorSpace = THREE.SRGBColorSpace;
@@ -234,23 +248,22 @@ export default function MazeRenderer() {
         }
 
         const wallMat = new THREE.MeshStandardMaterial({
-            color: '#FFFFFF',
-            emissive: isSector2 ? '#442200' : '#008888', // Darkened copper for city neon depth
-            emissiveIntensity: isSector2 ? 1.2 : 0.4,
+            color: isSector3 ? '#FFAA00' : '#FFFFFF',
+            emissive: isSector3 ? '#883300' : (isSector2 ? '#442200' : '#008888'), 
+            emissiveIntensity: isSector3 ? 0.8 : (isSector2 ? 1.2 : 0.4),
             roughness: 0.2,
             metalness: 0.8,
             map: wallTex,
-            emissiveMap: wallTex // RESTORED
         });
 
         const floorMat = new THREE.MeshStandardMaterial({
-            color: isSector2 ? '#AAAAFF' : '#FFFFFF',
-            roughness: isSector2 ? 0.05 : 0.4,
-            metalness: isSector2 ? 0.6 : 0.1,
+            color: isSector3 ? '#FFAA00' : (isSector2 ? '#AAAAFF' : '#FFFFFF'),
+            roughness: isSector3 ? 0.2 : (isSector2 ? 0.05 : 0.4),
+            metalness: isSector3 ? 0.8 : (isSector2 ? 0.6 : 0.1),
             map: floorTex,
-            emissive: isSector2 ? '#111122' : '#222222', // Darker base to allow neon to pop
-            emissiveMap: floorTex, // RESTORED
-            emissiveIntensity: isSector2 ? 0.3 : 0.15
+            emissive: isSector3 ? '#331100' : (isSector2 ? '#111122' : '#222222'),
+            emissiveMap: floorTex,
+            emissiveIntensity: isSector3 ? 0.5 : (isSector2 ? 0.3 : 0.15)
         });
 
         setMaterials({ wall: wallMat, floor: floorMat, wallTexture: wallTex, sector: gameState.floorLevel });

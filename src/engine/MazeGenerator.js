@@ -256,6 +256,58 @@ export function generateMaze(seed, floorLevel) {
         };
     }
 
+    // 6.55 SECTOR GUARDIAN BOSS PROTOCOL (Floor 30)
+    if (floorLevel === 30) {
+        // Octagonal-ish large arena for laser sweeps
+        const ARENA_SIZE = 35;
+        const newGrid = Array(ARENA_SIZE).fill().map(() => Array(ARENA_SIZE).fill(TILE.WALL));
+
+        // Carve Main Floor (Circle-ish)
+        const center = Math.floor(ARENA_SIZE / 2);
+        for (let y = 1; y < ARENA_SIZE - 1; y++) {
+            for (let x = 1; x < ARENA_SIZE - 1; x++) {
+                // Check distance from center
+                const dx = x - center;
+                const dy = y - center;
+                if (dx*dx + dy*dy <= 14*14) {
+                    newGrid[y][x] = TILE.PATH;
+                }
+            }
+        }
+
+        // Add 4 Cover Blocks in corners
+        const coverOffsets = [-8, 8];
+        coverOffsets.forEach(cx => {
+            coverOffsets.forEach(cy => {
+                newGrid[center + cy][center + cx] = TILE.WALL;
+                newGrid[center + cy + 1][center + cx] = TILE.WALL;
+                newGrid[center + cy][center + cx + 1] = TILE.WALL;
+                newGrid[center + cy + 1][center + cx + 1] = TILE.WALL;
+            });
+        });
+
+        finalGrid = newGrid;
+
+        finalStart.x = center;
+        finalStart.y = 2;
+
+        finalExit.x = center;
+        finalExit.y = ARENA_SIZE - 3;
+        finalGrid[finalExit.y][finalExit.x] = TILE.EXIT;
+
+        return {
+            grid: finalGrid,
+            width: ARENA_SIZE,
+            height: ARENA_SIZE,
+            metadata: {
+                seed: floorSeed,
+                sector: Math.ceil(floorLevel / 25),
+                start: finalStart,
+                exit: finalExit
+            }
+        };
+    }
+
     // 6.6 BROODMOTHER BOSS PROTOCOL (Floor 20)
     if (floorLevel === 20) {
         const roomSize = 15;

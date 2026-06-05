@@ -85,8 +85,8 @@ const QuickSlots = () => {
                 <div
                     key={index}
                     style={{
-                        width: '128px',
-                        height: '128px',
+                        width: '64px',
+                        height: '64px',
                         border: `2px solid ${getSlotBorderColor(item)}`,
                         borderRadius: '4px',
                         backgroundColor: 'rgba(0, 0, 0, 0.7)',

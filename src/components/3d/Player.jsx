@@ -247,10 +247,74 @@ const PlayerController = () => {
             }
         };
 
+        
+        const handleMobileFireStart = () => {
+            mouseDownTime.current = Date.now();
+            setIsCharging(true);
+            setChargingWeapon(true);
+            chargeSoundRef.current = playSFX('data_spike_charge');
+        };
+
+        const handleMobileFireEnd = () => {
+            if (!isCharging) return;
+            setIsCharging(false);
+            setChargingWeapon(false);
+            if (chargeSoundRef.current) {
+                chargeSoundRef.current.stop();
+                chargeSoundRef.current = null;
+            }
+
+            const rawDuration = Date.now() - mouseDownTime.current;
+            const duration = rawDuration * cycleMultiplier;
+
+            if (duration < 200) return;
+
+            let damage = 25;
+            let type = 0; // PING
+            let energyCost = 5;
+
+            if (duration > 800) {
+                damage = 75;
+                type = 1; // SHRED
+                energyCost = 20;
+            }
+
+            if (energy >= energyCost) {
+                dispatch({ type: 'SPEND_ENERGY', amount: energyCost });
+                fireProjectile(_cameraDirection, _spawnVector, type, damage * dmgMultiplier);
+            } else {
+                playSFX('error');
+            }
+        };
+
+        const handleMobileJump = () => {
+            const currentVel = body.current.linvel();
+            const isGrounded = Math.abs(currentVel.y) < 0.1;
+            if (isGrounded) {
+                body.current.setLinvel({ x: currentVel.x, y: 5.0, z: currentVel.z }, true);
+                playSFX('jump');
+            }
+        };
+
+        const handleMobilePing = () => {
+            triggerScan();
+        };
+
+        window.addEventListener('mobileFireStart', handleMobileFireStart);
+        window.addEventListener('mobileFireEnd', handleMobileFireEnd);
+        window.addEventListener('mobileJump', handleMobileJump);
+        window.addEventListener('mobilePing', handleMobilePing);
+
         window.addEventListener('mousedown', handleMouseDown);
         window.addEventListener('mouseup', handleMouseUp);
         window.addEventListener('keydown', handleKeyDown);
         return () => {
+            
+            window.removeEventListener('mobileFireStart', handleMobileFireStart);
+            window.removeEventListener('mobileFireEnd', handleMobileFireEnd);
+            window.removeEventListener('mobileJump', handleMobileJump);
+            window.removeEventListener('mobilePing', handleMobilePing);
+
             window.removeEventListener('mousedown', handleMouseDown);
             window.removeEventListener('mouseup', handleMouseUp);
             window.removeEventListener('keydown', handleKeyDown);

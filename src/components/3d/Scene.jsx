@@ -11,6 +11,7 @@ import ProjectileSystem from './ProjectileSystem';
 import ImpactSystem from './ImpactSystem';
 import Shockwave from './Shockwave';
 import AuroraSky from './AuroraSky';
+import DataGridSky from './DataGridSky';
 import { useGame, GameContext } from '../../context/GameContext';
 import { PlayerContext } from '../../context/PlayerContext';
 import { InventoryContext } from '../../context/InventoryContext';
@@ -112,10 +113,16 @@ const CyberScene = () => {
     const lightColor = isQuarantine ? '#ff00ff' : '#EA00FF';
 
     const isSector1 = gameState.floorLevel <= 10;
+    const isSector2 = gameState.floorLevel > 10 && gameState.floorLevel <= 20;
+    const isSector3 = gameState.floorLevel > 20 && gameState.floorLevel <= 30;
+
+    // Sector 3 overrides for fog/light
+    const currentFogColor = isSector3 ? '#220a00' : fogColor; 
+    const currentLightColor = isSector3 ? '#ffaa00' : lightColor;
 
     return (
         <>
-            <color attach="background" args={[fogColor]} />
+            <color attach="background" args={[currentFogColor]} />
 
             {isSector1 ? (
                 <>
@@ -124,7 +131,7 @@ const CyberScene = () => {
                     <fog attach="fog" args={[fogColor, 5, 55]} />
                     <Stars radius={150} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
                 </>
-            ) : (
+            ) : isSector2 ? (
                 <>
                     {/* SECTOR 02: PHYSICAL LAYER */}
                     <fog attach="fog" args={['#050505', 10, 60]} />
@@ -138,11 +145,19 @@ const CyberScene = () => {
                     </mesh>
                     <TextureBleedSphere />
                 </>
+            ) : (
+                <>
+                    {/* SECTOR 03: LOGIC LATTICE */}
+                    <DataGridSky />
+                    <fog attach="fog" args={[currentFogColor, 5, 50]} />
+                    <gridHelper args={[500, 100, 0xff5500, 0x220500]} position={[0, -2, 0]} />
+                    <Stars radius={120} depth={50} count={2000} factor={3} saturation={1} fade speed={0.5} />
+                </>
             )}
 
             {/* AMBIENT GLOW (DARKER FOR MYSTERY) */}
-            <ambientLight intensity={0.25} color="#FFFFFF" />
-            <pointLight position={[10, 10, 10]} intensity={0.6} color={lightColor} />
+            <ambientLight intensity={isSector3 ? 0.3 : 0.25} color="#FFFFFF" />
+            <pointLight position={[10, 10, 10]} intensity={isSector3 ? 0.8 : 0.6} color={currentLightColor} />
 
             <Physics gravity={[0, -20, 0]}>
                 <MazeRenderer />

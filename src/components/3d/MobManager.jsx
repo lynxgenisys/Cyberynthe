@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import { useInventory } from '../../context/InventoryContext';
 import SparkDrop from './SparkDrop';
 import ByteMotherBoss from './ByteMotherBoss';
+import SectorGuardianBoss from './SectorGuardianBoss';
 
 import biteMiteSkinSrc from '../../assets/mobs/Bite_Mite_Skin.webp';
 import wispSkinSrc from '../../assets/mobs/null_wisp_skin.webp';
@@ -293,10 +294,10 @@ export default function MobManager({ maze, floorLevel }) {
         return null;
     }
 
-    const miteRef = useRef(); const wispRef = useRef(); const wispOverlayRef = useRef(); const hunterRef = useRef();
+    const miteRef = useRef(); const wispRef = useRef(); const wispOverlayRef = useRef(); const hunterRef = useRef(); const trackerRef = useRef();
     const sentryTopRef = useRef(); const sentryMidRef = useRef(); const sentryBotRef = useRef(); const sentryHeartRef = useRef();
     const bossCore = useRef(); const bossRing1Ref = useRef(); const bossRing2Ref = useRef(); const bossRing3Ref = useRef();
-    const miteScanRef = useRef(); const wispScanRef = useRef(); const hunterScanRef = useRef(); const sentryScanRef = useRef(); const bossScanRef = useRef();
+    const miteScanRef = useRef(); const wispScanRef = useRef(); const hunterScanRef = useRef(); const sentryScanRef = useRef(); const bossScanRef = useRef(); const trackerScanRef = useRef();
     const sentryBeamRef = useRef(); // NEW: Instanced Beams
 
     const tempObject = useMemo(() => new THREE.Object3D(), []);
@@ -665,11 +666,12 @@ export default function MobManager({ maze, floorLevel }) {
                 }
             }
         }
-        if (floorLevel !== 999 && floorLevel !== 10 && floorLevel !== 20) {
+        if (floorLevel !== 999 && floorLevel !== 10 && floorLevel !== 20 && floorLevel !== 30) {
             deadEnds.forEach(pos => {
                 const rand = Math.random();
                 let type = 'BIT_MITE';
-                if (floorLevel >= 11 && rand < 0.2) type = 'NULL_WISP';
+                if (floorLevel >= 21 && rand < 0.15) type = 'STATEFUL_TRACKER';
+                else if (floorLevel >= 11 && rand < 0.2) type = 'NULL_WISP';
                 else if (floorLevel >= 13 && rand < 0.05) type = 'HUNTER';
                 else if (floorLevel >= 7 && rand > 0.72) type = 'STATELESS_SENTRY';
                 const mob = MobLogic.createMob(type, floorLevel || 1);
@@ -736,14 +738,14 @@ export default function MobManager({ maze, floorLevel }) {
                 const posArr = mobPositionBuffer.current;
                 posArr[i * 3] = mob.x;
                 // Accurate Y-pos for hit detection: Wisp higher (3.5), Sentry mid (2.5), Boss core (3.5)
-                const mobY = (mob.id === 'NULL_WISP' ? 3.5 : (mob.id === 'IO_SENTINEL') ? 3.5 : (mob.id === 'BYTE_MOTHER') ? 2.5 : mob.id === 'STATELESS_SENTRY' ? 2.5 : 1.0);
+                const mobY = (mob.id === 'NULL_WISP' ? 3.5 : (mob.id === 'IO_SENTINEL' || mob.id === 'SECTOR_GUARDIAN') ? 3.5 : (mob.id === 'BYTE_MOTHER') ? 2.5 : mob.id === 'STATELESS_SENTRY' ? 2.5 : mob.id === 'STATEFUL_TRACKER' ? 2.0 : 1.0);
                 posArr[i * 3 + 1] = mobY;
                 posArr[i * 3 + 2] = mob.z;
                 mobLifeBuffer.current[i] = mob.currentHp / mob.maxHp;
-                mobTypeBuffer.current[i] = (mob.id === 'BIT_MITE' ? 1 : mob.id === 'NULL_WISP' ? 2 : mob.id === 'HUNTER' ? 3 : mob.id === 'BYTE_MOTHER' ? 5 : 4);
+                mobTypeBuffer.current[i] = (mob.id === 'BIT_MITE' ? 1 : mob.id === 'NULL_WISP' ? 2 : mob.id === 'HUNTER' ? 3 : mob.id === 'BYTE_MOTHER' ? 5 : mob.id === 'STATEFUL_TRACKER' ? 6 : mob.id === 'SECTOR_GUARDIAN' ? 7 : 4);
 
                 // Boss Aggro Proximity Check
-                if ((mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER') && !mob.aggroActive && distSq < 625) { // 25m radius (25^2 = 625)
+                if ((mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER' || mob.id === 'SECTOR_GUARDIAN') && !mob.aggroActive && distSq < 625) { // 25m radius (25^2 = 625)
                     mob.aggroActive = true;
                 }
 
@@ -758,7 +760,7 @@ export default function MobManager({ maze, floorLevel }) {
                 if (mobDamageBuffer.current[i] > 0) {
                     let dmg = mobDamageBuffer.current[i];
                     
-                    if (mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER') {
+                    if (mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER' || mob.id === 'SECTOR_GUARDIAN') {
                         mob.aggroActive = true;
                     }
 
@@ -798,7 +800,7 @@ export default function MobManager({ maze, floorLevel }) {
 
                         // Damage per tick: 4 + 0.2 per level (Bosses take +1% max HP true damage)
                         let tickDamage = 4 + (playerLevel * 0.2);
-                        if (mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER') tickDamage += (mob.maxHp * 0.01);
+                        if (mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER' || mob.id === 'SECTOR_GUARDIAN') tickDamage += (mob.maxHp * 0.01);
 
                         // Tick timing: 2s at level 1, -0.1s per level (minimum 0.5s)
                         const tickInterval = Math.max(0.5, 2.0 - (playerLevel * 0.1));
@@ -890,7 +892,43 @@ export default function MobManager({ maze, floorLevel }) {
 
                     // WISP LOGIC: ORBIT & SLEEP
                     let vx = 0, vz = 0;
-                    if (mob.id === 'NULL_WISP') {
+                    
+                if (mob.id === 'STATEFUL_TRACKER') {
+                    if (dist < 15) {
+                        if (!mob.attackState) mob.attackState = 'IDLE';
+                        if (mob.attackState === 'IDLE') {
+                            if (Math.random() < 0.01) {
+                                mob.attackState = 'CHARGING';
+                                mob.chargeTimer = 1.5;
+                                addNotification("ALERT: STATEFUL_TRACKER_PHASE_LOCK", "#EA00FF");
+                            }
+                        } else if (mob.attackState === 'CHARGING') {
+                            mob.chargeTimer -= delta;
+                            mob.isStationary = true;
+                            if (mob.chargeTimer <= 0) {
+                                mob.attackState = 'FIRING';
+                                mob.fireTimer = 0.5;
+                            }
+                        } else if (mob.attackState === 'FIRING') {
+                            mob.fireTimer -= delta;
+                            if (mob.fireTimer <= 0) {
+                                dispatch({ type: 'TAKE_DAMAGE', amount: mob.damage || 15 });
+                                addNotification("CRITICAL: PHASE_LOCK_HIT", "#FF0000");
+                                createDamageText(playerPos.x, playerPos.y + 1, playerPos.z, mob.damage || 15, true);
+                                mob.attackState = 'COOLDOWN';
+                                mob.cooldownTimer = 2.0;
+                                mob.isStationary = false;
+                            }
+                        } else if (mob.attackState === 'COOLDOWN') {
+                            mob.cooldownTimer -= delta;
+                            if (mob.cooldownTimer <= 0) {
+                                mob.attackState = 'IDLE';
+                            }
+                        }
+                    }
+                }
+
+                if (mob.id === 'NULL_WISP') {
                         if (dist > 15) return; // Sleep if > 15m away
 
                         const camRotY = playerRotationRef.current || 0;
@@ -1129,6 +1167,42 @@ export default function MobManager({ maze, floorLevel }) {
                 }
 
                 // 3. NULL_WISP: PING_ALARM (Scout)
+                
+                if (mob.id === 'STATEFUL_TRACKER') {
+                    if (dist < 15) {
+                        if (!mob.attackState) mob.attackState = 'IDLE';
+                        if (mob.attackState === 'IDLE') {
+                            if (Math.random() < 0.01) {
+                                mob.attackState = 'CHARGING';
+                                mob.chargeTimer = 1.5;
+                                addNotification("ALERT: STATEFUL_TRACKER_PHASE_LOCK", "#EA00FF");
+                            }
+                        } else if (mob.attackState === 'CHARGING') {
+                            mob.chargeTimer -= delta;
+                            mob.isStationary = true;
+                            if (mob.chargeTimer <= 0) {
+                                mob.attackState = 'FIRING';
+                                mob.fireTimer = 0.5;
+                            }
+                        } else if (mob.attackState === 'FIRING') {
+                            mob.fireTimer -= delta;
+                            if (mob.fireTimer <= 0) {
+                                dispatch({ type: 'TAKE_DAMAGE', amount: mob.damage || 15 });
+                                addNotification("CRITICAL: PHASE_LOCK_HIT", "#FF0000");
+                                createDamageText(playerPos.x, playerPos.y + 1, playerPos.z, mob.damage || 15, true);
+                                mob.attackState = 'COOLDOWN';
+                                mob.cooldownTimer = 2.0;
+                                mob.isStationary = false;
+                            }
+                        } else if (mob.attackState === 'COOLDOWN') {
+                            mob.cooldownTimer -= delta;
+                            if (mob.cooldownTimer <= 0) {
+                                mob.attackState = 'IDLE';
+                            }
+                        }
+                    }
+                }
+
                 if (mob.id === 'NULL_WISP') {
                     if (dist < 15 && !mob.hasAlerted) {
                         addNotification("ALERT: SCOUT_PING_DETECTED // POSITION_LEAKED");
@@ -1294,6 +1368,38 @@ export default function MobManager({ maze, floorLevel }) {
                     }
                 }
                 
+                
+                if (mob.id === 'SECTOR_GUARDIAN' && floorLevel !== 999) {
+                    if (!mob.bossState) mob.bossState = 'IDLE';
+                    
+                    if (mob.bossState === 'IDLE' && mob.aggroActive) {
+                        if (Math.random() < 0.02) {
+                            mob.bossState = 'CHARGING';
+                            mob.chargeTimer = 2.0;
+                            setBossSubtitle("FIREWALL_PURGE_INITIATED", 2000);
+                        }
+                    } else if (mob.bossState === 'CHARGING') {
+                        mob.chargeTimer -= delta;
+                        if (mob.chargeTimer <= 0) {
+                            mob.bossState = 'FIRING';
+                            mob.fireTimer = 2.0; // 2 seconds of laser
+                        }
+                    } else if (mob.bossState === 'FIRING') {
+                        mob.fireTimer -= delta;
+                        // Sweeping damage
+                        if (distSq < 400 && Math.random() < 0.1) {
+                            dispatch({ type: 'TAKE_DAMAGE', amount: 20 });
+                        }
+                        if (mob.fireTimer <= 0) {
+                            mob.bossState = 'COOLDOWN';
+                            mob.cooldownTimer = 3.0;
+                        }
+                    } else if (mob.bossState === 'COOLDOWN') {
+                        mob.cooldownTimer -= delta;
+                        if (mob.cooldownTimer <= 0) mob.bossState = 'IDLE';
+                    }
+                }
+
                 // 3. BYTE_MOTHER: Minion Summoning
                 if (mob.id === 'BYTE_MOTHER' && floorLevel !== 999) {
                     mob.summonTimer = (mob.summonTimer || 0) - delta;
@@ -1371,7 +1477,7 @@ export default function MobManager({ maze, floorLevel }) {
                 bossC++; // Increment boss count
             }
             
-            if (mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER') {
+            if (mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER' || mob.id === 'SECTOR_GUARDIAN') {
                 // --- LIVE BOSS HP UPDATE ---
                 // Only update if HP changed significantly or every 0.5s to avoid React thrashing
                 if (!mob.lastReportedHp) mob.lastReportedHp = mob.currentHp;
@@ -1411,7 +1517,7 @@ export default function MobManager({ maze, floorLevel }) {
                     });
                 } else {
                     // Normal XP rewards
-                    rewardXP = (mob.id === 'BIT_MITE' ? 25 : mob.id === 'NULL_WISP' ? 40 : mob.id === 'HUNTER' ? 65 : mob.id === 'STATELESS_SENTRY' ? 80 : 500);
+                    rewardXP = (mob.id === 'BIT_MITE' ? 25 : mob.id === 'NULL_WISP' ? 40 : mob.id === 'HUNTER' ? 65 : mob.id === 'STATELESS_SENTRY' ? 80 : mob.id === 'STATEFUL_TRACKER' ? 120 : 500);
                     rewardEBits = Math.floor(rewardXP / 4);
                 }
 
@@ -1472,6 +1578,11 @@ export default function MobManager({ maze, floorLevel }) {
                     addNotification("BYTE_MOTHER_PURGED"); 
                     setBossKey({ x: mob.x, z: mob.z });
                     updateBossStatus({ active: false }); 
+                }
+                if (mob.id === 'SECTOR_GUARDIAN') { 
+                    addNotification("SECTOR_GUARDIAN_PURGED. LATTICE_OPENED.");  
+                    setBossKey({ x: mob.x, z: mob.z });
+                    updateBossStatus({ active: false }); 
 
                     // Drop Lore Fragment 2 directly at boss location
                     sparksRef.current.push({
@@ -1512,12 +1623,84 @@ export default function MobManager({ maze, floorLevel }) {
                 tempObject.scale.set(0.45, 0.45, 0.45);
             }
             // Null Wisps are ~35% (0.35)
-            if (mob.id === 'NULL_WISP') {
+            
+                if (mob.id === 'STATEFUL_TRACKER') {
+                    if (dist < 15) {
+                        if (!mob.attackState) mob.attackState = 'IDLE';
+                        if (mob.attackState === 'IDLE') {
+                            if (Math.random() < 0.01) {
+                                mob.attackState = 'CHARGING';
+                                mob.chargeTimer = 1.5;
+                                addNotification("ALERT: STATEFUL_TRACKER_PHASE_LOCK", "#EA00FF");
+                            }
+                        } else if (mob.attackState === 'CHARGING') {
+                            mob.chargeTimer -= delta;
+                            mob.isStationary = true;
+                            if (mob.chargeTimer <= 0) {
+                                mob.attackState = 'FIRING';
+                                mob.fireTimer = 0.5;
+                            }
+                        } else if (mob.attackState === 'FIRING') {
+                            mob.fireTimer -= delta;
+                            if (mob.fireTimer <= 0) {
+                                dispatch({ type: 'TAKE_DAMAGE', amount: mob.damage || 15 });
+                                addNotification("CRITICAL: PHASE_LOCK_HIT", "#FF0000");
+                                createDamageText(playerPos.x, playerPos.y + 1, playerPos.z, mob.damage || 15, true);
+                                mob.attackState = 'COOLDOWN';
+                                mob.cooldownTimer = 2.0;
+                                mob.isStationary = false;
+                            }
+                        } else if (mob.attackState === 'COOLDOWN') {
+                            mob.cooldownTimer -= delta;
+                            if (mob.cooldownTimer <= 0) {
+                                mob.attackState = 'IDLE';
+                            }
+                        }
+                    }
+                }
+
+                if (mob.id === 'NULL_WISP') {
                 tempObject.scale.set(0.35, 0.35, 0.35);
             }
 
             let mobY = mob.id === 'NULL_WISP' ? 3.5 : 1;
-            if (mob.id === 'NULL_WISP') {
+            
+                if (mob.id === 'STATEFUL_TRACKER') {
+                    if (dist < 15) {
+                        if (!mob.attackState) mob.attackState = 'IDLE';
+                        if (mob.attackState === 'IDLE') {
+                            if (Math.random() < 0.01) {
+                                mob.attackState = 'CHARGING';
+                                mob.chargeTimer = 1.5;
+                                addNotification("ALERT: STATEFUL_TRACKER_PHASE_LOCK", "#EA00FF");
+                            }
+                        } else if (mob.attackState === 'CHARGING') {
+                            mob.chargeTimer -= delta;
+                            mob.isStationary = true;
+                            if (mob.chargeTimer <= 0) {
+                                mob.attackState = 'FIRING';
+                                mob.fireTimer = 0.5;
+                            }
+                        } else if (mob.attackState === 'FIRING') {
+                            mob.fireTimer -= delta;
+                            if (mob.fireTimer <= 0) {
+                                dispatch({ type: 'TAKE_DAMAGE', amount: mob.damage || 15 });
+                                addNotification("CRITICAL: PHASE_LOCK_HIT", "#FF0000");
+                                createDamageText(playerPos.x, playerPos.y + 1, playerPos.z, mob.damage || 15, true);
+                                mob.attackState = 'COOLDOWN';
+                                mob.cooldownTimer = 2.0;
+                                mob.isStationary = false;
+                            }
+                        } else if (mob.attackState === 'COOLDOWN') {
+                            mob.cooldownTimer -= delta;
+                            if (mob.cooldownTimer <= 0) {
+                                mob.attackState = 'IDLE';
+                            }
+                        }
+                    }
+                }
+
+                if (mob.id === 'NULL_WISP') {
                 // Bobbing: Base 3.75, Amp 0.25 (3.5 to 4.0)
                 const t = state.clock.elapsedTime;
                 mobY = 3.75 + Math.sin(t * 2 + i) * 0.25;
@@ -1541,6 +1724,11 @@ export default function MobManager({ maze, floorLevel }) {
                 }
                 wispC++;
                 if (mob.scanTimer > 0 && wispScanRef.current) wispScanRef.current.setMatrixAt(wispScanC++, tempObject.matrix);
+            
+            } else if (mob.id === 'STATEFUL_TRACKER' && trackerRef.current) {
+                trackerRef.current.setMatrixAt(trackerC++, tempObject.matrix);
+                if (mob.scanTimer > 0 && trackerScanRef.current) trackerScanRef.current.setMatrixAt(trackerScanC++, tempObject.matrix);
+
             } else if (mob.id === 'HUNTER' && hunterRef.current) {
                 hunterRef.current.setMatrixAt(hunterC++, tempObject.matrix);
                 if (mob.scanTimer > 0 && hunterScanRef.current) hunterScanRef.current.setMatrixAt(hunterScanC++, tempObject.matrix);
@@ -1869,6 +2057,7 @@ export default function MobManager({ maze, floorLevel }) {
             {/* Boss Beam */}
             {mobs.map(m => m.id === 'IO_SENTINEL' && <BossBeam key={`bossbeam-${m.instanceId}`} mob={m} maze={maze} />)}
             {mobs.map(m => m.id === 'BYTE_MOTHER' && <ByteMotherBoss key={`BYTE_MOTHER-${m.instanceId}`} mob={m} />)}
+            {mobs.map(m => m.id === 'SECTOR_GUARDIAN' && <SectorGuardianBoss key={`SECTOR_GUARDIAN-${m.instanceId}`} mob={m} />)}
 
             <JumpSparksSystem queueRef={jumpSparkQueueRef} />
             <LightFlashesSystem queueRef={lightFlashQueueRef} />

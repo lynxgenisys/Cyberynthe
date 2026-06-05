@@ -94,8 +94,8 @@ export default function TouchControlsOverlay({ onLookMove }) {
                 {/* FIRE (Left Click) */}
                 <button 
                     className="absolute bottom-[12.66rem] right-[14.66rem] w-24 h-24 rounded-full bg-cyan/20 border-2 border-cyan text-cyan font-bold tracking-widest shadow-[0_0_15px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto text-sm"
-                    onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); triggerMouse(0, 'mousedown'); }}
-                    onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerMouse(0, 'mouseup'); }}
+                    onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileFireStart')); }}
+                    onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileFireEnd')); }}
                 >
                     FIRE
                 </button>
@@ -103,25 +103,22 @@ export default function TouchControlsOverlay({ onLookMove }) {
                 {/* SHRED (Right Click) */}
                 <button 
                     className="absolute bottom-[17.33rem] right-[1.33rem] w-20 h-20 rounded-full bg-magenta/20 border-2 border-magenta text-magenta font-bold shadow-[0_0_15px_#FF00FF] active:bg-magenta active:text-black pointer-events-auto text-xs"
-                    onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); triggerMouse(2, 'mousedown'); }}
-                    onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerMouse(2, 'mouseup'); }}
+                    onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredStart')); }}
+                    onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredEnd')); }}
                 >
                     SHRED
                 </button>
 
-                {/* PING (E) */}
-                <button 
-                    className="absolute bottom-[22rem] right-[14.66rem] w-20 h-20 rounded-full bg-cyan/10 border-2 border-cyan/50 text-cyan font-bold active:bg-cyan active:text-black pointer-events-auto text-xs"
-                    onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('e', 'KeyE', 'keydown'); }}
-                    onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('e', 'KeyE', 'keyup'); }}
-                >
-                    PING
-                </button>
+                {/* INVISIBLE MINIMAP OVERLAY (FOR PING) */}
+                <div 
+                    className="absolute bottom-4 right-4 w-48 h-48 rounded-full z-50 pointer-events-auto"
+                    onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobilePing')); }}
+                />
 
                 {/* JUMP (Space) */}
                 <button 
                     className="absolute bottom-12 right-[24rem] w-24 h-24 rounded-full bg-white/10 border-2 border-white/50 text-white font-bold active:bg-white active:text-black pointer-events-auto text-sm"
-                    onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey(' ', 'Space', 'keydown'); }}
+                    onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileJump')); }}
                     onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey(' ', 'Space', 'keyup'); }}
                 >
                     JUMP
