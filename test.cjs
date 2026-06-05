@@ -19,15 +19,18 @@ const puppeteer = require('puppeteer');
     await page.mouse.click(100, 100); // Click anywhere
     
     await new Promise(r => setTimeout(r, 2000));
-    console.log("Clicking INITIALIZE_NEW_RUN...");
     try {
-        await page.evaluate(() => document.querySelector('.initialize-btn').click());
+        await page.keyboard.type('testuser');
+        await new Promise(r => setTimeout(r, 500));
+        await page.keyboard.press('Enter');
     } catch(e) {
-        console.log("Failed to click INITIALIZE:", e.message);
+        console.log("Failed to auth:", e.message);
     }
 
     console.log("Waiting 5 seconds for game to load...");
     await new Promise(r => setTimeout(r, 5000));
+    await page.screenshot({path: 'mobile_test_shot.png'});
+    console.log("Screenshot taken.");
     console.log("Done.");
     await browser.close();
 })();
