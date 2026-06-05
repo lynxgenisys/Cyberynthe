@@ -10,6 +10,7 @@ import { useInventory } from '../../context/InventoryContext';
 import SparkDrop from './SparkDrop';
 import ByteMotherBoss from './ByteMotherBoss';
 import SectorGuardianBoss from './SectorGuardianBoss';
+import useDeviceDetect from '../../hooks/useDeviceDetect';
 
 import biteMiteSkinSrc from '../../assets/mobs/Bite_Mite_Skin.webp';
 import wispSkinSrc from '../../assets/mobs/null_wisp_skin.webp';
@@ -258,6 +259,8 @@ export default function MobManager({ maze, floorLevel }) {
     const jumpSparkQueueRef = useRef([]);
     const lightFlashQueueRef = useRef([]);
     const shardDroppedRef = useRef(false);
+    const mobLightsRef = useRef([]);
+    const { isMobile } = useDeviceDetect();
 
     const { gameState, setGameState, addNotification, setBossSubtitle, updateBossStatus, fastStateRef, getLevelFromXP, getNextLevelXP, setInteractionPrompt, updateScannedTargets, triggerCrit, consumeMobQueue, playerRotationRef } = useGame();
     const { triggerImpact, mobDamageBuffer, mobPositionBuffer, mobLifeBuffer, mobTypeBuffer, mobStatusBuffer } = useCombat();
@@ -721,6 +724,8 @@ export default function MobManager({ maze, floorLevel }) {
         let sentryBeamC = 0; // Instance Counter
         let trackerBeamC = 0;
         const playerLevel = getLevelFromXP(gameState.xp || 0);
+        const detectionRange = 15 + (playerLevel * 1.0); // 15m base + 1m per level
+        const detectionRangeSq = detectionRange * detectionRange;
         const currentMobs = mobsRef.current;
 
         // Clear mob buffers initially
@@ -734,6 +739,9 @@ export default function MobManager({ maze, floorLevel }) {
 
         currentMobs.forEach((mob, i) => {
             const dx = playerPos.x - mob.x, dz = playerPos.z - mob.z, distSq = dx * dx + dz * dz;
+
+            // Passive Detection (Radar)
+            mob.isDetected = distSq < detectionRangeSq;
 
             // Sync with Combat System (Mob Buffers)
             if (mobPositionBuffer && mobPositionBuffer.current && i < MAX_MOBS) {
@@ -1622,7 +1630,7 @@ export default function MobManager({ maze, floorLevel }) {
 
             if (mob.id === 'BIT_MITE' && miteRef.current) {
                 miteRef.current.setMatrixAt(miteC++, tempObject.matrix);
-                if (mob.scanTimer > 0 && miteScanRef.current) miteScanRef.current.setMatrixAt(miteScanC++, tempObject.matrix);
+                if ((mob.scanTimer > 0 || mob.isDetected) && miteScanRef.current) miteScanRef.current.setMatrixAt(miteScanC++, tempObject.matrix);
             } else if (mob.id === 'NULL_WISP' && wispRef.current) {
                 wispRef.current.setMatrixAt(wispC, tempObject.matrix);
 
@@ -1633,15 +1641,15 @@ export default function MobManager({ maze, floorLevel }) {
                     wispOverlayRef.current.setMatrixAt(wispC, tempObject.matrix);
                 }
                 wispC++;
-                if (mob.scanTimer > 0 && wispScanRef.current) wispScanRef.current.setMatrixAt(wispScanC++, tempObject.matrix);
+                if ((mob.scanTimer > 0 || mob.isDetected) && wispScanRef.current) wispScanRef.current.setMatrixAt(wispScanC++, tempObject.matrix);
             
             } else if (mob.id === 'STATEFUL_TRACKER' && trackerRef.current) {
                 trackerRef.current.setMatrixAt(trackerC++, tempObject.matrix);
-                if (mob.scanTimer > 0 && trackerScanRef.current) trackerScanRef.current.setMatrixAt(trackerScanC++, tempObject.matrix);
+                if ((mob.scanTimer > 0 || mob.isDetected) && trackerScanRef.current) trackerScanRef.current.setMatrixAt(trackerScanC++, tempObject.matrix);
 
             } else if (mob.id === 'HUNTER' && hunterRef.current) {
                 hunterRef.current.setMatrixAt(hunterC++, tempObject.matrix);
-                if (mob.scanTimer > 0 && hunterScanRef.current) hunterScanRef.current.setMatrixAt(hunterScanC++, tempObject.matrix);
+                if ((mob.scanTimer > 0 || mob.isDetected) && hunterScanRef.current) hunterScanRef.current.setMatrixAt(hunterScanC++, tempObject.matrix);
             } else if (mob.id === 'STATELESS_SENTRY') {
                 const ti = sentryC++;
                 const t = state.clock.elapsedTime;
@@ -1718,7 +1726,7 @@ export default function MobManager({ maze, floorLevel }) {
                     sentryHeartRef.current.setColorAt(ti, activeColor);
                 }
 
-                if (mob.scanTimer > 0 && sentryScanRef.current) {
+                if ((mob.scanTimer > 0 || mob.isDetected) && sentryScanRef.current) {
                     tempObject.position.set(mob.x, 2.25, mob.z); tempObject.scale.setScalar(1.0); tempObject.updateMatrix();
                     sentryScanRef.current.setMatrixAt(sentryScanC++, tempObject.matrix);
                 }
@@ -1891,6 +1899,47 @@ export default function MobManager({ maze, floorLevel }) {
                 return { ...prev, scannedTargets: newArr };
             });
         }
+
+        // Update nearby mob lights (High-Performance Zero-GC update)
+        if (!isMobile && mobLightsRef.current) {
+            const nearest = currentMobs
+                .filter(m => m.currentHp > 0 && !m.isStasis)
+                .map(m => {
+                    const dx = playerPos.x - m.x;
+                    const dz = playerPos.z - m.z;
+                    const distSq = dx * dx + dz * dz;
+                    return { mob: m, distSq };
+                })
+                .filter(item => item.distSq < detectionRangeSq) // Use dynamic scaled detection range
+                .sort((a, b) => a.distSq - b.distSq)
+                .slice(0, 4); // Hard cap for WebGL limits
+
+            for (let idx = 0; idx < 4; idx++) {
+                const light = mobLightsRef.current[idx];
+                if (light) {
+                    if (idx < nearest.length) {
+                        const m = nearest[idx].mob;
+                        let color = "#00FFFF";
+                        if (m.id === 'BIT_MITE') color = "#00FFaa";
+                        else if (m.id === 'NULL_WISP') color = "#0088FF";
+                        else if (m.id === 'STATEFUL_TRACKER') color = "#FFAA00";
+                        else if (m.id === 'HUNTER') color = "#EA00FF";
+                        else if (m.id === 'STATELESS_SENTRY') color = "#00FFFF";
+                        else if (m.id === 'IO_SENTINEL') color = "#ff00ff";
+                        else if (m.id === 'BYTE_MOTHER') color = "#ff0055";
+                        else if (m.id === 'SECTOR_GUARDIAN') color = "#ffaa00";
+
+                        light.position.set(m.x, m.id === 'NULL_WISP' ? 3.5 : (m.id === 'STATELESS_SENTRY' ? 2.5 : 1.2), m.z);
+                        light.color.set(color);
+                        light.intensity = m.scanTimer > 0 ? 2.5 : 0.8;
+                        light.distance = m.scanTimer > 0 ? 8 : 4;
+                        light.visible = true;
+                    } else {
+                        light.visible = false;
+                    }
+                }
+            }
+        }
     });
 
     return (
@@ -1918,7 +1967,7 @@ export default function MobManager({ maze, floorLevel }) {
                 <octahedronGeometry args={[0.9, 0]} />
                 <meshStandardMaterial color="#220022" emissive="#ffaa00" emissiveIntensity={1.5} wireframe={false} metalness={0.9} roughness={0.1} />
             </instancedMesh>
-            <instancedMesh ref={trackerScanRef} args={[null, null, 100]} count={0} frustumCulled={false} renderOrder={999}><sphereGeometry args={[0.5, 16, 16]} /><meshBasicMaterial color="#ffaa00" wireframe transparent opacity={0.8} depthTest={false} /></instancedMesh>
+            <instancedMesh ref={trackerScanRef} args={[null, null, 100]} count={0} frustumCulled={false} renderOrder={999}><sphereGeometry args={[0.8, 16, 16]} /><meshBasicMaterial color="#ffaa00" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} /></instancedMesh>
               <instancedMesh ref={hunterRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false}>
                 <dodecahedronGeometry args={[0.7, 0]} />
                 <meshStandardMaterial ref={hunterMatRef} map={hunterTex} emissiveMap={hunterTex} emissive="#FFFFFF" emissiveIntensity={1} metalness={0.8} roughness={0.2} transparent opacity={0.8} />
@@ -1964,25 +2013,21 @@ export default function MobManager({ maze, floorLevel }) {
             </instancedMesh>
             {/* SCAN WIREFRAMES DISABLED - User Request (EXCEPT BOSS) */}
             <instancedMesh ref={bossScanRef} args={[null, null, 5]} count={0} frustumCulled={false}>
-                <sphereGeometry args={[1.0, 32, 32]} /><meshBasicMaterial color="#EA00FF" wireframe transparent opacity={0.6} depthTest={false} />
+                <sphereGeometry args={[2.0, 32, 32]} /><meshBasicMaterial color="#EA00FF" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} />
             </instancedMesh>
 
             {/* SCAN WIREFRAMES - REFINED CRITICAL POINTS (User Request: Just Cores) */}
             <instancedMesh ref={miteScanRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false} renderOrder={999}>
-                {/* Mite Core: Tight fit (0.4) */}
-                <tetrahedronGeometry args={[0.4, 0]} /><meshBasicMaterial color="#EA00FF" wireframe transparent opacity={0.8} depthTest={false} />
+                <sphereGeometry args={[0.6, 16, 16]} /><meshBasicMaterial color="#EA00FF" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} />
             </instancedMesh>
             <instancedMesh ref={wispScanRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false} renderOrder={999}>
-                {/* Wisp Core: Tight fit (0.3) */}
-                <sphereGeometry args={[0.3, 16, 16]} /><meshBasicMaterial color="#EA00FF" wireframe transparent opacity={0.8} depthTest={false} />
+                <sphereGeometry args={[0.5, 16, 16]} /><meshBasicMaterial color="#EA00FF" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} />
             </instancedMesh>
             <instancedMesh ref={hunterScanRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false} renderOrder={999}>
-                {/* Hunter Critical: Tight fit (0.4) */}
-                <sphereGeometry args={[0.4, 16, 16]} /><meshBasicMaterial color="#EA00FF" wireframe transparent opacity={0.8} depthTest={false} />
+                <sphereGeometry args={[0.8, 16, 16]} /><meshBasicMaterial color="#EA00FF" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} />
             </instancedMesh>
             <instancedMesh ref={sentryScanRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false} renderOrder={999}>
-                {/* Sentry Critical: Tiny! 50% smaller (0.18 -> 0.09) - CYAN COLOR */}
-                <sphereGeometry args={[0.09, 16, 16]} /><meshBasicMaterial color="#00FFFF" wireframe transparent opacity={0.8} depthTest={false} />
+                <sphereGeometry args={[0.5, 16, 16]} /><meshBasicMaterial color="#00FFFF" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} />
             </instancedMesh>
             {/* Boss now uses instanced meshes below instead of BossFX component */}
             {bossKey && <KernelShard position={bossKey} maze={maze} />}
@@ -2013,6 +2058,15 @@ export default function MobManager({ maze, floorLevel }) {
                     color="#EA00FF"
                     distance={8}
                     decay={2}
+                />
+            ))}
+
+            {/* Dynamic PointLights for nearest mobs */}
+            {!isMobile && Array(4).fill(0).map((_, idx) => (
+                <pointLight
+                    key={`moblight-${idx}`}
+                    ref={el => mobLightsRef.current[idx] = el}
+                    visible={false}
                 />
             ))}
 

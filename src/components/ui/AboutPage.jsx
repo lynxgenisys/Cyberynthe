@@ -80,9 +80,20 @@ const AboutPage = () => {
                     <div className="absolute top-0 right-0 bg-cyan text-black px-3 py-1 text-xs font-bold">
                         {patch.date}
                     </div>
-                    <h3 className="text-2xl text-cyan mb-4">{patch.version}</h3>
+                    <h3 className="text-2xl text-cyan mb-4">
+                        {patch.version}{patch.title ? ` | ${patch.title}` : ''}
+                    </h3>
                     <div className="space-y-6 text-sm text-gray-300">
-                        {Object.entries(patch.categories).map(([category, items]) => (
+                        {patch.changes && (
+                            <div>
+                                <ul className="list-disc pl-5 space-y-1">
+                                    {patch.changes.map((item, i) => (
+                                        <li key={i}>{item}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                        {patch.categories && typeof patch.categories === 'object' && Object.entries(patch.categories).map(([category, items]) => (
                             <div key={category}>
                                 <h4 className={`text-lg font-bold mb-2 border-b pb-1 
                                     ${category === 'Added' ? 'text-green-400 border-green-400/30' : 

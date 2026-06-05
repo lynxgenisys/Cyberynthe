@@ -86,6 +86,7 @@ export const GameProvider = ({ children }) => {
         // SYSTEM SIGNALS
         manualExitSignal: false, // Triggered by UI to end run gracefully
         isRunLocked: false, // Sprint Toggle State
+        kernelSpikeLoaded: false, // Next shot is an instakill KERNEL_SPIKE round
 
         // DECRYPTION MINIGAME
         isDecrypting: false,
@@ -733,8 +734,9 @@ export const GameProvider = ({ children }) => {
                     addNotification("[SYSTEM_PING]: Map revealed");
                     break;
                 case 'INSTANT_KILL':
-                    // TODO: Mark next mob for instant kill
-                    addNotification("[KERNEL_SPIKE]: Ready");
+                    // Load the Kernel Spike shot — next projectile fired is an instakill
+                    setGameState(prev => ({ ...prev, kernelSpikeLoaded: true }));
+                    addNotification("[KERNEL_SPIKE]: ARMED // Next shot is lethal");
                     break;
                 case 'SKIP_FLOOR':
                     advanceFloor();
@@ -748,7 +750,9 @@ export const GameProvider = ({ children }) => {
             }
 
             // Consume item
-            if (item.stackable && item.count > 1) {
+            if (item.isLink) {
+                // Do not null out the slot if it's a backpack link; let QuickSlots.jsx unequip it when the real stack is empty
+            } else if (item.stackable && item.count > 1) {
                 slots[slotIndex] = { ...item, count: item.count - 1 };
             } else {
                 slots[slotIndex] = null;
@@ -874,9 +878,10 @@ export const GameProvider = ({ children }) => {
             consumeMobQueue, // NEW
 
             // SYSTEM CONTROL
-            triggerExitRun: () => setGameState(prev => ({ ...prev, manualExitSignal: true })),
+            triggerExitRun: () => setGameState(prev => ({ ...prev, manualExitSignal: true, saveSignal: (prev.saveSignal || 0) + 1 })),
             toggleRunLock: () => setGameState(prev => ({ ...prev, isRunLocked: !prev.isRunLocked })),
             setRunLocked: (val) => setGameState(prev => ({ ...prev, isRunLocked: val })),
+            setKernelSpikeLoaded: (val) => setGameState(prev => ({ ...prev, kernelSpikeLoaded: val })),
 
             // COMBAT UI
             setChargingWeapon: (isCharging) => setGameState(prev => ({ ...prev, isChargingWeapon: isCharging }))

@@ -103,27 +103,27 @@ export default function TouchControlsOverlay({ onLookMove }) {
                 JUMP
             </button>
 
-            {/* SPIKE — moved up by own height (5rem) and left by own width (5rem) */}
+            {/* SPIKE — shifted left by two button widths */}
             <button
-                className={`${btnClass} bottom-[17rem] right-[13rem] bg-cyan/20 border-2 border-cyan text-cyan shadow-[0_0_15px_#00FFFF] active:bg-cyan/50`}
+                className={`${btnClass} bottom-[17rem] right-[23rem] bg-cyan/20 border-2 border-cyan text-cyan shadow-[0_0_15px_#00FFFF] active:bg-cyan/50`}
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileFireStart')); }}
                 onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileFireEnd')); }}
             >
                 SPIKE
             </button>
 
-            {/* SHRED — moved left by own width, then swapped with JUMP → now at JUMP's old spot */}
+            {/* SHRED — shifted left by two button widths */}
             <button
-                className={`${btnClass} bottom-[17rem] right-6 bg-[#FF00FF]/20 border-2 border-[#FF00FF] text-[#FF00FF] shadow-[0_0_15px_#FF00FF] active:bg-[#FF00FF]/50`}
+                className={`${btnClass} bottom-[17rem] right-[11.5rem] bg-[#FF00FF]/20 border-2 border-[#FF00FF] text-[#FF00FF] shadow-[0_0_15px_#FF00FF] active:bg-[#FF00FF]/50`}
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredStart')); }}
                 onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredEnd')); }}
             >
                 SHRED
             </button>
 
-            {/* OVERCLOCK SLIDER — bottom row, between QuickSlot 1 and JUMP button */}
+            {/* OVERCLOCK SLIDER — bottom row, immediately to the right of quick items */}
             <div
-                className="absolute bottom-4 right-[11rem] pointer-events-auto cursor-pointer touch-none"
+                className="absolute bottom-4 left-[calc(50%+62px)] pointer-events-auto cursor-pointer touch-none"
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); toggleRunLock(); }}
                 onClick={(e) => { e.preventDefault(); toggleRunLock(); }}
             >
@@ -139,18 +139,20 @@ export default function TouchControlsOverlay({ onLookMove }) {
 
             {/* ── LEFT SIDE BUTTONS ── */}
 
-            {/* INTERACT (F) — above joystick */}
+            {/* INTERACT (F) — raised up and rotated 90 degrees (vertical pill) */}
             <button
-                className="absolute bottom-64 left-24 w-16 h-16 rounded-full border-2 border-green-500 text-green-500 bg-green-500/20 active:bg-green-500 active:text-black font-mono text-xs font-bold flex items-center justify-center shadow-[0_0_10px_#22C55E] pointer-events-auto select-none"
+                className="absolute bottom-[18rem] left-24 w-12 h-20 rounded-full border-2 border-green-500 text-green-500 bg-green-500/20 active:bg-green-500 active:text-black font-mono font-bold flex flex-col items-center justify-center gap-0.5 shadow-[0_0_10px_#22C55E] pointer-events-auto select-none"
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('f', 'KeyF', 'keydown'); }}
                 onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('f', 'KeyF', 'keyup'); }}
             >
-                INT
+                <div className="text-[10px] leading-none">I</div>
+                <div className="text-[10px] leading-none">N</div>
+                <div className="text-[10px] leading-none">T</div>
             </button>
 
-            {/* CYBERDECK — same size as quickslots (96px octagon), between joystick and QuickSlots */}
+            {/* CYBERDECK — scaled down to 48x48 (same size as quick item slots) and border fixed (double-octagon border style) */}
             <button
-                className="absolute bottom-4 left-[30%] -translate-x-1/2 pointer-events-auto select-none"
+                className="absolute bottom-4 left-[calc(50%-110px)] pointer-events-auto select-none flex items-center justify-center"
                 onTouchStart={(e) => {
                     e.preventDefault(); e.stopPropagation();
                     triggerKey('i', 'KeyI', 'keydown');
@@ -159,24 +161,34 @@ export default function TouchControlsOverlay({ onLookMove }) {
                 onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('i', 'KeyI', 'keyup'); }}
                 style={{
                     clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)',
-                    width: '96px',
-                    height: '96px',
-                    background: 'rgba(0, 255, 255, 0.1)',
+                    width: '48px',
+                    height: '48px',
+                    background: '#00FFFF',
                     border: 'none',
-                    outline: '2px solid #00FFFF',
-                    outlineOffset: '-4px',
-                    color: '#00FFFF',
-                    fontFamily: 'monospace',
-                    fontSize: '10px',
-                    fontWeight: 'bold',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 0 12px #00FFFF80',
-                    letterSpacing: '0.05em',
+                    boxShadow: '0 0 12px rgba(0, 255, 255, 0.5)',
                 }}
             >
-                DECK
+                <div
+                    style={{
+                        clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)',
+                        width: 'calc(100% - 4px)',
+                        height: 'calc(100% - 4px)',
+                        background: 'rgba(0, 0, 0, 0.85)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#00FFFF',
+                        fontFamily: 'monospace',
+                        fontSize: '9px',
+                        fontWeight: 'bold',
+                        letterSpacing: '0.02em',
+                    }}
+                >
+                    DECK
+                </div>
             </button>
         </div>
     );

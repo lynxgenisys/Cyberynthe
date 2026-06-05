@@ -132,6 +132,24 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
             </div>
             <div className="splash-subtitle">THE GRADIENT LABYRINTH</div>
 
+            {hasSave && (
+                <div className="resume-container flex flex-col items-stretch justify-center border-2 border-cyan/40 bg-black/60 shadow-[0_0_20px_rgba(0,255,255,0.15)] p-4 md:p-8 w-full max-w-2xl mx-auto mb-6">
+                    <button className="resume-btn !mb-0 w-full" onClick={() => {
+                        onResume();
+                    }}>
+                        RESUME_PREVIOUS_RUN
+                    </button>
+                    <div className="bg-black/50 border border-cyan/30 p-4 mt-6 text-base md:text-xl font-mono text-center w-full">
+                        <div className="text-cyan mb-2 font-bold tracking-widest uppercase">» ACTIVE_LCACHE_DATA</div>
+                        <div className="flex justify-center gap-x-6 md:gap-x-12 text-gray-300">
+                            <span>MODE: <span className="text-white">{(hasSave.gameState?.gameMode || 'NORMAL').toUpperCase()}</span></span>
+                            <span>FLOOR: <span className="text-white">{hasSave.gameState?.floorLevel || 1}</span></span>
+                            <span>XP: <span className="text-white">{hasSave.gameState?.xp || 0}</span></span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="mode-select-container">
                 <div className="mode-select-label">MODE_SELECTION:</div>
 
@@ -166,24 +184,6 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
             </div>
 
             <div className="action-buttons">
-                {hasSave && (
-                    <div className="resume-container flex flex-col items-stretch justify-center border-2 border-cyan/40 bg-black/60 shadow-[0_0_20px_rgba(0,255,255,0.15)] p-4 md:p-8 w-full max-w-2xl mx-auto mb-6">
-                        <button className="resume-btn !mb-0 w-full" onClick={() => {
-                            onResume();
-                        }}>
-                            RESUME_PREVIOUS_RUN
-                        </button>
-                        <div className="bg-black/50 border border-cyan/30 p-4 mt-6 text-base md:text-xl font-mono text-center w-full">
-                            <div className="text-cyan mb-2 font-bold tracking-widest uppercase">» ACTIVE_LCACHE_DATA</div>
-                            <div className="flex justify-center gap-x-6 md:gap-x-12 text-gray-300">
-                                <span>MODE: <span className="text-white">{(hasSave.gameState?.gameMode || 'NORMAL').toUpperCase()}</span></span>
-                                <span>FLOOR: <span className="text-white">{hasSave.gameState?.floorLevel || 1}</span></span>
-                                <span>XP: <span className="text-white">{hasSave.gameState?.xp || 0}</span></span>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
                 <button className="initialize-btn" onClick={handleStart}>
                     INITIALIZE_NEW_RUN
                 </button>

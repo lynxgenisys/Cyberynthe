@@ -106,7 +106,7 @@ function CoreInterface() {
         authListener.subscription.unsubscribe();
       }
     };
-  }, []);
+  }, [gameState.isInMenu]);
 
   const handleNewGameClick = () => {
     setIsEnteringName(true);
@@ -276,7 +276,7 @@ function CoreInterface() {
         const k = e.key.toLowerCase();
         // UI TOGGLES
         if (k === 'i') setIsDeckOpen(prev => !prev);
-        if (k === 'm' && e.shiftKey) setShowDebug(prev => !prev);
+        if (k === 'm') setShowDebug(prev => !prev);
         if (k === 'h') setShowHelp(prev => !prev);
 
         // ACTIONS

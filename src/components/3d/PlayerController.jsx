@@ -13,7 +13,7 @@ import { useGame } from '../../context/GameContext';
 export default function PlayerController() {
     const rigidBodyRef = useRef();
     const controlsRef = useRef();
-    const { triggerScan, triggerInteract, enterBestiaryMode } = useGame();
+    const { gameState, triggerScan, triggerInteract, enterBestiaryMode } = useGame();
 
     // Input State
     const input = useRef({ forward: false, backward: false, left: false, right: false });
@@ -35,7 +35,7 @@ export default function PlayerController() {
                     break;
                 case 'Digit9':
                 case 'Numpad9':
-                    if (typeof enterBestiaryMode === 'function' && import.meta.env.DEV) {
+                    if (typeof enterBestiaryMode === 'function' && gameState.playerName === 'Lynx_Genisys') {
                         enterBestiaryMode();
                     }
                     break;

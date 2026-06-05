@@ -87,18 +87,24 @@ export default function ProjectileSystem() {
 
                     if (mdx * mdx + mdy * mdy + mdz * mdz < hitRadiusSq) {
                         lArr[i] = 0;
-                        // Data Spike damage: 10 base + 1.5 per level
-                        const dataSpikeBaseDamage = 10 + (playerLevel * 1.5);
-                        // Shred (tArr[i] === 1) damage: 3 flat
-                        mobDamageBuffer.current[m] += (tArr[i] === 0 ? dataSpikeBaseDamage : 3);
+                        // KERNEL_SPIKE (type 2): instakill any non-boss mob. Boss mobs (type 4/5) take massive flat damage.
+                        const isBoss = (mobTypeBuffer.current[m] === 4 || mobTypeBuffer.current[m] === 5);
+                        if (tArr[i] === 2) {
+                            mobDamageBuffer.current[m] += isBoss ? 500 : 99999; // Instakill non-boss
+                        } else {
+                            // Data Spike damage: 10 base + 1.5 per level
+                            const dataSpikeBaseDamage = 10 + (playerLevel * 1.5);
+                            // Shred (tArr[i] === 1) damage: 3 flat
+                            mobDamageBuffer.current[m] += (tArr[i] === 0 ? dataSpikeBaseDamage : 3);
+                        }
                         // Logic Breach: Apply Hacked status if Shred V2 (Type 1) and DoT is unlocked
                         if (tArr[i] === 1 && gameState.hasUnlockedDoT && mobStatusBuffer && mobStatusBuffer.current) {
                             mobStatusBuffer.current[m] = 1;
                         }
 
-                        const impactColor = (tArr[i] === 1 && gameState.hasUnlockedDoT) ? '#00FF00' : (tArr[i] === 1 ? '#EA00FF' : '#00FFFF');
+                        const impactColor = tArr[i] === 2 ? '#FF4400' : ((tArr[i] === 1 && gameState.hasUnlockedDoT) ? '#00FF00' : (tArr[i] === 1 ? '#EA00FF' : '#00FFFF'));
                         triggerImpact({ x: px, y: py, z: pz }, impactColor);
-                        playSFX('hit');
+                        playSFX(tArr[i] === 2 ? 'data_spike_attack' : 'hit');
                         break;
                     }
                 }
@@ -127,9 +133,15 @@ export default function ProjectileSystem() {
             tempObject.lookAt(px + vArr[idx3], py + vArr[idx3 + 1], pz + vArr[idx3 + 2]);
 
             const isPing = tArr[i] === 0;
+            const isKernelSpike = tArr[i] === 2;
             if (isPing) {
                 tempColor.set('#00FFFF').multiplyScalar(3);
                 tempObject.scale.set(1, 1, 1);
+            } else if (isKernelSpike) {
+                // KERNEL_SPIKE: Pulsing crimson-gold large bolt
+                const pulse = 0.85 + Math.sin(state.clock.elapsedTime * 20) * 0.15;
+                tempColor.set('#FF2200').multiplyScalar(5 * pulse);
+                tempObject.scale.set(3, 0.5, 0.5); // Long, thin beam
             } else {
                 tempColor.set(playerLevel >= 5 ? '#00FF00' : '#EA00FF').multiplyScalar(3);
                 tempObject.scale.set(1, playerLevel >= 5 ? 0.5 : 1, playerLevel >= 5 ? 0.5 : 1);

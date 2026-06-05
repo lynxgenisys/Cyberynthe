@@ -7,7 +7,7 @@ import { generateMaze } from '../../engine/MazeGenerator';
  * PURPOSE: Visualize the Grid Integrity and Seed Consistency.
  */
 export default function DebugMazeView() {
-    const { gameState } = useGame();
+    const { gameState, discoveryRef } = useGame();
     const [mazeData, setMazeData] = useState(null);
 
     // Regenerate maze whenever Level or Seed changes
@@ -62,6 +62,16 @@ export default function DebugMazeView() {
                             // Check if Cache is looted
                             const cacheId = `${x},${y}`;
                             const isLooted = cell === 9 && gameState.lootedCaches.includes(cacheId);
+                            const isRevealed = discoveryRef.current && discoveryRef.current[y] && discoveryRef.current[y][x] === 1;
+
+                            if (!isRevealed) {
+                                return (
+                                    <div
+                                        key={`${x}-${y}`}
+                                        className="w-full h-full bg-black text-[0px] relative"
+                                    />
+                                );
+                            }
 
                             return (
                                 <div

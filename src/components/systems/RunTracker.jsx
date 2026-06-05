@@ -117,6 +117,16 @@ export default function RunTracker() {
         }
     }, [gameState.manualExitSignal, setGameState]);
 
+    const getSaveKeyLocal = async () => {
+        if (!supabase) return 'CyberSynthe_Save_guest';
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            return `CyberSynthe_Save_${user ? user.id : 'guest'}`;
+        } catch (e) {
+            return 'CyberSynthe_Save_guest';
+        }
+    };
+
     const handleRunEnd = async (reason) => {
         // Calculate Total Score: (Floor * 1000) + eBits
         // This is a simple formula, we can make it more complex later
@@ -229,9 +239,20 @@ export default function RunTracker() {
         });
         localStorage.setItem('CyberSynthe_RunHistory', JSON.stringify(runHistory.slice(-20))); // Keep last 20
 
-        // For hardcore mode, clear save
+        // For hardcore mode, clear save dynamically
         if (gameState.gameMode === 'hardcore') {
-            localStorage.removeItem('CyberSynthe_Save');
+            const saveKey = await getSaveKeyLocal();
+            localStorage.removeItem(saveKey);
+            try {
+                if (supabase) {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) {
+                        await supabase.from('saves').delete().eq('id', user.id);
+                    }
+                }
+            } catch (e) {
+                console.error("Cloud save clear failed:", e);
+            }
         }
 
         // Return to menu (in the future, show post-death summary)

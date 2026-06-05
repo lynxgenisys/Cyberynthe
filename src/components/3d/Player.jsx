@@ -26,8 +26,13 @@ const PlayerController = () => {
     const { isMobile } = useDeviceDetect();
     const [subscribeKeys, getKeys] = useKeyboardControls();
     const { camera } = useThree();
-    const { gameState, updatePlayerPos, triggerScan, getLevelFromXP, playerRotationRef, enterBestiaryMode, setChargingWeapon, toggleRunLock, setRunLocked } = useGame();
+    const { gameState, updatePlayerPos, triggerScan, getLevelFromXP, playerRotationRef, enterBestiaryMode, setChargingWeapon, toggleRunLock, setRunLocked, setGameState } = useGame();
     const { playSFX } = useSound();
+
+    const gameStateRef = React.useRef(gameState);
+    React.useEffect(() => {
+        gameStateRef.current = gameState;
+    }, [gameState]);
 
     // Raycaster for ground check
     const rapier = useRapier();
@@ -53,6 +58,11 @@ const PlayerController = () => {
     // 5% Stat -> 15% Boost (1.15x)
     const effectiveClockSpeed = clockSpeed + speedBuff;
     const cycleMultiplier = (100 + (effectiveClockSpeed * 3)) / 100;
+
+    const cycleMultiplierRef = React.useRef(cycleMultiplier);
+    React.useEffect(() => {
+        cycleMultiplierRef.current = cycleMultiplier;
+    }, [cycleMultiplier]);
 
     // Movement: 3.0 Base * Multiplier
     const SPEED = 3.0 * cycleMultiplier;
@@ -89,6 +99,7 @@ const PlayerController = () => {
     // INPUT STATE
     const mouseDownTime = useRef(0);
     const chargeSoundRef = useRef(null);
+    const isChargingRef = useRef(false);
     const [isCharging, setIsCharging] = useState(false);
     const footstepTimer = useRef(0);
 
@@ -107,16 +118,16 @@ const PlayerController = () => {
     // GHOST MODE / AUTO-RUN INPUT HANDLER
     React.useEffect(() => {
         const handleMouseDownGlobal = (e) => {
-            if (gameState.gameMode !== 'ghost') return;
+            if (gameStateRef.current.gameMode !== 'ghost') return;
             if (e.button === 0) window.ghostLeftClick = true;
         };
         const handleMouseUpGlobal = (e) => {
-            if (gameState.gameMode !== 'ghost') return;
+            if (gameStateRef.current.gameMode !== 'ghost') return;
             if (e.button === 0) window.ghostLeftClick = false;
         };
 
         const handleKeyDownGlobal = (e) => {
-            if (gameState.gameMode === 'ghost' && e.key === 'Shift' && !e.repeat) {
+            if (gameStateRef.current.gameMode === 'ghost' && e.key === 'Shift' && !e.repeat) {
                 window.ghostRunToggle = !window.ghostRunToggle;
             }
             if (e.key && e.key.toLowerCase() === 'r' && !e.repeat) {
@@ -135,7 +146,7 @@ const PlayerController = () => {
             window.removeEventListener('mouseup', handleMouseUpGlobal);
             window.removeEventListener('keydown', handleKeyDownGlobal);
         };
-    }, [gameState.gameMode, toggleRunLock]);
+    }, [toggleRunLock]);
 
     // STANDARD MODE / COMBAT INPUT
     React.useEffect(() => {
@@ -146,7 +157,7 @@ const PlayerController = () => {
             if (isMobile && e.isTrusted) return; // Ignore synthetic touches, rely on TouchControlsOverlay
 
             // GHOST MODE: Controls Override (Only Click Actions here, State handled above)
-            if (gameState.gameMode === 'ghost') {
+            if (gameStateRef.current.gameMode === 'ghost') {
                 // RIGHT CLICK (2): TRIGGER SCAN (No Weapon) - SWAPPED
                 if (e.button === 2) {
                     if (lockResource(10)) triggerScan();
@@ -182,7 +193,7 @@ const PlayerController = () => {
             if (!document.pointerLockElement && !isMobile) return;
             if (isMobile && e.isTrusted) return; // Ignore synthetic touches
 
-            if (gameState.gameMode === 'ghost') return;
+            if (gameStateRef.current.gameMode === 'ghost') return;
 
             if (e.button !== 0) return;
 
@@ -204,7 +215,7 @@ const PlayerController = () => {
 
             const rawDuration = Date.now() - mouseDownTime.current;
             // APPLY CYCLE SPEED: Faster charging with higher clock
-            const duration = rawDuration * cycleMultiplier;
+            const duration = rawDuration * cycleMultiplierRef.current;
 
             const direction = new THREE.Vector3();
             camera.getWorldDirection(direction);
@@ -212,7 +223,7 @@ const PlayerController = () => {
             const spawnPos = new THREE.Vector3(startPos.x, startPos.y + 1.5, startPos.z).add(direction.clone().multiplyScalar(0.2));
 
             // LEVEL 5 CHECK (Exponential Curve)
-            const playerLevel = getLevelFromXP(gameState.xp || 0);
+            const playerLevel = getLevelFromXP(gameStateRef.current.xp || 0);
             const canBurst = playerLevel >= 5;
 
             // CHARGE SHOT (Hold > 1000ms)
@@ -223,9 +234,15 @@ const PlayerController = () => {
                 }
             } else {
                 // STANDARD TAP
-                if (lockResource(5)) { // 5 M-RAM for single shot
-                    fireProjectile(spawnPos, direction, 'PING');
-                    playSFX('shoot');
+                if (gameStateRef.current.kernelSpikeLoaded) {
+                    fireProjectile(spawnPos, direction, 'KERNEL_SPIKE');
+                    playSFX('data_spike_attack');
+                    setGameState(prev => ({ ...prev, kernelSpikeLoaded: false }));
+                } else {
+                    if (lockResource(5)) { // 5 M-RAM for single shot
+                        fireProjectile(spawnPos, direction, 'PING');
+                        playSFX('shoot');
+                    }
                 }
             }
         };
@@ -241,7 +258,7 @@ const PlayerController = () => {
                     triggerScan();
                 }
             } else if (e.code === 'Digit9' || e.code === 'Numpad9') {
-                if (import.meta.env.DEV) {
+                if (gameStateRef.current.playerName === 'Lynx_Genisys') {
                     if (enterBestiaryMode) enterBestiaryMode();
                 }
             }
@@ -250,13 +267,15 @@ const PlayerController = () => {
         
         const handleMobileFireStart = () => {
             mouseDownTime.current = Date.now();
+            isChargingRef.current = true;
             setIsCharging(true);
             setChargingWeapon(true);
             chargeSoundRef.current = playSFX('data_spike_charge');
         };
 
         const handleMobileFireEnd = () => {
-            if (!isCharging) return;
+            if (!isChargingRef.current) return;
+            isChargingRef.current = false;
             setIsCharging(false);
             setChargingWeapon(false);
             
@@ -271,14 +290,14 @@ const PlayerController = () => {
             }
 
             const rawDuration = Date.now() - mouseDownTime.current;
-            const duration = rawDuration * cycleMultiplier;
+            const duration = rawDuration * cycleMultiplierRef.current;
 
             const direction = new THREE.Vector3();
             camera.getWorldDirection(direction);
             const startPos = body.current.translation();
             const spawnPos = new THREE.Vector3(startPos.x, startPos.y + 1.5, startPos.z).add(direction.clone().multiplyScalar(0.2));
 
-            const playerLevel = getLevelFromXP(gameState.xp || 0);
+            const playerLevel = getLevelFromXP(gameStateRef.current.xp || 0);
             const canBurst = playerLevel >= 5;
 
             if (canBurst && duration > 1000) {
@@ -287,9 +306,15 @@ const PlayerController = () => {
                     playSFX('data_spike_attack');
                 }
             } else {
-                if (lockResource(5)) {
-                    fireProjectile(spawnPos, direction, 'PING');
-                    playSFX('shoot');
+                if (gameStateRef.current.kernelSpikeLoaded) {
+                    fireProjectile(spawnPos, direction, 'KERNEL_SPIKE');
+                    playSFX('data_spike_attack');
+                    setGameState(prev => ({ ...prev, kernelSpikeLoaded: false }));
+                } else {
+                    if (lockResource(5)) {
+                        fireProjectile(spawnPos, direction, 'PING');
+                        playSFX('shoot');
+                    }
                 }
             }
         };
@@ -347,19 +372,20 @@ const PlayerController = () => {
 
     useFrame((state, delta) => {
         // WATCHDOG: Stuck Charge Audio
-        if (chargeSoundRef.current && !document.pointerLockElement) {
-            try {
-                const ctx = chargeSoundRef.current.osc.context;
-                const t = ctx.currentTime;
-                chargeSoundRef.current.gain.gain.linearRampToValueAtTime(0, t + 0.1);
-                chargeSoundRef.current.osc.stop(t + 0.1);
-            } catch (e) {
-                // Ignore
+            if (chargeSoundRef.current && !document.pointerLockElement) {
+                try {
+                    const ctx = chargeSoundRef.current.osc.context;
+                    const t = ctx.currentTime;
+                    chargeSoundRef.current.gain.gain.linearRampToValueAtTime(0, t + 0.1);
+                    chargeSoundRef.current.osc.stop(t + 0.1);
+                } catch (e) {
+                    // Ignore
+                }
+                chargeSoundRef.current = null;
+                isChargingRef.current = false;
+                setIsCharging(false);
+                setChargingWeapon(false);
             }
-            chargeSoundRef.current = null;
-            setIsCharging(false);
-            setChargingWeapon(false);
-        }
         if (!body.current) return;
 
         // PAUSE LOGIC
@@ -574,6 +600,16 @@ const PlayerController = () => {
                     <capsuleGeometry args={[0.5, 1]} />
                     <meshStandardMaterial color="cyan" />
                 </mesh>
+
+                {/* Slight cyan glow reflecting from player */}
+                {!isMobile && (
+                    <pointLight
+                        position={[0, 0, 0]}
+                        color="#00FFFF"
+                        intensity={0.6}
+                        distance={6}
+                    />
+                )}
             </RigidBody>
 
             {/* LOGIC BREACH FIX: ONLY ATTACH IF NOT PAUSED */}

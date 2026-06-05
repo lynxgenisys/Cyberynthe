@@ -18,7 +18,7 @@ export const CombatProvider = ({ children }) => {
     // Positions: Float32Array(200 * 3) [x, y, z]
     // Velocities: Float32Array(200 * 3) [vx, vy, vz]
     // Life: Float32Array(200) [life]
-    // Type: Float32Array(200) [0=PING, 1=SHRED]
+    // Type: Float32Array(200) [0=PING, 1=SHRED, 2=KERNEL_SPIKE (instakill)]
 
     const MAX_PROJECTILES = 200;
     const MAX_MOBS = 50;
@@ -50,13 +50,13 @@ export const CombatProvider = ({ children }) => {
         pMap[idx * 3 + 2] = startPos.z;
 
         const vMap = velocityBuffer.current;
-        const speed = type === 'PING' ? 40 : 25;
+        const speed = type === 'PING' ? 40 : (type === 'KERNEL_SPIKE' ? 55 : 25);
         vMap[idx * 3] = direction.x * speed;
         vMap[idx * 3 + 1] = direction.y * speed;
         vMap[idx * 3 + 2] = direction.z * speed;
 
         lifeBuffer.current[idx] = 60.0; // 60 Seconds (Effectively Infinite Range)
-        typeBuffer.current[idx] = type === 'PING' ? 0 : 1;
+        typeBuffer.current[idx] = type === 'PING' ? 0 : (type === 'KERNEL_SPIKE' ? 2 : 1);
 
     }, []);
 

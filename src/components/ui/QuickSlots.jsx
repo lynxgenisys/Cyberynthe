@@ -70,6 +70,19 @@ const QuickSlots = () => {
         return item.color || '#00FFFF';
     };
 
+    const getItemIcon = (item) => {
+        if (!item) return '';
+        switch(item.type) {
+            case 'MRAM_INJECTOR': return '✚';
+            case 'SYSTEM_PING': return '⌖';
+            case 'KERNEL_SPIKE': return '⚡';
+            case 'SECTOR_BREACH': return '⇪';
+            case 'CORE_SWAP': return '⟲';
+            case 'GHOST_PROTOCOL': return '☁';
+            default: return '✦';
+        }
+    };
+
     return (
         <div style={{
             position: 'fixed',
@@ -123,15 +136,24 @@ const QuickSlots = () => {
                             justifyContent: 'center',
                             padding: '8px'
                         }}>
-                            {/* Item icon (colored square for now) */}
+                            {/* Item icon */}
                             <div style={{
                                 width: '48px',
                                 height: '48px',
-                                backgroundColor: getSlotColor(item),
-                                borderRadius: '4px',
-                                boxShadow: `0 0 12px ${getSlotColor(item)}80`,
-                                marginBottom: '6px'
-                            }} />
+                                backgroundColor: `color-mix(in srgb, ${getSlotColor(item)} 20%, transparent)`,
+                                border: `2px solid ${getSlotColor(item)}`,
+                                borderRadius: '8px',
+                                boxShadow: `0 0 12px ${getSlotColor(item)}80, inset 0 0 8px ${getSlotColor(item)}40`,
+                                marginBottom: '6px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '28px',
+                                color: getSlotColor(item),
+                                textShadow: `0 0 8px ${getSlotColor(item)}`
+                            }}>
+                                {getItemIcon(item)}
+                            </div>
 
                             {/* Item name */}
                             <div style={{

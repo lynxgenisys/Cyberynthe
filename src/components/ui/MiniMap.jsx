@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
+import { useCombat } from '../../context/CombatContext';
 
 /**
  * COMPONENT: TACTICAL_NAV_SYSTEM
@@ -7,6 +8,7 @@ import { useGame } from '../../context/GameContext';
  */
 export const MiniMap = React.memo(() => {
     const { gameState, discoveryRef, fastStateRef, revealMap, toggleTacticalView, playerRotationRef, triggerScan } = useGame();
+    const { mobPositionBuffer, mobLifeBuffer } = useCombat();
     const canvasRef = useRef(null);
     const temporaryBlipsRef = useRef({}); // Fading blips (mobs)
     const permanentMarkersRef = useRef({}); // Permanent markers (caches, portals)
@@ -17,13 +19,13 @@ export const MiniMap = React.memo(() => {
     // KEYBINDINGS
     useEffect(() => {
         const handleKeys = (e) => {
-            if (e.code === 'KeyM') {
-                if (import.meta.env.DEV) toggleTacticalView();
+            if (e.code === 'KeyT') {
+                if (gameState.playerName === 'Lynx_Genisys') toggleTacticalView();
             }
         };
         window.addEventListener('keydown', handleKeys);
         return () => window.removeEventListener('keydown', handleKeys);
-    }, [toggleTacticalView]);
+    }, [toggleTacticalView, gameState.playerName]);
 
     // RENDER LOOP
     useEffect(() => {
@@ -210,18 +212,16 @@ export const MiniMap = React.memo(() => {
                 ctx.shadowBlur = 0;
             });
 
-            // Render and decay temporary blips (mobs)
+            // Render and decay temporary blips (mobs hit by active scan)
             Object.keys(temporaryBlipsRef.current).forEach(key => {
                 const b = temporaryBlipsRef.current[key];
                 const age = now - (b.timestamp || 0);
 
-                // Remove if dead
                 if (gameState.deadEntities && gameState.deadEntities.includes(Number(key))) {
                     delete temporaryBlipsRef.current[key];
                     return;
                 }
 
-                // Fade over 2.5 seconds (slower than before)
                 if (age > 2500) {
                     delete temporaryBlipsRef.current[key];
                     return;
@@ -229,16 +229,13 @@ export const MiniMap = React.memo(() => {
 
                 b.opacity = 1 - (age / 2500);
 
-                // Convert world coords to grid coords (2m per cell)
                 const bGX = b.x / 2;
                 const bGZ = b.z / 2;
 
-                // Draw blip circle - pulsing (half size)
                 ctx.beginPath();
-                const pulseSize = scale * (0.15 + Math.sin(age / 200) * 0.025); // 50% smaller pulse
+                const pulseSize = scale * (0.15 + Math.sin(age / 200) * 0.025);
                 ctx.arc(bGX * scale, bGZ * scale, pulseSize, 0, Math.PI * 2);
 
-                // Red glow for mobs
                 ctx.fillStyle = `rgba(255, 50, 50, ${b.opacity})`;
                 ctx.shadowBlur = 8 * b.opacity;
                 ctx.shadowColor = `rgba(255, 0, 0, ${b.opacity})`;
@@ -246,6 +243,46 @@ export const MiniMap = React.memo(() => {
                 ctx.fill();
                 ctx.shadowBlur = 0;
             });
+
+            // Render Passive Radar (Detected Mobs)
+            if (mobPositionBuffer && mobLifeBuffer && pWorld) {
+                const playerLevel = gameState.xp ? Math.floor(Math.sqrt(gameState.xp / 100)) + 1 : 1;
+                const detectionRange = 15 + (playerLevel * 1.0);
+                const detectionRangeSq = detectionRange * detectionRange;
+
+                // MAX_MOBS is 50 in MobManager
+                for (let i = 0; i < 50; i++) {
+                    const hpPercent = mobLifeBuffer.current[i];
+                    if (hpPercent > 0) {
+                        const mx = mobPositionBuffer.current[i * 3];
+                        const mz = mobPositionBuffer.current[i * 3 + 2];
+                        const dx = mx - pWorld.x;
+                        const dz = mz - pWorld.z;
+                        
+                        // Check if within passive detection range
+                        if (dx * dx + dz * dz < detectionRangeSq) {
+                            const mGX = mx / 2;
+                            const mGZ = mz / 2;
+                            
+                            // Don't draw if there's already an active scan pulse drawing this mob
+                            // We use proximity since we don't have the instanceId here
+                            let hasActivePulse = false;
+                            Object.values(temporaryBlipsRef.current).forEach(b => {
+                                const bdx = b.x - mx;
+                                const bdz = b.z - mz;
+                                if (bdx * bdx + bdz * bdz < 1.0) hasActivePulse = true;
+                            });
+
+                            if (!hasActivePulse) {
+                                ctx.beginPath();
+                                ctx.arc(mGX * scale, mGZ * scale, scale * 0.1, 0, Math.PI * 2);
+                                ctx.fillStyle = 'rgba(200, 0, 100, 0.7)'; // Softer magenta/red for passive
+                                ctx.fill();
+                            }
+                        }
+                    }
+                }
+            }
 
             ctx.restore(); // Restore to screen space
 

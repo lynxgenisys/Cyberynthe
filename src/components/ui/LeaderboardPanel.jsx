@@ -21,7 +21,7 @@ export default function LeaderboardPanel() {
     const [activeMode, setActiveMode] = useState('normal'); 
     
     // Sub-tabs depending on Mode
-    const [activeMetric, setActiveMetric] = useState('velocity'); 
+    const [activeMetric, setActiveMetric] = useState('depth'); 
 
     const [leaderboard, setLeaderboard] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -36,20 +36,12 @@ export default function LeaderboardPanel() {
         setSelectedUsername(username);
     };
 
-    // When mode changes, ensure metric is valid for that mode
+    // When mode changes, ensure metric defaults to deepest dive (depth)
     useEffect(() => {
         if (activeMode === 'accomplishments') {
-            if (['tot_kills', 'tot_runs', 'tot_deaths', 'max_xp'].indexOf(activeMetric) === -1) {
-                setActiveMetric('tot_kills');
-            }
-        } else if (activeMode === 'ghost') {
-            if (['velocity', 'depth', 'stealth'].indexOf(activeMetric) === -1) {
-                setActiveMetric('velocity');
-            }
+            setActiveMetric('tot_kills');
         } else {
-            if (['velocity', 'depth', 'kills'].indexOf(activeMetric) === -1) {
-                setActiveMetric('velocity');
-            }
+            setActiveMetric('depth');
         }
     }, [activeMode]);
 
@@ -221,14 +213,14 @@ export default function LeaderboardPanel() {
         ];
     } else if (activeMode === 'ghost') {
         subTabs = [
-            { id: 'velocity', label: 'VELOCITY SCORE' },
             { id: 'depth', label: 'DEEPEST DIVE' },
+            { id: 'velocity', label: 'VELOCITY SCORE' },
             { id: 'stealth', label: 'STEALTH PARTITION' }
         ];
     } else {
         subTabs = [
-            { id: 'velocity', label: 'VELOCITY SCORE' },
             { id: 'depth', label: 'DEEPEST DIVE' },
+            { id: 'velocity', label: 'VELOCITY SCORE' },
             { id: 'kills', label: 'MOST KILLS' }
         ];
     }
