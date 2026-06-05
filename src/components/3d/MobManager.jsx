@@ -1388,7 +1388,7 @@ export default function MobManager({ maze, floorLevel }) {
                         mob.fireTimer -= delta;
                         // Sweeping damage
                         if (distSq < 400 && Math.random() < 0.1) {
-                            dispatch({ type: 'TAKE_DAMAGE', amount: 20 });
+                            damageKernel(20);
                         }
                         if (mob.fireTimer <= 0) {
                             mob.bossState = 'COOLDOWN';
@@ -1981,7 +1981,9 @@ export default function MobManager({ maze, floorLevel }) {
             </instancedMesh>
 
             {/* HUNTER: Dodecahedron - Metallic Shimmer with Fade */}
-            <instancedMesh ref={hunterRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false}>
+            <instancedMesh ref={trackerRef} args={[null, null, 100]} count={0} frustumCulled={false}><boxGeometry args={[0.8, 0.8, 0.8]} /><meshStandardMaterial color="#ff00ff" emissive="#ff0000" emissiveIntensity={2} wireframe /></instancedMesh>
+              <instancedMesh ref={trackerScanRef} args={[null, null, 100]} count={0} frustumCulled={false} renderOrder={999}><sphereGeometry args={[0.5, 16, 16]} /><meshBasicMaterial color="#ff0000" wireframe transparent opacity={0.8} depthTest={false} /></instancedMesh>
+              <instancedMesh ref={hunterRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false}>
                 <dodecahedronGeometry args={[0.7, 0]} />
                 <meshStandardMaterial ref={hunterMatRef} map={hunterTex} emissiveMap={hunterTex} emissive="#FFFFFF" emissiveIntensity={1} metalness={0.8} roughness={0.2} transparent opacity={0.8} />
             </instancedMesh>
