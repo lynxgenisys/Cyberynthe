@@ -648,6 +648,14 @@ export default function MobManager({ maze, floorLevel }) {
                     newMobs.push({ ...mob, instanceId: Math.random(), x: pos.x * 2, z: pos.z * 2, isStationary: true });
                 }
             });
+        } else if (floorLevel === 30) {
+            const boss = MobLogic.createMob('SECTOR_GUARDIAN', floorLevel);
+            if (boss) {
+                // Spawn boss in the center of the 35x35 arena
+                const startX = Math.floor(maze.width / 2);
+                const startZ = Math.floor(maze.height / 2);
+                newMobs.push({ ...boss, instanceId: Math.random(), x: startX * 2, z: startZ * 2, phase: 1, aggroActive: false, bossState: 'IDLE', bossTimer: 1.0 });
+            }
         } else if (floorLevel === 999) {
             const specs = [{ id: 'BIT_MITE', x: 4, z: 4 }, { id: 'NULL_WISP', x: 4, z: 10 }, { id: 'HUNTER', x: 10, z: 4 }, { id: 'STATELESS_SENTRY', x: 10, z: 10 }, { id: 'IO_SENTINEL', x: 7, z: 7 }];
             specs.forEach(s => {

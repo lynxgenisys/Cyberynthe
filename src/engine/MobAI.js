@@ -37,7 +37,7 @@ export const BESTIARY = {
     SECTOR_GUARDIAN: {
         id: 'SECTOR_GUARDIAN',
         name: 'Sector Guardian',
-        hp: 500,
+        hp: 5000, // Very high HP for floor 30
         dmg: 50,
         telegraph: {
             color: '#FFFFFF', // White Hot

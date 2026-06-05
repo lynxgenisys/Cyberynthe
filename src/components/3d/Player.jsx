@@ -172,6 +172,23 @@ const PlayerController = () => {
                 setIsCharging(true); // Start charging visual
                 setChargingWeapon(true); // Update global state for HUD
                 chargeSoundRef.current = playSFX('data_spike_charge'); // Play charge sound and store ref
+                
+                // FIRE SINGLE SHOT IMMEDIATELY ON TAP
+                const direction = new THREE.Vector3();
+                camera.getWorldDirection(direction);
+                const startPos = body.current.translation();
+                const spawnPos = new THREE.Vector3(startPos.x, startPos.y + 1.5, startPos.z).add(direction.clone().multiplyScalar(0.2));
+
+                if (gameStateRef.current.kernelSpikeLoaded) {
+                    fireProjectile(spawnPos, direction, 'KERNEL_SPIKE');
+                    playSFX('data_spike_attack');
+                    setGameState(prev => ({ ...prev, kernelSpikeLoaded: false }));
+                } else {
+                    if (lockResource(5)) { // 5 M-RAM for single shot
+                        fireProjectile(spawnPos, direction, 'PING');
+                        playSFX('shoot');
+                    }
+                }
             }
 
             // RIGHT CLICK (2) -> BIT_FLIP (Magenta, 5 M-RAM)
@@ -222,27 +239,11 @@ const PlayerController = () => {
             const startPos = body.current.translation();
             const spawnPos = new THREE.Vector3(startPos.x, startPos.y + 1.5, startPos.z).add(direction.clone().multiplyScalar(0.2));
 
-            // LEVEL 5 CHECK (Exponential Curve)
-            const playerLevel = getLevelFromXP(gameStateRef.current.xp || 0);
-            const canBurst = playerLevel >= 5;
-
             // CHARGE SHOT (Hold > 1000ms)
-            if (canBurst && duration > 1000) {
+            if (duration > 1000) {
                 if (lockResource(10)) { // higher cost, efficiency
                     fireBurst(spawnPos, direction, 'PING');
                     playSFX('data_spike_attack');
-                }
-            } else {
-                // STANDARD TAP
-                if (gameStateRef.current.kernelSpikeLoaded) {
-                    fireProjectile(spawnPos, direction, 'KERNEL_SPIKE');
-                    playSFX('data_spike_attack');
-                    setGameState(prev => ({ ...prev, kernelSpikeLoaded: false }));
-                } else {
-                    if (lockResource(5)) { // 5 M-RAM for single shot
-                        fireProjectile(spawnPos, direction, 'PING');
-                        playSFX('shoot');
-                    }
                 }
             }
         };
@@ -271,6 +272,23 @@ const PlayerController = () => {
             setIsCharging(true);
             setChargingWeapon(true);
             chargeSoundRef.current = playSFX('data_spike_charge');
+            
+            // FIRE SINGLE SHOT IMMEDIATELY ON TAP
+            const direction = new THREE.Vector3();
+            camera.getWorldDirection(direction);
+            const startPos = body.current.translation();
+            const spawnPos = new THREE.Vector3(startPos.x, startPos.y + 1.5, startPos.z).add(direction.clone().multiplyScalar(0.2));
+
+            if (gameStateRef.current.kernelSpikeLoaded) {
+                fireProjectile(spawnPos, direction, 'KERNEL_SPIKE');
+                playSFX('data_spike_attack');
+                setGameState(prev => ({ ...prev, kernelSpikeLoaded: false }));
+            } else {
+                if (lockResource(5)) {
+                    fireProjectile(spawnPos, direction, 'PING');
+                    playSFX('shoot');
+                }
+            }
         };
 
         const handleMobileFireEnd = () => {
@@ -297,24 +315,10 @@ const PlayerController = () => {
             const startPos = body.current.translation();
             const spawnPos = new THREE.Vector3(startPos.x, startPos.y + 1.5, startPos.z).add(direction.clone().multiplyScalar(0.2));
 
-            const playerLevel = getLevelFromXP(gameStateRef.current.xp || 0);
-            const canBurst = playerLevel >= 5;
-
-            if (canBurst && duration > 1000) {
+            if (duration > 1000) {
                 if (lockResource(10)) {
                     fireBurst(spawnPos, direction, 'PING');
                     playSFX('data_spike_attack');
-                }
-            } else {
-                if (gameStateRef.current.kernelSpikeLoaded) {
-                    fireProjectile(spawnPos, direction, 'KERNEL_SPIKE');
-                    playSFX('data_spike_attack');
-                    setGameState(prev => ({ ...prev, kernelSpikeLoaded: false }));
-                } else {
-                    if (lockResource(5)) {
-                        fireProjectile(spawnPos, direction, 'PING');
-                        playSFX('shoot');
-                    }
                 }
             }
         };
