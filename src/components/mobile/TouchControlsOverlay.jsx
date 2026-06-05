@@ -90,46 +90,53 @@ export default function TouchControlsOverlay({ onLookMove }) {
                 
             {/* ACTION BUTTONS */}
             
-            {/* FIRE (Left Click) removed - Ping is now on MiniMap */}
-
-            {/* SPIKE (Right Click) */}
+            {/* DATA SPIKE (Left Click) - Left of MiniMap */}
             <button 
-                className="absolute bottom-32 right-6 w-24 h-24 rounded-full bg-magenta/20 border-2 border-magenta text-magenta font-bold shadow-[0_0_15px_#FF00FF] active:bg-magenta active:text-black pointer-events-auto text-sm"
-                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredStart')); }}
-                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredEnd')); }}
+                className="absolute bottom-32 right-[18rem] w-20 h-20 rounded-full bg-cyan/20 border-2 border-cyan text-cyan font-bold shadow-[0_0_15px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto text-xs"
+                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileFireStart')); }}
+                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileFireEnd')); }}
             >
                 SPIKE
             </button>
 
-            {/* JUMP (Space) */}
+            {/* SHRED (Right Click) - Left of MiniMap, below Data Spike */}
             <button 
-                className="absolute bottom-6 right-36 w-24 h-24 rounded-full bg-white/10 border-2 border-white/50 text-white font-bold active:bg-white active:text-black pointer-events-auto text-sm"
+                className="absolute bottom-8 right-[18rem] w-20 h-20 rounded-full bg-magenta/20 border-2 border-magenta text-magenta font-bold shadow-[0_0_15px_#FF00FF] active:bg-magenta active:text-black pointer-events-auto text-xs"
+                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredStart')); }}
+                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredEnd')); }}
+            >
+                SHRED
+            </button>
+
+            {/* JUMP (Space) - Above MiniMap */}
+            <button 
+                className="absolute bottom-[18rem] right-12 w-20 h-20 rounded-full bg-white/10 border-2 border-white/50 text-white font-bold active:bg-white active:text-black pointer-events-auto text-xs"
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileJump')); }}
                 onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey(' ', 'Space', 'keyup'); }}
             >
                 JUMP
             </button>
 
-            {/* INTERACT (F) */}
+            {/* INTERACT (F) - Above Joystick */}
             <button 
-                className="absolute bottom-36 left-4 w-14 h-14 rounded-full border-2 border-green-500 text-green-500 bg-green-500/20 active:bg-green-500 active:text-black font-mono text-xs font-bold flex items-center justify-center shadow-[0_0_10px_#22C55E] pointer-events-auto"
+                className="absolute bottom-64 left-24 w-16 h-16 rounded-full border-2 border-green-500 text-green-500 bg-green-500/20 active:bg-green-500 active:text-black font-mono text-xs font-bold flex items-center justify-center shadow-[0_0_10px_#22C55E] pointer-events-auto"
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('f', 'KeyF', 'keydown'); }}
                 onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('f', 'KeyF', 'keyup'); }}
             >
                 INT
             </button>
             
-            {/* Inventory */}
+            {/* CYBERDECK (Inventory) - Between Joystick and QuickSlots */}
             <button 
-                className="absolute bottom-20 left-4 p-3 border border-cyan text-cyan bg-black/80 font-mono shadow-[0_0_10px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto"
+                className="absolute bottom-16 left-[30%] -translate-x-1/2 p-3 border border-cyan text-cyan bg-black/80 font-mono shadow-[0_0_10px_#00FFFF] active:bg-cyan active:text-black pointer-events-auto text-xs"
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('i', 'KeyI', 'keydown'); }}
                 onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('i', 'KeyI', 'keyup'); }}
             >
                 CYBERDECK
             </button>
 
-            {/* Overclock (Run) Slider - Between Quick items (Center) and Jump (Right) */}
-            <div className="absolute bottom-16 right-[28%] translate-x-1/2 pointer-events-auto cursor-pointer touch-none"
+            {/* Overclock (Run) Slider - Top center ish to keep it out of the way */}
+            <div className="absolute top-24 left-1/2 -translate-x-1/2 pointer-events-auto cursor-pointer touch-none"
                  onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); toggleRunLock(); }}>
                 <div className={`flex items-center gap-2 p-2 border ${gameState.isRunLocked ? 'border-magenta shadow-[0_0_15px_#FF00FF]' : 'border-cyan shadow-[0_0_10px_#00FFFF]'} bg-black/80 font-mono transition-colors`}>
                     <span className={gameState.isRunLocked ? 'text-orange-500 font-bold animate-pulse text-xs' : 'text-cyan text-xs'}>

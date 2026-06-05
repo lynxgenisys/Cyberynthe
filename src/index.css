@@ -21,6 +21,7 @@ body {
   overflow-x: hidden;
   image-rendering: pixelated;
   touch-action: none;
+  -webkit-user-select: none;
   user-select: none;
   /* Hard edges for Re-VAMPD aesthetic */
 }

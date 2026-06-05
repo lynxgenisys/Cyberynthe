@@ -81,7 +81,7 @@ const QuickSlots = () => {
             zIndex: 100,
             pointerEvents: 'auto'
         }}
-        className="-translate-x-1/2 origin-bottom transition-all">
+        className="-translate-x-1/2 origin-bottom transition-all mobile:scale-50">
             {slots.map((item, index) => (
                 <div
                     key={index}
