@@ -148,7 +148,7 @@ export default function MazeRenderer() {
     
     // Dynamic Cell Size: Wider passages for Sector 3 (Floors 21-30)
     const isSector3 = gameState.floorLevel > 20 && gameState.floorLevel <= 30;
-    const CELL_SIZE = isSector3 ? 2.4 : 2.0;
+    const CELL_SIZE = 2.0;
     
     const WALL_HEIGHT = 4;
     const [maze, setMaze] = useState(null);

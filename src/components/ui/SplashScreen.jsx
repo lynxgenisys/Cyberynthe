@@ -20,6 +20,7 @@ export default function SplashScreen({ onStart, hasSave, onResume }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [checkingAuth, setCheckingAuth] = useState(true);
     const [welcomeDismissed, setWelcomeDismissed] = useState(false);
+    const APP_VERSION = "v0.16.2"; // Added Version Number
 
     // AUTH CHECK
     useEffect(() => {

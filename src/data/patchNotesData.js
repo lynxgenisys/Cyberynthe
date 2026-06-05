@@ -1,5 +1,17 @@
 export const patchNotes = [
     {
+        version: "v0.16.2",
+        date: "2026-06-04",
+        title: "Sector 3 Unlocked & Stateful Tracker",
+        changes: [
+            "ADDED: Sector 3 Environments (DataGridSky & Logic Lattice Theme)",
+            "ADDED: Stateful Tracker Mob (Phase-lock teleports & laser attacks)",
+            "ADDED: Sector Guardian Boss (Floor 30) - Evade Firewall Sweeps",
+            "FIXED: Boss Room generation consistency across workers",
+            "FIXED: Safe-zone NaN crash protection in MobManager",
+        ]
+    },
+    {
         version: "v0.16.1",
         date: "2026-06-04",
         categories: {

@@ -19,16 +19,29 @@ const GradientWallMaterial = ({ baseMaterial, wallHeight, texture, isHorizontal,
 
         materialRef.current.onBeforeCompile = (shader) => {
             shader.uniforms.uTime = { value: 0 };
-            const isSector1Comp = (sector || 1.0) < 10.5;
-            shader.uniforms.uTopColor = { value: isSector1Comp ? new THREE.Color('#00AAAA') : new THREE.Color('#00FFFF') };
-            shader.uniforms.uBotColor = { value: isSector1Comp ? new THREE.Color('#AA00AA') : new THREE.Color('#EA00FF') }; // More vibrant Magenta
+            const sec = sector || 1.0;
+            const isSector1Comp = sec < 10.5;
+            const isSector3Comp = sec >= 20.5;
+            
+            let topC = '#00FFFF'; // Sector 2 Default
+            let botC = '#EA00FF'; 
+            if (isSector1Comp) {
+                topC = '#00AAAA';
+                botC = '#AA00AA';
+            } else if (isSector3Comp) {
+                topC = '#ffaa00'; // Gold
+                botC = '#aa3300'; // Deep Orange/Red
+            }
+
+            shader.uniforms.uTopColor = { value: new THREE.Color(topC) };
+            shader.uniforms.uBotColor = { value: new THREE.Color(botC) };
             shader.uniforms.uTex = { value: texture };
             shader.uniforms.uScrollDir = { value: isHorizontal ? 1.0 : 0.0 };
-            shader.uniforms.uSector = { value: sector || 1.0 };
-            shader.uniforms.uBrightness = { value: isSector1Comp ? 0.5 : 0.85 }; // Slightly lower to prevent white washout
-            shader.uniforms.uSectorSpeed = { value: isSector1Comp ? 0.012 : 0.0066 };
-            shader.uniforms.uBaseLift = { value: isSector1Comp ? 0.1 : 0.05 }; // Sharper contrast
-            shader.uniforms.uGlowMult = { value: isSector1Comp ? 1.5 : 3.0 }; // Boosted texture glow
+            shader.uniforms.uSector = { value: sec };
+            shader.uniforms.uBrightness = { value: isSector1Comp ? 0.5 : (isSector3Comp ? 1.0 : 0.85) };
+            shader.uniforms.uSectorSpeed = { value: isSector1Comp ? 0.012 : (isSector3Comp ? 0.008 : 0.0066) };
+            shader.uniforms.uBaseLift = { value: isSector1Comp ? 0.1 : 0.05 }; 
+            shader.uniforms.uGlowMult = { value: isSector1Comp ? 1.5 : (isSector3Comp ? 3.5 : 3.0) }; 
             shader.uniforms.uScrollDirFlag = { value: isSector1Comp ? 0.0 : 1.0 };
 
             shader.vertexShader = `

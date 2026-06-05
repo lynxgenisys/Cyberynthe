@@ -299,6 +299,7 @@ export default function MobManager({ maze, floorLevel }) {
     const bossCore = useRef(); const bossRing1Ref = useRef(); const bossRing2Ref = useRef(); const bossRing3Ref = useRef();
     const miteScanRef = useRef(); const wispScanRef = useRef(); const hunterScanRef = useRef(); const sentryScanRef = useRef(); const bossScanRef = useRef(); const trackerScanRef = useRef();
     const sentryBeamRef = useRef(); // NEW: Instanced Beams
+    const trackerBeamRef = useRef();
 
     const tempObject = useMemo(() => new THREE.Object3D(), []);
 
@@ -715,9 +716,10 @@ export default function MobManager({ maze, floorLevel }) {
     useFrame((state, delta) => {
         const playerPos = fastStateRef.current.playerWorldPos; if (!playerPos) return;
         let mobsDirty = false;
-        let miteC = 0, wispC = 0, hunterC = 0, sentryC = 0, bossC = 0;
-        let miteScanC = 0, wispScanC = 0, hunterScanC = 0, sentryScanC = 0, bossScanC = 0;
+        let miteC = 0, wispC = 0, hunterC = 0, sentryC = 0, bossC = 0, trackerC = 0;
+        let miteScanC = 0, wispScanC = 0, hunterScanC = 0, sentryScanC = 0, bossScanC = 0, trackerScanC = 0;
         let sentryBeamC = 0; // Instance Counter
+        let trackerBeamC = 0;
         const playerLevel = getLevelFromXP(gameState.xp || 0);
         const currentMobs = mobsRef.current;
 
@@ -1134,29 +1136,47 @@ export default function MobManager({ maze, floorLevel }) {
                 // 3. NULL_WISP: PING_ALARM (Scout)
                 
                 if (mob.id === 'STATEFUL_TRACKER') {
-                    if (dist < 15) {
-                        if (!mob.attackState) mob.attackState = 'IDLE';
+                    if (!mob.attackState) mob.attackState = 'IDLE';
+                    if (!mob.cooldownTimer) mob.cooldownTimer = 0;
+                    
+                    if (dist < 20) {
                         if (mob.attackState === 'IDLE') {
-                            if (Math.random() < 0.01) {
+                            // Phase-Lock Tracking Beam (Tracks Player, Then Fires)
+                            if (Math.random() < 0.005) {
                                 mob.attackState = 'CHARGING';
-                                mob.chargeTimer = 1.5;
+                                mob.chargeTimer = 2.0;
                                 addNotification("ALERT: STATEFUL_TRACKER_PHASE_LOCK", "#EA00FF");
+                            } else {
+                                // Wander or move towards player slowly
+                                vx = (dx / dist) * 1.5;
+                                vz = (dz / dist) * 1.5;
                             }
                         } else if (mob.attackState === 'CHARGING') {
                             mob.chargeTimer -= delta;
-                            mob.isStationary = true;
+                            mob.isStationary = true; // Stop walking
+                            
+                            // Phase-blink (Teleport slightly towards player while charging)
+                            if (Math.random() < 0.05 && dist > 3) {
+                                mob.x += (dx / dist) * 1.5;
+                                mob.z += (dz / dist) * 1.5;
+                            }
+                            
                             if (mob.chargeTimer <= 0) {
                                 mob.attackState = 'FIRING';
                                 mob.fireTimer = 0.5;
+                                if (playSFX) playSFX('laser');
                             }
                         } else if (mob.attackState === 'FIRING') {
                             mob.fireTimer -= delta;
                             if (mob.fireTimer <= 0) {
-                                dispatch({ type: 'TAKE_DAMAGE', amount: mob.damage || 15 });
-                                addNotification("CRITICAL: PHASE_LOCK_HIT", "#FF0000");
-                                createDamageText(playerPos.x, playerPos.y + 1, playerPos.z, mob.damage || 15, true);
+                                // Raycast Hit
+                                if (dist < 25) { // Unavoidable if in sight and fired
+                                    dispatch({ type: 'TAKE_DAMAGE', amount: mob.damage || 20 });
+                                    addNotification("CRITICAL: PHASE_LOCK_HIT", "#FF0000");
+                                    createDamageText(playerPos.x, playerPos.y + 1, playerPos.z, mob.damage || 20, true);
+                                }
                                 mob.attackState = 'COOLDOWN';
-                                mob.cooldownTimer = 2.0;
+                                mob.cooldownTimer = 3.0;
                                 mob.isStationary = false;
                             }
                         } else if (mob.attackState === 'COOLDOWN') {
@@ -1164,6 +1184,9 @@ export default function MobManager({ maze, floorLevel }) {
                             if (mob.cooldownTimer <= 0) {
                                 mob.attackState = 'IDLE';
                             }
+                            // Retreat slowly
+                            vx = -(dx / dist) * 1.0;
+                            vz = -(dz / dist) * 1.0;
                         }
                     }
                 }
@@ -1752,9 +1775,29 @@ export default function MobManager({ maze, floorLevel }) {
                     sentryBeamRef.current.setMatrixAt(sentryBeamC++, tempObject.matrix);
                 }
             }
+
+            // TRACKER BEAM LOGIC
+            if (mob.id === 'STATEFUL_TRACKER' && mob.attackState === 'FIRING') {
+                if (trackerBeamRef.current) {
+                    const hitDist = Math.sqrt(distSq); // Beam directly to player
+                    // Start at center height (2.0)
+                    tempObject.position.set(mob.x, 2.0, mob.z);
+
+                    // Point directly at player
+                    tempObject.lookAt(playerPos.x, playerPos.y + 1, playerPos.z);
+                    tempObject.rotateX(-Math.PI / 2); // Cylinder lies flat
+
+                    // Shift forward by half distance
+                    tempObject.translateY(hitDist / 2);
+
+                    tempObject.scale.set(1, hitDist, 1);
+                    tempObject.updateMatrix();
+                    trackerBeamRef.current.setMatrixAt(trackerBeamC++, tempObject.matrix);
+                }
+            }
         });
 
-        [miteRef, wispRef, wispOverlayRef, hunterRef, sentryTopRef, sentryMidRef, sentryBotRef, sentryHeartRef, bossCore, bossRing1Ref, bossRing2Ref, bossRing3Ref, miteScanRef, wispScanRef, hunterScanRef, sentryScanRef, bossScanRef, sentryBeamRef].forEach(r => {
+        [miteRef, wispRef, wispOverlayRef, hunterRef, sentryTopRef, sentryMidRef, sentryBotRef, sentryHeartRef, bossCore, bossRing1Ref, bossRing2Ref, bossRing3Ref, miteScanRef, wispScanRef, hunterScanRef, sentryScanRef, bossScanRef, trackerRef, trackerScanRef, sentryBeamRef, trackerBeamRef].forEach(r => {
             if (r.current) {
                 r.current.count = (
                     r === miteRef ? miteC :
@@ -1766,7 +1809,10 @@ export default function MobManager({ maze, floorLevel }) {
                                             r === hunterScanRef ? hunterScanC :
                                                 r === sentryScanRef ? sentryScanC :
                                                     r === sentryBeamRef ? sentryBeamC :
-                                                        r === bossScanRef ? bossScanC : sentryC
+                                                        r === trackerRef ? trackerC :
+                                                            r === trackerScanRef ? trackerScanC :
+                                                                r === trackerBeamRef ? trackerBeamC :
+                                                                    r === bossScanRef ? bossScanC : sentryC
                 );
                 if ((r === sentryTopRef || r === sentryMidRef || r === sentryBotRef || r === sentryHeartRef) && r.current.instanceColor) {
                     r.current.instanceColor.needsUpdate = true; // Enable Color Updates
@@ -1949,6 +1995,10 @@ export default function MobManager({ maze, floorLevel }) {
             <instancedMesh ref={sentryBeamRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false}>
                 <cylinderGeometry args={[0.07, 0.07, 1, 8, 1, true]} /> {/* 30% Smaller Dia (0.1 -> 0.07) */}
                 <meshBasicMaterial color="#00FFFF" transparent opacity={0.6} depthWrite={false} side={THREE.DoubleSide} />
+            </instancedMesh>
+            <instancedMesh ref={trackerBeamRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false} renderOrder={100}>
+                <cylinderGeometry args={[0.05, 0.1, 1, 8, 1, true]} />
+                <meshBasicMaterial color="#EA00FF" transparent opacity={0.8} depthWrite={false} side={THREE.DoubleSide} />
             </instancedMesh>
             
             {/* Boss Beam */}
