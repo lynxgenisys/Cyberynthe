@@ -236,7 +236,7 @@ export default function CyberdeckUI({ onClose }) {
                                 label="LOCAL_CACHE"
                                 value={displayClockSpeed + '%'}
                                 upgraded={speedBuff > 0 || (playerState.hardwareBonuses?.clock || 0) > 0}
-                                onUpgrade={() => handleUpgrade('clock')}
+                                onUpgrade={() => upgradeStat('clock')}
                                 canUpgrade={availablePoints > 0}
                                 color="#00FFFF"
                             />
