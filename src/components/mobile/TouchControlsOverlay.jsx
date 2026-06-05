@@ -94,37 +94,36 @@ export default function TouchControlsOverlay({ onLookMove }) {
 
             {/* ── QUARTER-CIRCLE COMBAT BUTTONS (around minimap) ── */}
 
-            {/* JUMP — directly above minimap (12 o'clock) */}
+            {/* JUMP — swapped to SHRED's old moved position (bottom row, far right) */}
             <button
-                className={`${btnClass} bottom-[17rem] right-6 bg-white/10 border-2 border-white/60 text-white active:bg-white/40`}
+                className={`${btnClass} bottom-[4rem] right-[21rem] bg-white/10 border-2 border-white/60 text-white active:bg-white/40`}
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileJump')); }}
                 onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey(' ', 'Space', 'keyup'); }}
             >
                 JUMP
             </button>
 
-            {/* SPIKE — upper-left of minimap (10 o'clock) */}
+            {/* SPIKE — moved up by own height (5rem) and left by own width (5rem) */}
             <button
-                className={`${btnClass} bottom-[12rem] right-[8rem] bg-cyan/20 border-2 border-cyan text-cyan shadow-[0_0_15px_#00FFFF] active:bg-cyan/50`}
+                className={`${btnClass} bottom-[17rem] right-[13rem] bg-cyan/20 border-2 border-cyan text-cyan shadow-[0_0_15px_#00FFFF] active:bg-cyan/50`}
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileFireStart')); }}
                 onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileFireEnd')); }}
             >
                 SPIKE
             </button>
 
-            {/* SHRED — directly left of minimap (9 o'clock) */}
+            {/* SHRED — moved left by own width, then swapped with JUMP → now at JUMP's old spot */}
             <button
-                className={`${btnClass} bottom-[4rem] right-[16rem] bg-[#FF00FF]/20 border-2 border-[#FF00FF] text-[#FF00FF] shadow-[0_0_15px_#FF00FF] active:bg-[#FF00FF]/50`}
+                className={`${btnClass} bottom-[17rem] right-6 bg-[#FF00FF]/20 border-2 border-[#FF00FF] text-[#FF00FF] shadow-[0_0_15px_#FF00FF] active:bg-[#FF00FF]/50`}
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredStart')); }}
                 onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('mobileShredEnd')); }}
             >
                 SHRED
             </button>
 
-            {/* ── OVERCLOCK SLIDER — centred between JUMP btn and quickslots ── */}
-            {/* Position: bottom-[17.5rem] horizontally centred in the right area */}
+            {/* OVERCLOCK SLIDER — bottom row, between QuickSlot 1 and JUMP button */}
             <div
-                className="absolute bottom-[20rem] right-[10rem] pointer-events-auto cursor-pointer touch-none"
+                className="absolute bottom-4 right-[11rem] pointer-events-auto cursor-pointer touch-none"
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); toggleRunLock(); }}
                 onClick={(e) => { e.preventDefault(); toggleRunLock(); }}
             >
@@ -149,9 +148,9 @@ export default function TouchControlsOverlay({ onLookMove }) {
                 INT
             </button>
 
-            {/* CYBERDECK — between joystick and QuickSlots, hexagonal feel */}
+            {/* CYBERDECK — same size as quickslots (96px octagon), between joystick and QuickSlots */}
             <button
-                className="absolute bottom-16 left-[30%] -translate-x-1/2 pointer-events-auto select-none"
+                className="absolute bottom-4 left-[30%] -translate-x-1/2 pointer-events-auto select-none"
                 onTouchStart={(e) => {
                     e.preventDefault(); e.stopPropagation();
                     triggerKey('i', 'KeyI', 'keydown');
@@ -159,13 +158,13 @@ export default function TouchControlsOverlay({ onLookMove }) {
                 }}
                 onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); triggerKey('i', 'KeyI', 'keyup'); }}
                 style={{
-                    clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
-                    width: '80px',
-                    height: '64px',
+                    clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)',
+                    width: '96px',
+                    height: '96px',
                     background: 'rgba(0, 255, 255, 0.1)',
                     border: 'none',
                     outline: '2px solid #00FFFF',
-                    outlineOffset: '-2px',
+                    outlineOffset: '-4px',
                     color: '#00FFFF',
                     fontFamily: 'monospace',
                     fontSize: '10px',

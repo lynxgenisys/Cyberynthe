@@ -89,12 +89,12 @@ const QuickSlots = () => {
                         width: '96px',
                         height: '96px',
                         clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)',
-                        backgroundColor: 'rgba(0, 0, 0, 0.85)',
-                        outline: `2px solid ${getSlotBorderColor(item)}`,
-                        outlineOffset: '-3px',
+                        backgroundColor: item ? `color-mix(in srgb, ${getSlotBorderColor(item)} 15%, rgba(0,0,0,0.85))` : 'rgba(0, 0, 0, 0.85)',
                         position: 'relative',
                         cursor: item ? 'pointer' : 'default',
-                        boxShadow: item ? `0 0 18px ${getSlotBorderColor(item)}50` : 'none',
+                        filter: item
+                            ? `drop-shadow(0 0 6px ${getSlotBorderColor(item)}) drop-shadow(0 0 2px ${getSlotBorderColor(item)})`
+                            : `drop-shadow(0 0 3px #333333)`,
                         transition: 'all 0.2s ease'
                     }}
                     onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); handleSlotClick(index); }}
