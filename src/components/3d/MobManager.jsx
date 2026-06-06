@@ -18,6 +18,7 @@ import sentrySkinSrc from '../../assets/mobs/stateless_sentry_skin.webp';
 import hunterSkinSrc from '../../assets/mobs/hunter_skin.webp';
 import bossCoreSrc from '../../assets/mobs/lvl_10_boss.webp';
 import bossRingsSrc from '../../assets/mobs/lvl_10_boss_rings.webp';
+import trackerTexSrc from '../../assets/logic_lattice_wall.png';
 
 const MAX_MOBS = 50;
 
@@ -314,6 +315,7 @@ export default function MobManager({ maze, floorLevel }) {
     const [sentryTex, setSentryTex] = useState(null);
     const [bossCoreTex, setBossCoreTex] = useState(null);
     const [bossRingsTex, setBossRingsTex] = useState(null);
+    const [trackerTex, setTrackerTex] = useState(null);
 
     // Material refs for manual texture assignment
     const miteMatRef = useRef();
@@ -325,6 +327,7 @@ export default function MobManager({ maze, floorLevel }) {
     const sentryBotMatRef = useRef();
     const sentryHeartMatRef = useRef();
     const bossCoreMatRef = useRef(); const bossRing1MatRef = useRef(); const bossRing2MatRef = useRef(); const bossRing3MatRef = useRef();
+    const trackerMatRef = useRef();
 
     useEffect(() => {
         const loader = new THREE.TextureLoader();
@@ -417,15 +420,23 @@ export default function MobManager({ maze, floorLevel }) {
 
         loader.load(bossRingsSrc, (tex) => {
             tex.colorSpace = THREE.SRGBColorSpace;
-            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-            tex.minFilter = THREE.NearestFilter;
-            tex.magFilter = THREE.NearestFilter;
             setBossRingsTex(tex);
-            if (bossRing1MatRef.current) { bossRing1MatRef.current.map = tex; bossRing1MatRef.current.needsUpdate = true; }
-            if (bossRing2MatRef.current) { bossRing2MatRef.current.map = tex; bossRing2MatRef.current.needsUpdate = true; }
-            if (bossRing3MatRef.current) { bossRing3MatRef.current.map = tex; bossRing3MatRef.current.needsUpdate = true; }
-            console.log("Boss Rings texture loaded");
-        }, undefined, (err) => console.warn('Boss rings texture failed:', err));
+            if (bossRing1MatRef.current) bossRing1MatRef.current.map = bossRing1MatRef.current.emissiveMap = tex;
+            if (bossRing2MatRef.current) bossRing2MatRef.current.map = bossRing2MatRef.current.emissiveMap = tex;
+            if (bossRing3MatRef.current) bossRing3MatRef.current.map = bossRing3MatRef.current.emissiveMap = tex;
+        });
+
+        loader.load(trackerTexSrc, (tex) => {
+            tex.colorSpace = THREE.SRGBColorSpace;
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            setTrackerTex(tex);
+            if (trackerMatRef.current) {
+                trackerMatRef.current.map = tex;
+                trackerMatRef.current.emissiveMap = tex;
+                trackerMatRef.current.needsUpdate = true;
+            }
+        });
+
     }, []);
 
     // Animate all mob textures
@@ -2057,7 +2068,7 @@ export default function MobManager({ maze, floorLevel }) {
             {/* STATEFUL_TRACKER: Octahedron - Logic Lattice Theme */}
             <instancedMesh ref={trackerRef} args={[null, null, 100]} count={0} frustumCulled={false}>
                 <octahedronGeometry args={[0.9, 0]} />
-                <meshStandardMaterial color="#220022" emissive="#ffaa00" emissiveIntensity={1.5} wireframe={false} metalness={0.9} roughness={0.1} />
+                <meshStandardMaterial ref={trackerMatRef} color="#FFFFFF" emissive="#ffaa00" emissiveIntensity={1.5} wireframe={false} metalness={0.9} roughness={0.1} transparent opacity={0.9} />
             </instancedMesh>
             <instancedMesh ref={trackerScanRef} args={[null, null, 100]} count={0} frustumCulled={false} renderOrder={999}><sphereGeometry args={[0.8, 16, 16]} /><meshBasicMaterial color="#ffaa00" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} /></instancedMesh>
               <instancedMesh ref={hunterRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false}>
