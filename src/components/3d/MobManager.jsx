@@ -1638,7 +1638,7 @@ export default function MobManager({ maze, floorLevel }) {
 
             if (mob.id === 'BIT_MITE' && miteRef.current) {
                 miteRef.current.setMatrixAt(miteC++, tempObject.matrix);
-                if ((mob.scanTimer > 0 || mob.isDetected) && miteScanRef.current) miteScanRef.current.setMatrixAt(miteScanC++, tempObject.matrix);
+                if ((mob.scanTimer > 0) && miteScanRef.current) miteScanRef.current.setMatrixAt(miteScanC++, tempObject.matrix);
             } else if (mob.id === 'NULL_WISP' && wispRef.current) {
                 wispRef.current.setMatrixAt(wispC, tempObject.matrix);
 
@@ -1649,15 +1649,15 @@ export default function MobManager({ maze, floorLevel }) {
                     wispOverlayRef.current.setMatrixAt(wispC, tempObject.matrix);
                 }
                 wispC++;
-                if ((mob.scanTimer > 0 || mob.isDetected) && wispScanRef.current) wispScanRef.current.setMatrixAt(wispScanC++, tempObject.matrix);
+                if ((mob.scanTimer > 0) && wispScanRef.current) wispScanRef.current.setMatrixAt(wispScanC++, tempObject.matrix);
             
             } else if (mob.id === 'STATEFUL_TRACKER' && trackerRef.current) {
                 trackerRef.current.setMatrixAt(trackerC++, tempObject.matrix);
-                if ((mob.scanTimer > 0 || mob.isDetected) && trackerScanRef.current) trackerScanRef.current.setMatrixAt(trackerScanC++, tempObject.matrix);
+                if ((mob.scanTimer > 0) && trackerScanRef.current) trackerScanRef.current.setMatrixAt(trackerScanC++, tempObject.matrix);
 
             } else if (mob.id === 'HUNTER' && hunterRef.current) {
                 hunterRef.current.setMatrixAt(hunterC++, tempObject.matrix);
-                if ((mob.scanTimer > 0 || mob.isDetected) && hunterScanRef.current) hunterScanRef.current.setMatrixAt(hunterScanC++, tempObject.matrix);
+                if ((mob.scanTimer > 0) && hunterScanRef.current) hunterScanRef.current.setMatrixAt(hunterScanC++, tempObject.matrix);
             } else if (mob.id === 'STATELESS_SENTRY') {
                 const ti = sentryC++;
                 const t = state.clock.elapsedTime;
@@ -1734,7 +1734,7 @@ export default function MobManager({ maze, floorLevel }) {
                     sentryHeartRef.current.setColorAt(ti, activeColor);
                 }
 
-                if ((mob.scanTimer > 0 || mob.isDetected) && sentryScanRef.current) {
+                if ((mob.scanTimer > 0) && sentryScanRef.current) {
                     tempObject.position.set(mob.x, 2.25, mob.z); tempObject.scale.setScalar(1.0); tempObject.updateMatrix();
                     sentryScanRef.current.setMatrixAt(sentryScanC++, tempObject.matrix);
                 }
