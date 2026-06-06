@@ -1378,8 +1378,9 @@ export default function MobManager({ maze, floorLevel }) {
                     }
                 }
                 
+            } // === END IO_SENTINEL LOGIC ===
                 
-                if (mob.id === 'SECTOR_GUARDIAN' && floorLevel !== 999) {
+            if (mob.id === 'SECTOR_GUARDIAN' && floorLevel !== 999) {
                     if (!mob.bossState) mob.bossState = 'IDLE';
 
                     // Rotation Tracking (Look at player)
@@ -1504,8 +1505,10 @@ export default function MobManager({ maze, floorLevel }) {
                         mob.bossState = 'IDLE';
                     }
                 }
+            // === END BYTE_MOTHER LOGIC ===
 
-                // Update Boss Instances (Core + Rings)
+            // Update Boss Instances (Core + Rings) for Instanced Bosses
+            if (mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER') {
                 // APPLY ROTATION TO INSTANCES
                 const bossRot = mob.rotationY || 0;
 
@@ -1552,7 +1555,7 @@ export default function MobManager({ maze, floorLevel }) {
                     bossScanRef.current.setMatrixAt(bossScanC++, tempObject.matrix);
                 }
                 bossC++; // Increment boss count
-            }
+            } // === END INSTANCED BOSS RENDERING ===
             
             if (mob.id === 'IO_SENTINEL' || mob.id === 'BYTE_MOTHER' || mob.id === 'SECTOR_GUARDIAN') {
                 // --- LIVE BOSS HP UPDATE ---
