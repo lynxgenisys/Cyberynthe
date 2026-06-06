@@ -50,16 +50,41 @@ export default function SectorGuardianBoss({ mob }) {
 
         // Shields rotating and pulling tight
         const targetShieldDist = isSlamming ? 1.5 : 4.0;
+        const isFiring = mob.bossState === 'FIRING';
+
         shieldsRef.current.forEach((shield, i) => {
             if (shield) {
-                const speed = mob.bossState === 'FIRING' ? 4.0 : (isSlamming ? 0.0 : 1.0);
-                shield.rotation.y += delta * speed * (i % 2 === 0 ? 1 : -1);
-                if (!isSlamming) shield.rotation.z = Math.sin(time * 2 + i) * 0.2;
-                else shield.rotation.z = THREE.MathUtils.lerp(shield.rotation.z, 0, 0.1); // flatten out to form a wall
-
                 const mesh = shield.children[0];
-                if (mesh) {
-                    mesh.position.x = THREE.MathUtils.lerp(mesh.position.x, targetShieldDist, 0.1);
+
+                if (isFiring && i === 0) {
+                    // BOOMERANG ATTACK (Shield 0)
+                    shield.rotation.y += delta * 25.0; // Spin extremely fast
+                    
+                    if (mob.fireTimer !== undefined && mesh) {
+                        // Fire timer goes 2.0 -> 0. Apex is at 1.0
+                        const throwProgress = Math.max(0, 1.0 - Math.abs(mob.fireTimer - 1.0)); // 0 -> 1 -> 0
+                        
+                        // Shoot forward along local Z axis
+                        shield.position.z = THREE.MathUtils.lerp(shield.position.z, -throwProgress * 15.0, 0.4); 
+                        // Center the mesh so it spins on its own axis instead of orbiting
+                        mesh.position.x = THREE.MathUtils.lerp(mesh.position.x, 0, 0.2);
+                        // Flatten it so it looks like a sawblade
+                        mesh.rotation.x = THREE.MathUtils.lerp(mesh.rotation.x, Math.PI / 2, 0.2);
+                    }
+                } else {
+                    // NORMAL ORBIT BEHAVIOR
+                    shield.position.z = THREE.MathUtils.lerp(shield.position.z, 0, 0.1);
+                    if (mesh) mesh.rotation.x = THREE.MathUtils.lerp(mesh.rotation.x, 0, 0.1);
+
+                    const speed = isFiring ? 4.0 : (isSlamming ? 0.0 : 1.0);
+                    shield.rotation.y += delta * speed * (i % 2 === 0 ? 1 : -1);
+                    
+                    if (!isSlamming) shield.rotation.z = Math.sin(time * 2 + i) * 0.2;
+                    else shield.rotation.z = THREE.MathUtils.lerp(shield.rotation.z, 0, 0.1); // flatten out to form a wall
+
+                    if (mesh) {
+                        mesh.position.x = THREE.MathUtils.lerp(mesh.position.x, targetShieldDist, 0.1);
+                    }
                 }
             }
         });

@@ -1013,6 +1013,20 @@ export default function MobManager({ maze, floorLevel }) {
                         if (!mob.aggroActive && mob.id === 'IO_SENTINEL') {
                             vx = 0;
                             vz = 0;
+                        } else if (mob.id === 'SECTOR_GUARDIAN') {
+                            // Maintain distance (~6m) for ranged boomerang attacks
+                            if (dist > 6.0) {
+                                vx = (dx / dist) * speed;
+                                vz = (dz / dist) * speed;
+                            } else if (dist < 4.0) {
+                                // Back away slowly if too close
+                                vx = -(dx / dist) * (speed * 0.5);
+                                vz = -(dz / dist) * (speed * 0.5);
+                            } else {
+                                // Hold position
+                                vx = 0;
+                                vz = 0;
+                            }
                         } else {
                             vx = (dx / dist) * speed;
                             vz = (dz / dist) * speed;
@@ -1392,18 +1406,35 @@ export default function MobManager({ maze, floorLevel }) {
                         mob.chargeTimer -= delta;
                         if (mob.chargeTimer <= 0) {
                             mob.bossState = 'FIRING';
-                            mob.fireTimer = 3.0; // 3 seconds of laser
+                            mob.fireTimer = 2.0; // 2 seconds for a quick boomerang throw
+                            mob.hasHitPlayer = false; // Reset flag
                         }
                     } else if (mob.bossState === 'FIRING') {
                         mob.fireTimer -= delta;
-                        // Sweeping damage
-                        if (distSq < 400) {
-                            damageKernel(15 * delta); // Continuous damage while firing!
-                            if (Math.random() < 0.2) triggerImpact({ x: playerPos.x, y: 1.5, z: playerPos.z }, "#FF0000"); 
+                        
+                        // Boomerang Shield Damage Logic
+                        // Deals burst damage when the shield is near its apex (fireTimer ~ 1.0)
+                        if (mob.fireTimer < 1.2 && mob.fireTimer > 0.8 && !mob.hasHitPlayer) {
+                            const rotY = mob.rotationY;
+                            const pDx = playerPos.x - mob.x;
+                            const pDz = playerPos.z - mob.z;
+                            const bx = -Math.sin(rotY), bz = -Math.cos(rotY);
+                            const dot = pDx * bx + pDz * bz;
+                            const cross = pDx * bz - pDz * bx;
+                            const beamDist = Math.abs(cross);
+                            
+                            // Hitbox: straight line 15m long, 2m wide
+                            if (dot > 0 && dot < 15 && beamDist < 2.0) {
+                                damageKernel(35); // 35 Burst Damage
+                                playSFX('mob_attack');
+                                triggerImpact({ x: playerPos.x, y: 1.5, z: playerPos.z }, "#EA00FF");
+                            }
+                            mob.hasHitPlayer = true;
                         }
+
                         if (mob.fireTimer <= 0) {
                             mob.bossState = 'COOLDOWN';
-                            mob.cooldownTimer = 3.0;
+                            mob.cooldownTimer = 2.0;
                         }
                     } else if (mob.bossState === 'COOLDOWN') {
                         mob.cooldownTimer -= delta;
