@@ -372,20 +372,22 @@ const PlayerController = () => {
 
     useFrame((state, delta) => {
         // WATCHDOG: Stuck Charge Audio
-            if (chargeSoundRef.current && !document.pointerLockElement) {
-                try {
-                    const ctx = chargeSoundRef.current.osc.context;
-                    const t = ctx.currentTime;
-                    chargeSoundRef.current.gain.gain.linearRampToValueAtTime(0, t + 0.1);
-                    chargeSoundRef.current.osc.stop(t + 0.1);
-                } catch (e) {
-                    // Ignore
-                }
-                chargeSoundRef.current = null;
-                isChargingRef.current = false;
-                setIsCharging(false);
-                setChargingWeapon(false);
+        // On mobile/touch devices, pointerLockElement is always null, so skip this check
+        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        if (chargeSoundRef.current && !document.pointerLockElement && !isTouchDevice) {
+            try {
+                const ctx = chargeSoundRef.current.osc.context;
+                const t = ctx.currentTime;
+                chargeSoundRef.current.gain.gain.linearRampToValueAtTime(0, t + 0.1);
+                chargeSoundRef.current.osc.stop(t + 0.1);
+            } catch (e) {
+                // Ignore
             }
+            chargeSoundRef.current = null;
+            isChargingRef.current = false;
+            setIsCharging(false);
+            setChargingWeapon(false);
+        }
         if (!body.current) return;
 
         // PAUSE LOGIC

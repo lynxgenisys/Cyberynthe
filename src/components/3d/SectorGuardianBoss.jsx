@@ -68,6 +68,7 @@ export default function SectorGuardianBoss({ mob }) {
                         map={shieldTex}
                         color="#222222" 
                         emissive={coreColor} 
+                        emissiveMap={shieldTex}
                         emissiveIntensity={isVulnerable ? 0.2 : 0.8} 
                         metalness={0.9} 
                         roughness={0.1} 
@@ -81,7 +82,7 @@ export default function SectorGuardianBoss({ mob }) {
     }
 
     return (
-        <group ref={groupRef} scale={0.9}>
+        <group ref={groupRef} scale={0.45}>
             {/* CORE (Octahedron) */}
             <mesh ref={coreRef}>
                 <octahedronGeometry args={[1.5, 0]} />
@@ -89,6 +90,7 @@ export default function SectorGuardianBoss({ mob }) {
                     map={bodyTex}
                     color="#FFFFFF" 
                     emissive={coreColor} 
+                    emissiveMap={bodyTex}
                     emissiveIntensity={isFiring ? 2.0 : 1.0} 
                     wireframe={isVulnerable} 
                     metalness={0.5} 
