@@ -1381,6 +1381,20 @@ export default function MobManager({ maze, floorLevel }) {
                 
                 if (mob.id === 'SECTOR_GUARDIAN' && floorLevel !== 999) {
                     if (!mob.bossState) mob.bossState = 'IDLE';
+
+                    // Rotation Tracking (Look at player)
+                    const targetDx = playerPos.x - mob.x;
+                    const targetDz = playerPos.z - mob.z;
+                    const targetRot = Math.atan2(-targetDx, -targetDz);
+
+                    let currentRot = mob.rotationY || 0;
+                    let diff = targetRot - currentRot;
+                    while (diff > Math.PI) diff -= Math.PI * 2;
+                    while (diff < -Math.PI) diff += Math.PI * 2;
+
+                    // Lock rotation if firing or slamming
+                    const rotSpeed = (mob.bossState === 'FIRING' || mob.bossState === 'SHIELD_SLAM') ? 0.0 : 2.0;
+                    mob.rotationY = currentRot + diff * rotSpeed * delta;
                     
                     // Detect if recently damaged
                     if (mob.currentHp < (mob.lastHp || mob.maxHp)) {
