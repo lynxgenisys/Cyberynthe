@@ -74,7 +74,6 @@ export default function SectorGuardianBoss({ mob }) {
                         roughness={0.1} 
                         transparent
                         opacity={0.9}
-                        wireframe={isVulnerable}
                     />
                 </mesh>
             </group>
@@ -92,12 +91,18 @@ export default function SectorGuardianBoss({ mob }) {
                     emissive={coreColor} 
                     emissiveMap={bodyTex}
                     emissiveIntensity={isFiring ? 2.0 : 1.0} 
-                    wireframe={isVulnerable} 
                     metalness={0.5} 
                     roughness={0.2} 
                 />
                 <pointLight position={[0, 0, 0]} intensity={isFiring ? 2 : 1} distance={15} color={coreColor} />
             </mesh>
+            {/* SCAN WIREFRAME (Glowing Ball) */}
+            {isVulnerable && (
+                <mesh>
+                    <sphereGeometry args={[2.0, 32, 32]} />
+                    <meshBasicMaterial color="#EA00FF" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} />
+                </mesh>
+            )}
 
             {/* SHIELDS */}
             {shields}
