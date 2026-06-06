@@ -1368,6 +1368,20 @@ export default function MobManager({ maze, floorLevel }) {
                 if (mob.id === 'SECTOR_GUARDIAN' && floorLevel !== 999) {
                     if (!mob.bossState) mob.bossState = 'IDLE';
                     
+                    // Detect if recently damaged
+                    if (mob.currentHp < (mob.lastHp || mob.maxHp)) {
+                        mob.lastHp = mob.currentHp;
+                        
+                        // If taking damage, NOT scanned, and NOT currently slamming, trigger SHIELD_SLAM
+                        if ((mob.scanTimer || 0) <= 0 && mob.bossState !== 'SHIELD_SLAM' && mob.bossState !== 'RISING' && Math.random() < 0.4) {
+                            mob.bossState = 'SHIELD_SLAM';
+                            mob.slamTimer = 3.0; // Stay down for 3 seconds
+                            setBossSubtitle("DEFENSIVE_MANEUVER: KERNEL_SHIELDING", 2000);
+                        }
+                    } else {
+                        mob.lastHp = mob.currentHp;
+                    }
+
                     if (mob.bossState === 'IDLE' && mob.aggroActive) {
                         if (Math.random() < 0.02) {
                             mob.bossState = 'CHARGING';
@@ -1378,13 +1392,14 @@ export default function MobManager({ maze, floorLevel }) {
                         mob.chargeTimer -= delta;
                         if (mob.chargeTimer <= 0) {
                             mob.bossState = 'FIRING';
-                            mob.fireTimer = 2.0; // 2 seconds of laser
+                            mob.fireTimer = 3.0; // 3 seconds of laser
                         }
                     } else if (mob.bossState === 'FIRING') {
                         mob.fireTimer -= delta;
                         // Sweeping damage
-                        if (distSq < 400 && Math.random() < 0.1) {
-                            damageKernel(20);
+                        if (distSq < 400) {
+                            damageKernel(15 * delta); // Continuous damage while firing!
+                            if (Math.random() < 0.2) triggerImpact({ x: playerPos.x, y: 1.5, z: playerPos.z }, "#FF0000"); 
                         }
                         if (mob.fireTimer <= 0) {
                             mob.bossState = 'COOLDOWN';
@@ -1393,6 +1408,27 @@ export default function MobManager({ maze, floorLevel }) {
                     } else if (mob.bossState === 'COOLDOWN') {
                         mob.cooldownTimer -= delta;
                         if (mob.cooldownTimer <= 0) mob.bossState = 'IDLE';
+                    } else if (mob.bossState === 'SHIELD_SLAM') {
+                        mob.slamTimer -= delta;
+                        if (mob.slamTimer <= 0) {
+                            mob.bossState = 'RISING';
+                            mob.riseTimer = 2.0;
+                            // SPAWN SENTRY
+                            const sentry = MobLogic.createMob('STATELESS_SENTRY', floorLevel);
+                            spawnQueue.current.push({
+                                ...sentry,
+                                instanceId: Math.random(),
+                                x: mob.x,
+                                z: mob.z
+                            });
+                            setBossSubtitle("UNIT_DEPLOYED", 2000);
+                            mobsDirty = true;
+                        }
+                    } else if (mob.bossState === 'RISING') {
+                        mob.riseTimer -= delta;
+                        if (mob.riseTimer <= 0) {
+                            mob.bossState = 'IDLE';
+                        }
                     }
                 }
 

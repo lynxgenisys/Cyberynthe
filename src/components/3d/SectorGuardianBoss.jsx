@@ -23,29 +23,44 @@ export default function SectorGuardianBoss({ mob }) {
     useFrame((state, delta) => {
         if (!groupRef.current) return;
 
-        // Sync position & rotation from mob state
-        groupRef.current.position.set(mob.x, 3.5, mob.z); // Hovering height
+        const isSlamming = mob.bossState === 'SHIELD_SLAM';
+        const isRising = mob.bossState === 'RISING';
+
+        // Base hover height is 3.5, slam height is 1.0
+        const targetY = (isSlamming || isRising) ? 1.0 : 3.5;
+        
+        // Smoothly move Y position
+        groupRef.current.position.set(mob.x, THREE.MathUtils.lerp(groupRef.current.position.y || 3.5, targetY, 0.05), mob.z);
         groupRef.current.rotation.y = mob.rotationY || 0;
 
         const time = state.clock.elapsedTime;
         
-        // Hover animation
-        groupRef.current.position.y = 3.5 + Math.sin(time * 2.0) * 0.5;
+        // Hover animation (only if not slamming)
+        if (!isSlamming && !isRising) {
+            groupRef.current.position.y += Math.sin(time * 2.0) * 0.02; 
+        }
 
         // Core pulsing
         if (coreRef.current) {
             coreRef.current.rotation.x += delta * 0.5;
             coreRef.current.rotation.y += delta * 0.7;
-            const targetScale = mob.bossState === 'FIRING' ? 1.5 : 1.0;
+            const targetScale = mob.bossState === 'FIRING' ? 1.5 : (isSlamming ? 0.8 : 1.0);
             coreRef.current.scale.setScalar(THREE.MathUtils.lerp(coreRef.current.scale.x, targetScale, 0.1));
         }
 
-        // Shields rotating
+        // Shields rotating and pulling tight
+        const targetShieldDist = isSlamming ? 1.5 : 4.0;
         shieldsRef.current.forEach((shield, i) => {
             if (shield) {
-                const speed = mob.bossState === 'FIRING' ? 4.0 : 1.0;
+                const speed = mob.bossState === 'FIRING' ? 4.0 : (isSlamming ? 0.0 : 1.0);
                 shield.rotation.y += delta * speed * (i % 2 === 0 ? 1 : -1);
-                shield.rotation.z = Math.sin(time * 2 + i) * 0.2;
+                if (!isSlamming) shield.rotation.z = Math.sin(time * 2 + i) * 0.2;
+                else shield.rotation.z = THREE.MathUtils.lerp(shield.rotation.z, 0, 0.1); // flatten out to form a wall
+
+                const mesh = shield.children[0];
+                if (mesh) {
+                    mesh.position.x = THREE.MathUtils.lerp(mesh.position.x, targetShieldDist, 0.1);
+                }
             }
         });
     });
@@ -90,11 +105,11 @@ export default function SectorGuardianBoss({ mob }) {
                     color="#FFFFFF" 
                     emissive={coreColor} 
                     emissiveMap={bodyTex}
-                    emissiveIntensity={isFiring ? 2.0 : 1.0} 
+                    emissiveIntensity={isVulnerable ? 8.0 : (isFiring ? 2.0 : 1.0)} 
                     metalness={0.5} 
                     roughness={0.2} 
                 />
-                <pointLight position={[0, 0, 0]} intensity={isFiring ? 2 : 1} distance={15} color={coreColor} />
+                <pointLight position={[0, 0, 0]} intensity={isVulnerable ? 4 : (isFiring ? 2 : 1)} distance={15} color={coreColor} />
             </mesh>
             {/* SCAN WIREFRAME (Glowing Ball) */}
             {isVulnerable && (
@@ -106,14 +121,6 @@ export default function SectorGuardianBoss({ mob }) {
 
             {/* SHIELDS */}
             {shields}
-
-            {/* SCAN WIREFRAME */}
-            {mob.scanTimer > 0 && (
-                <mesh>
-                    <sphereGeometry args={[4.5, 16, 16]} />
-                    <meshBasicMaterial color="#FF0000" wireframe transparent opacity={0.5} depthTest={false} />
-                </mesh>
-            )}
         </group>
     );
 }
