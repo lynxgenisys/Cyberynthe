@@ -2105,21 +2105,21 @@ export default function MobManager({ maze, floorLevel }) {
             </instancedMesh>
             {/* SCAN WIREFRAMES DISABLED - User Request (EXCEPT BOSS) */}
             <instancedMesh ref={bossScanRef} args={[null, null, 5]} count={0} frustumCulled={false}>
-                <sphereGeometry args={[2.0, 32, 32]} /><meshBasicMaterial color="#EA00FF" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} />
+                <sphereGeometry args={[0.66, 32, 32]} /><meshBasicMaterial color="#EA00FF" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} />
             </instancedMesh>
 
             {/* SCAN WIREFRAMES - REFINED CRITICAL POINTS (User Request: Just Cores) */}
             <instancedMesh ref={miteScanRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false} renderOrder={999}>
-                <sphereGeometry args={[0.6, 16, 16]} /><meshBasicMaterial color="#EA00FF" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} />
+                <sphereGeometry args={[0.2, 16, 16]} /><meshBasicMaterial color="#EA00FF" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} />
             </instancedMesh>
             <instancedMesh ref={wispScanRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false} renderOrder={999}>
-                <sphereGeometry args={[0.5, 16, 16]} /><meshBasicMaterial color="#EA00FF" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} />
+                <sphereGeometry args={[0.16, 16, 16]} /><meshBasicMaterial color="#EA00FF" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} />
             </instancedMesh>
             <instancedMesh ref={hunterScanRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false} renderOrder={999}>
-                <sphereGeometry args={[0.8, 16, 16]} /><meshBasicMaterial color="#EA00FF" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} />
+                <sphereGeometry args={[0.26, 16, 16]} /><meshBasicMaterial color="#EA00FF" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} />
             </instancedMesh>
             <instancedMesh ref={sentryScanRef} args={[null, null, MAX_MOBS]} count={0} frustumCulled={false} renderOrder={999}>
-                <sphereGeometry args={[0.5, 16, 16]} /><meshBasicMaterial color="#00FFFF" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} />
+                <sphereGeometry args={[0.16, 16, 16]} /><meshBasicMaterial color="#00FFFF" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} />
             </instancedMesh>
             {/* Boss now uses instanced meshes below instead of BossFX component */}
             {bossKey && <KernelShard position={bossKey} maze={maze} />}

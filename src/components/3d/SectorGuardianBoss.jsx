@@ -68,13 +68,17 @@ export default function SectorGuardianBoss({ mob }) {
                         shield.position.z = THREE.MathUtils.lerp(shield.position.z, -throwProgress * 15.0, 0.4); 
                         // Center the mesh so it spins on its own axis instead of orbiting
                         mesh.position.x = THREE.MathUtils.lerp(mesh.position.x, 0, 0.2);
-                        // Flatten it so it looks like a sawblade
-                        mesh.rotation.x = THREE.MathUtils.lerp(mesh.rotation.x, Math.PI / 2, 0.2);
+                        // Flatten it so it lays horizontally like a sawblade (Rotate Z)
+                        mesh.rotation.z = THREE.MathUtils.lerp(mesh.rotation.z, Math.PI / 2, 0.2);
+                        mesh.rotation.x = THREE.MathUtils.lerp(mesh.rotation.x, 0, 0.2);
                     }
                 } else {
                     // NORMAL ORBIT BEHAVIOR
                     shield.position.z = THREE.MathUtils.lerp(shield.position.z, 0, 0.1);
-                    if (mesh) mesh.rotation.x = THREE.MathUtils.lerp(mesh.rotation.x, 0, 0.1);
+                    if (mesh) {
+                        mesh.rotation.x = THREE.MathUtils.lerp(mesh.rotation.x, 0, 0.1);
+                        mesh.rotation.z = THREE.MathUtils.lerp(mesh.rotation.z, 0, 0.1);
+                    }
 
                     const speed = isFiring ? 4.0 : (isSlamming ? 0.0 : 1.0);
                     shield.rotation.y += delta * speed * (i % 2 === 0 ? 1 : -1);
@@ -139,7 +143,7 @@ export default function SectorGuardianBoss({ mob }) {
             {/* SCAN WIREFRAME (Glowing Ball) */}
             {isVulnerable && (
                 <mesh>
-                    <sphereGeometry args={[2.0, 32, 32]} />
+                    <sphereGeometry args={[0.66, 32, 32]} />
                     <meshBasicMaterial color="#EA00FF" transparent opacity={0.3} depthTest={false} blending={THREE.AdditiveBlending} />
                 </mesh>
             )}
